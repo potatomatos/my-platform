@@ -1,4 +1,4 @@
-package cn.cxnxs.common.core.annotation;
+package cn.cxnxs.common.web.annotation;
 
 
 import java.lang.annotation.ElementType;

@@ -1,4 +1,4 @@
-package cn.cxnxs.common.core.vo.response;
+package cn.cxnxs.common.core.entity;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;

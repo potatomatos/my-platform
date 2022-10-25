@@ -1,4 +1,4 @@
-package cn.cxnxs.common.core.vo.response;
+package cn.cxnxs.common.web.vo.response;
 
 /**
  * <p>分页结果对象</p>
