@@ -1,6 +1,5 @@
-package cn.cxnxs.system;
+package cn.cxnxs.gateway;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -8,18 +7,17 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 /**
- * 系统模块
+ * 网关模块
  *
  * @author mengjinyuan
  */
 @SpringBootApplication
-@MapperScan("cn.cxnxs.system.mapper")
 @EnableFeignClients
 @RefreshScope
 @CrossOrigin(origins = "*", maxAge = 3600)
-public class SystemApplication {
+public class GatewayApplication {
     public static void main(String[] args) {
-        SpringApplication.run(SystemApplication.class, args);
-        System.out.println("(♥◠‿◠)ﾉﾞ  系统服务启动成功   ლ(´ڡ`ლ)ﾞ  \n");
+        SpringApplication.run(GatewayApplication.class, args);
+        System.out.println("(♥◠‿◠)ﾉﾞ  网关服务启动成功   ლ(´ڡ`ლ)ﾞ  \n");
     }
 }
