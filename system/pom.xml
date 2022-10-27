@@ -75,6 +75,11 @@
             <version>1.0.0</version>
         </dependency>
         <dependency>
+            <groupId>cn.cxnxs</groupId>
+            <artifactId>common-cache</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>

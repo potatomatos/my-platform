@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
  *
  * @author mengjinyuan
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"cn.cxnxs.gateway"})
 @EnableFeignClients
 @RefreshScope
 @CrossOrigin(origins = "*", maxAge = 3600)
