@@ -143,14 +143,15 @@ public class Result<T> implements Serializable {
         SUCCESS(200, "成功", "success"),
         SYSTEM_EXCEPTION(50000, "系统内部异常", "failure"),
         UNKNOWN_ERROR(-1, "未知错误", "failure"),
-        ILLEGAL_PARM(50000, "参数错误", "failure"),
-        ILLEGAL_TOKEN(50008, "token错误", "failure"),
-        LOGIN_ERROR(50010, "登陆异常", "failure"),
-        LOGIN_VERIFY_ERROR(50011, "用户名或密码错误", "failure"),
-        DUPLICATION_LOGIN(50012, "重复登录", "failure"),
-        TOKEN_EXPIRED(50014, "token过期", "failure"),
-        ERROR_404(40000, "404 Not Found", "failure"),
-        NO_PERMISSION(43000,"请求无权限","no permission");
+        USER_ACCOUNT_EXPIRED(5001, "账号过期", "user_account_expired"),
+        USER_CREDENTIALS_ERROR(5002, "密码错误", "user_credentials_error"),
+        USER_CREDENTIALS_EXPIRED(5003, "密码过期", "user_credentials_expired"),
+        USER_ACCOUNT_DISABLE(5004, "密码过期", "user_account_disable"),
+        USER_ACCOUNT_LOCKED(5005, "账号锁定", "user_account_locked"),
+        USER_ACCOUNT_NOT_EXIST(5006, "用户不存在", "user_account_not_exist"),
+        NEED_LOGIN(6001, "权限未认证", "NEED_LOGIN"),
+        TOKEN_REQUIRED(6002, "TOKEN不存在", "TOKEN_REQUIRED_EXCEPTION"),
+        TOKEN_EXPIRED(6003, "登录信息已过期", "TOKEN_EXPIRED");
 
         /**
          * 状态码

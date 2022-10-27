@@ -1,6 +1,7 @@
 package cn.cxnxs.system.mapper;
 
 import cn.cxnxs.system.entity.SysUsers;
+import cn.cxnxs.system.vo.RoleVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -40,4 +41,11 @@ public interface SysUsersMapper extends BaseMapper<SysUsers> {
      */
     @Select("SELECT c.role_code roleCode,b.client_id clientId,b.api,b.`code` FROM sys_role_permission a,sys_permission b,sys_role c ,sys_user_role d WHERE a.permission_id=b.id AND a.role_id=c.id AND c.id=d.role_id AND d.user_id=#{userId};")
     List<Map<String,String>> getUserPermissions(Integer userId);
+
+    /**
+     * 获取用户绑定的角色信息
+     * @param roleVO
+     * @return
+     */
+    List<RoleVO> getUserRolesBound(RoleVO roleVO);
 }

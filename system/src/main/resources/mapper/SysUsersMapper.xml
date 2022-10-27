@@ -2,4 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cxnxs.system.mapper.SysUsersMapper">
 
+    <select id="getUserRolesBound" resultType="cn.cxnxs.system.vo.RoleVO" parameterType="cn.cxnxs.system.vo.RoleVO">
+        SELECT
+        a.*, c.app_name
+        FROM
+        sys_role a
+        LEFT JOIN sys_user_role b ON a.id = b.role_id
+        LEFT JOIN sys_app c ON a.client_id = c.client_id
+        WHERE
+        b.user_id = #{userId}
+        <if test="roleName!=null">
+            <bind name="roleName" value="'%' + roleName + '%'"/>
+            and a.role_name like #{roleName}
+        </if>
+        <if test="clientId!=null">
+            and a.client_id like #{clientId}
+        </if>
+        order by b.id desc
+    </select>
 </mapper>
