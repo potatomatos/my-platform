@@ -13,7 +13,7 @@
     <description>网关服务</description>
     <properties>
         <!--打包目录-->
-        <package.url>D:\my-platform\gateway</package.url>
+        <package.url>C:\my-platform\gateway</package.url>
         <!--启动类目录-->
         <mainClass.url>cn.cxnxs.gateway.GatewayApplication</mainClass.url>
     </properties>

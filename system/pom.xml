@@ -12,7 +12,7 @@
     <artifactId>system</artifactId>
     <properties>
         <!--打包目录-->
-        <package.url>D:\my-platform\system</package.url>
+        <package.url>C:\my-platform\system</package.url>
         <!--启动类目录-->
         <mainClass.url>cn.cxnxs.system.SystemApplication</mainClass.url>
     </properties>
