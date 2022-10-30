@@ -1,7 +1,10 @@
 package cn.cxnxs.system.security;
 
+import cn.cxnxs.common.cache.RedissonProperties;
 import cn.cxnxs.system.security.entity.JwtUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -38,6 +41,7 @@ import java.util.HashMap;
  * @date 2022-04-10 20:27
  **/
 @Configuration
+@EnableConfigurationProperties(value = KeyPairProperties.class)
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
@@ -52,6 +56,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Autowired
     private UserDetailsService userService;
+
+    @Autowired
+    private KeyPairProperties keyPairProperties;
 
 
     /**
@@ -106,8 +113,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Bean
     public KeyPair keyPair() {
-        KeyStoreKeyFactory factory = new KeyStoreKeyFactory(new ClassPathResource("jwt.jks"), "123456".toCharArray());
-        return factory.getKeyPair("jwt", "123456".toCharArray());
+        KeyStoreKeyFactory factory = new KeyStoreKeyFactory(new ClassPathResource(keyPairProperties.getKeyFile()),
+                keyPairProperties.getStorePassword().toCharArray());
+        return factory.getKeyPair(keyPairProperties.getAlias(), keyPairProperties.getPassword().toCharArray());
     }
 
     /**
