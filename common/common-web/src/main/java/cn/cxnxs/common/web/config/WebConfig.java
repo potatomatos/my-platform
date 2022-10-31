@@ -20,7 +20,7 @@ import javax.annotation.Resource;
  **/
 @Configuration
 @Slf4j
-public class MvcConfig implements WebMvcConfigurer {
+public class WebConfig implements WebMvcConfigurer {
 
     @Resource
     private ResponseResultInterceptor responseResultInterceptor;

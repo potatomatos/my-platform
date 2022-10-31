@@ -9,6 +9,7 @@
         <module>common</module>
         <module>system</module>
         <module>gateway</module>
+        <module>oauth-server</module>
     </modules>
     <name>my-platform</name>
     <packaging>pom</packaging>
