@@ -1,6 +1,6 @@
 package cn.cxnxs.gateway.handler;
 
-import cn.cxnxs.common.web.vo.response.Result;
+import cn.cxnxs.common.core.entity.response.Result;
 import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
