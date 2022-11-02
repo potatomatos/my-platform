@@ -1,6 +1,6 @@
 package cn.cxnxs.security.config;
 
-import cn.cxnxs.system.security.entity.JwtUser;
+import cn.cxnxs.security.entity.JwtUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

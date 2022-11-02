@@ -1,11 +1,11 @@
 package cn.cxnxs.security.filter;
 
-import cn.cxnxs.common.web.vo.response.Result;
+import cn.cxnxs.common.api.SystemService;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.entity.JwtUser;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -30,7 +30,7 @@ import java.util.Objects;
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     @Autowired
-    private ISecurityService securityService;
+    private SystemService systemService;
 
     @Autowired
     private TokenStore jdbcTokenStore;
@@ -43,7 +43,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String clientId = request.getHeader("clientId");
 
         //不需要token的路由可以直接放行
-        if (securityService.permit(uri, clientId)) {
+        Result<Boolean> permition = systemService.permit(uri, clientId);
+        if (Result.ResultEnum.SUCCESS.getCode().equals(permition.getCode())&&permition.getData()) {
             filterChain.doFilter(request, response);
             return;
         }

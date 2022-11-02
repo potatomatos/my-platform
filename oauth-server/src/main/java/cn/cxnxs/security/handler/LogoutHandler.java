@@ -1,6 +1,6 @@
 package cn.cxnxs.security.handler;
 
-import cn.cxnxs.common.web.vo.response.Result;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.config.JSONAuthentication;
 import cn.cxnxs.security.constants.RedisKeyPrefix;
 import cn.cxnxs.security.entity.JwtUser;

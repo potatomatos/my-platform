@@ -1,9 +1,10 @@
 package cn.cxnxs.security.service.impl;
 
-import cn.cxnxs.system.entity.SysUsers;
-import cn.cxnxs.system.mapper.SysUsersMapper;
-import cn.cxnxs.system.security.entity.JwtUser;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import cn.cxnxs.common.api.SystemService;
+import cn.cxnxs.common.api.domain.UserApiEntity;
+import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.security.entity.JwtUser;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 public class UserDetailServiceImpl implements UserDetailsService {
 
     @Resource
-    private SysUsersMapper sysUsersMapper;
+    private SystemService systemService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -32,38 +33,43 @@ public class UserDetailServiceImpl implements UserDetailsService {
             return null;
         }
         //从数据库获取权限
-        SysUsers sysUsers = sysUsersMapper.selectOne(new LambdaQueryWrapper<SysUsers>().eq(SysUsers::getUsername, username));
-        if (sysUsers==null){
+        Result<UserApiEntity> result = systemService.getUserByName(username);
+        UserApiEntity userApiEntity;
+        if (result.ok()){
+            userApiEntity = result.getData();
+        }else {
+            throw new BadCredentialsException("用户信息获取失败");
+        }
+
+        if (userApiEntity ==null){
             //表示用户不存在
             throw  new UsernameNotFoundException("用户名或密码错误");
         }
         //取出正确密码（密文）
-        String password = sysUsers.getEncryptedPassword();
+        String password = userApiEntity.getEncryptedPassword();
         boolean enabled=true;
         boolean accountNonExpired=true;
         boolean credentialsNonExpired=true;
         boolean accountNonLocked=true;
 
-        if (JwtUser.USER_STATE.DISABLED.getCode().equals(sysUsers.getState())){
+        if (JwtUser.USER_STATE.DISABLED.getCode().equals(userApiEntity.getState())){
             enabled=false;
         }
-        if (JwtUser.USER_STATE.ACCOUNT_EXPIRED.getCode().equals(sysUsers.getState())){
+        if (JwtUser.USER_STATE.ACCOUNT_EXPIRED.getCode().equals(userApiEntity.getState())){
             accountNonExpired=false;
         }
-        if (JwtUser.USER_STATE.CREDENTIALS_EXPIRED.getCode().equals(sysUsers.getState())){
+        if (JwtUser.USER_STATE.CREDENTIALS_EXPIRED.getCode().equals(userApiEntity.getState())){
             credentialsNonExpired=false;
         }
-        if (JwtUser.USER_STATE.ACCOUNT_LOCKED.getCode().equals(sysUsers.getState())){
+        if (JwtUser.USER_STATE.ACCOUNT_LOCKED.getCode().equals(userApiEntity.getState())){
             accountNonLocked=false;
         }
-        //获取用户权限
-        Integer userId=sysUsers.getId();
         //获取用户客户端信息
-        List<String> userClients = sysUsersMapper.getUserClients(userId);
+        List<String> userClients = userApiEntity.getUserClients();
         //获取用户的所有角色
-        List<String> userRoles = sysUsersMapper.getUserRoles(userId);
+        List<String> userRoles = userApiEntity.getUserRoles();
         //获取用户的权限信息
-        List<Map<String, String>> permissions = sysUsersMapper.getUserPermissions(userId);
+        List<Map<String, String>> permissions = userApiEntity.getPermissions();
         //根据角色分组权限
         Map<String,List<Map<String, String>>> rolePermissions=permissions.stream().collect(Collectors.groupingBy(e->e.get("role_code")));
 
@@ -74,14 +80,14 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 credentialsNonExpired,
                 accountNonLocked,
                 AuthorityUtils.commaSeparatedStringToAuthorityList(String.join(",", userRoles)));
-        userDetails.setId(userId);
-        userDetails.setUsername(sysUsers.getUsername());
-        userDetails.setAvatar(sysUsers.getAvatar());
-        userDetails.setPhoneNumber(sysUsers.getPhoneNumber());
-        userDetails.setEmail(sysUsers.getEmail());
-        userDetails.setLoginCount(sysUsers.getLoginCount());
-        userDetails.setCurrentLoginTime(sysUsers.getCurrentLoginTime());
-        userDetails.setCurrentLoginIp(sysUsers.getCurrentLoginIp());
+        userDetails.setId(userApiEntity.getId());
+        userDetails.setUsername(userApiEntity.getUsername());
+        userDetails.setAvatar(userApiEntity.getAvatar());
+        userDetails.setPhoneNumber(userApiEntity.getPhoneNumber());
+        userDetails.setEmail(userApiEntity.getEmail());
+        userDetails.setLoginCount(userApiEntity.getLoginCount());
+        userDetails.setCurrentLoginTime(userApiEntity.getCurrentLoginTime());
+        userDetails.setCurrentLoginIp(userApiEntity.getCurrentLoginIp());
         userDetails.setPermissions(permissions);
         userDetails.setUserClients(userClients);
         userDetails.setUserRoles(userRoles);

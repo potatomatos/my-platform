@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>auth-server</artifactId>
+    <artifactId>oauth-server</artifactId>
     <description>鉴权模块</description>
     <properties>
         <!--打包目录-->
@@ -71,6 +71,11 @@
         <dependency>
             <groupId>cn.cxnxs</groupId>
             <artifactId>common-cache</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.cxnxs</groupId>
+            <artifactId>common-api</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

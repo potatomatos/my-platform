@@ -1,14 +1,13 @@
 package cn.cxnxs.security.config;
 
+import cn.cxnxs.security.filter.JwtAuthenticationTokenFilter;
+import cn.cxnxs.security.filter.UserPasswordAuthenticationProcessingFilter;
 import cn.cxnxs.security.handler.DeniedHandler;
 import cn.cxnxs.security.handler.FailureHandler;
 import cn.cxnxs.security.handler.LogoutHandler;
 import cn.cxnxs.security.handler.SuccessHandler;
+import cn.cxnxs.security.provider.UserPasswordAuthorizationProvider;
 import cn.cxnxs.security.service.impl.UserDetailServiceImpl;
-import cn.cxnxs.system.security.filter.JwtAuthenticationTokenFilter;
-import cn.cxnxs.system.security.filter.UserPasswordAuthenticationProcessingFilter;
-import cn.cxnxs.system.security.provider.UserPasswordAuthorizationProvider;
-import cn.cxnxs.system.service.ISecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -45,12 +44,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private DeniedHandler deniedHandler;
-
-    @Autowired
-    private ISecurityService securityService;
-
-    @Value("${oauth2.clientId}")
-    private String clientId;
 
     /**
      * 核心：filter配置
@@ -122,7 +115,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 //                .and()
                 .authorizeRequests()
-                .antMatchers(securityService.permitPermissions(clientId).toArray(new String[0])).permitAll()
+//                .antMatchers(securityService.permitPermissions(clientId).toArray(new String[0])).permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()

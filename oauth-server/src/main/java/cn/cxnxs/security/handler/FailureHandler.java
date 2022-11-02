@@ -7,7 +7,7 @@ package cn.cxnxs.security.handler;
  * @date 2022-04-14 00:13
  **/
 
-import cn.cxnxs.common.web.vo.response.Result;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.config.JSONAuthentication;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
