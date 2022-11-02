@@ -1,7 +1,7 @@
-package cn.cxnxs.system.service.impl;
+package cn.cxnxs.security.service.impl;
 
 
-import cn.cxnxs.system.security.entity.AuthToken;
+import cn.cxnxs.security.entity.AuthToken;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;

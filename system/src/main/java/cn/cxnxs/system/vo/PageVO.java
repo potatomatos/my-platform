@@ -1,7 +1,7 @@
 package cn.cxnxs.system.vo;
 
 
-import cn.cxnxs.common.web.vo.response.PageResult;
+import cn.cxnxs.common.core.entity.response.PageResult;
 
 /**
  * <p></p>

@@ -1,9 +1,10 @@
 package cn.cxnxs.system.service.impl;
 
+import cn.cxnxs.common.api.domain.UserApiEntity;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.common.web.vo.request.PageWrapper;
-import cn.cxnxs.common.web.vo.response.Result;
+import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.system.entity.SysUsers;
 import cn.cxnxs.system.mapper.SysUsersMapper;
 import cn.cxnxs.system.service.IUserService;
@@ -15,11 +16,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -97,7 +100,7 @@ public class UserServiceImpl implements IUserService {
      * @return
      */
     @Override
-    public Integer addUser(Integer userId) {
+    public Integer delUser(Integer userId) {
         return sysUsersMapper.deleteById(userId);
     }
 
@@ -116,5 +119,22 @@ public class UserServiceImpl implements IUserService {
         pageResult.setCode(Result.ResultEnum.SUCCESS.getCode());
         pageResult.setData(pageInfo.getList());
         return pageResult;
+    }
+
+    @Override
+    public UserApiEntity getUserByName(String username){
+        SysUsers sysUsers = sysUsersMapper.selectOne(new LambdaQueryWrapper<SysUsers>().eq(SysUsers::getUsername, username));
+        if (sysUsers == null){
+            return null;
+        }
+        UserApiEntity userApiEntity = new UserApiEntity();
+        BeanUtils.copyProperties(sysUsers,userApiEntity);
+        List<String> userClients = sysUsersMapper.getUserClients(sysUsers.getId());
+        List<String> userRoles = sysUsersMapper.getUserRoles(sysUsers.getId());
+        List<Map<String, String>> userPermissions = sysUsersMapper.getUserPermissions(sysUsers.getId());
+        userApiEntity.setUserClients(userClients);
+        userApiEntity.setUserRoles(userRoles);
+        userApiEntity.setPermissions(userPermissions);
+        return userApiEntity;
     }
 }
