@@ -4,6 +4,7 @@ import cn.cxnxs.common.api.SystemService;
 import cn.cxnxs.common.api.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.entity.JwtUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  **/
 public class UserDetailServiceImpl implements UserDetailsService {
 
-    @Resource
+    @Autowired
     private SystemService systemService;
 
     @Override

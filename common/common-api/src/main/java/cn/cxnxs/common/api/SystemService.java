@@ -6,6 +6,7 @@ import cn.cxnxs.common.api.factory.SystemServiceFallbackFactory;
 import cn.cxnxs.common.core.entity.response.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  *
  * @author mengjinyuan
  */
-@FeignClient(contextId = "systemService", value = ServiceNameConstants.SYSTEM_SERVICE, fallbackFactory = SystemServiceFallbackFactory.class)
+@FeignClient(value = ServiceNameConstants.SYSTEM_SERVICE, fallbackFactory = SystemServiceFallbackFactory.class)
 public interface SystemService {
 
     /**
@@ -23,7 +24,7 @@ public interface SystemService {
      * @return true or false
      */
     @GetMapping(value = "/system/api/permit")
-    Result<Boolean> permit(String uri, String clientId);
+    Result<Boolean> permit(@RequestParam("uri") String uri, @RequestParam("clientId") String clientId);
 
     /**
      * 更新用户信息

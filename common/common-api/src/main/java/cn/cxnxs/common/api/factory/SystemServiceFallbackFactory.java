@@ -4,14 +4,16 @@ package cn.cxnxs.common.api.factory;
 import cn.cxnxs.common.api.SystemService;
 import cn.cxnxs.common.api.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.response.Result;
+import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.openfeign.FallbackFactory;
+import org.springframework.stereotype.Component;
 
 
 /**
  * 服务降级
  */
 @Slf4j
+@Component
 public class SystemServiceFallbackFactory implements FallbackFactory<SystemService> {
 
     @Override

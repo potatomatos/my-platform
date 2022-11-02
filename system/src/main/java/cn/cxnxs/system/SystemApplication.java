@@ -3,6 +3,7 @@ package cn.cxnxs.system;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 @SpringBootApplication(scanBasePackages = {"cn.cxnxs"})
 @MapperScan("cn.cxnxs.system.mapper")
-@EnableFeignClients
+@EnableFeignClients(basePackages = {"cn.cxnxs.common.api"})
+@EnableDiscoveryClient
 @RefreshScope
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class SystemApplication {
