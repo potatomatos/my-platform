@@ -1,4 +1,4 @@
-package cn.cxnxs.common.web.vo.request;
+package cn.cxnxs.common.core.entity.request;
 
 import com.alibaba.fastjson.JSON;
 

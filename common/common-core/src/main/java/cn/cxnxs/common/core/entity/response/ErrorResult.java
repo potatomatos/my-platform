@@ -1,4 +1,4 @@
-package cn.cxnxs.common.web.vo.response;
+package cn.cxnxs.common.core.entity.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

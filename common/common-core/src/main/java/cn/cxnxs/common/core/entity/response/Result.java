@@ -1,11 +1,11 @@
-package cn.cxnxs.common.web.vo.response;
-
+package cn.cxnxs.common.core.entity.response;
 
 
 import java.io.Serializable;
 
 /**
  * Description:接口通用规范
+ *
  * @author mengjinyuan
  */
 public class Result<T> implements Serializable {
@@ -86,6 +86,10 @@ public class Result<T> implements Serializable {
             return new Result<>(resultEnum.getCode(), resultEnum.getResult(), resultEnum.getInfo(), null,
                     stackInfo);
         }
+    }
+
+    public boolean ok() {
+        return ResultEnum.SUCCESS.getCode().equals(this.code);
     }
 
     public Integer getCode() {

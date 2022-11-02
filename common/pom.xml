@@ -13,6 +13,7 @@
         <module>common-core</module>
         <module>common-web</module>
         <module>common-cache</module>
+        <module>common-api</module>
     </modules>
 
     <artifactId>common</artifactId>

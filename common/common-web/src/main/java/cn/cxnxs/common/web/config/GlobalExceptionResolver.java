@@ -1,7 +1,7 @@
 package cn.cxnxs.common.web.config;
 
-import cn.cxnxs.common.web.vo.response.ErrorResult;
-import cn.cxnxs.common.web.vo.response.Result;
+import cn.cxnxs.common.core.entity.response.ErrorResult;
+import cn.cxnxs.common.core.entity.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -1,8 +1,8 @@
 package cn.cxnxs.common.web.config;
 
+import cn.cxnxs.common.core.entity.response.ErrorResult;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.web.annotation.ResponseResult;
-import cn.cxnxs.common.web.vo.response.ErrorResult;
-import cn.cxnxs.common.web.vo.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;

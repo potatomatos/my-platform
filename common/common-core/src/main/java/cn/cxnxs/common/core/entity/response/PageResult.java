@@ -1,4 +1,6 @@
-package cn.cxnxs.common.web.vo.response;
+package cn.cxnxs.common.core.entity.response;
+
+import java.util.List;
 
 /**
  * <p>分页结果对象</p>
@@ -12,6 +14,8 @@ public class PageResult<T> extends Result<T> {
      */
     private Long count;
 
+    private List<T> rows;
+
     public PageResult(Long count) {
         this.count = count;
     }
@@ -24,10 +28,19 @@ public class PageResult<T> extends Result<T> {
         this.count = count;
     }
 
+    public List<T> getRows() {
+        return rows;
+    }
+
+    public void setRows(List<T> rows) {
+        this.rows = rows;
+    }
+
     @Override
     public String toString() {
         return "PageResult{" +
                 "count=" + count +
-                "} " + super.toString();
+                ", rows=" + rows +
+                '}';
     }
 }
