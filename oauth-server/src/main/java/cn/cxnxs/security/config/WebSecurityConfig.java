@@ -117,7 +117,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
                 .authorizeRequests()
 //                .antMatchers(securityService.permitPermissions(clientId).toArray(new String[0])).permitAll()
-                .antMatchers(new String[]{"/oauth/**","/captcha","/rsa/publicKey"}).permitAll()
+                .antMatchers(new String[]{"/oauth/**","/captcha","/rsa/publicKey","/login"}).permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
