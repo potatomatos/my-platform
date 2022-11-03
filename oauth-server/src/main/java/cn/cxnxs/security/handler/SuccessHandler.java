@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -20,7 +21,7 @@ import java.io.IOException;
 @Component("myAuthenticationSuccessHandler")
 public class SuccessHandler extends JSONAuthentication implements AuthenticationSuccessHandler {
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException {
+    public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
         UserPasswordAuthenticationToken authenticationToken= (UserPasswordAuthenticationToken) authentication;
         String authorizeUrl="/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}";
         authorizeUrl=authorizeUrl
@@ -37,6 +38,7 @@ public class SuccessHandler extends JSONAuthentication implements Authentication
             httpServletResponse.setStatus(302);
             httpServletResponse.sendRedirect(authorizeUrl);
         }
-
+        //申请授权码
+//        httpServletRequest.getRequestDispatcher(authorizeUrl).forward(httpServletRequest, httpServletResponse);
     }
 }

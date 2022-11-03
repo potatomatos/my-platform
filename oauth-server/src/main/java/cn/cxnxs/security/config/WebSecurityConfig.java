@@ -9,7 +9,6 @@ import cn.cxnxs.security.handler.SuccessHandler;
 import cn.cxnxs.security.provider.UserPasswordAuthorizationProvider;
 import cn.cxnxs.security.service.impl.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +21,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
 
 /**
  * <p>springSecurity配置</p>
@@ -116,10 +117,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
                 .authorizeRequests()
 //                .antMatchers(securityService.permitPermissions(clientId).toArray(new String[0])).permitAll()
+                .antMatchers(new String[]{"/oauth/**","/captcha","/rsa/publicKey"}).permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
-                .formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll()
+                .formLogin().loginProcessingUrl("/login").permitAll()
                 //此处写登录成功后的操作无效，userPasswordAuthenticationProcessingFilter（）已接管此类设置
 //                .successHandler(successHandler).permitAll()
 //                .failureHandler(failureHandler).permitAll()

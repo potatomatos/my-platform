@@ -7,6 +7,7 @@ import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.security.constants.RedisKeyPrefix;
 import cn.cxnxs.security.entity.JwtUser;
 import cn.cxnxs.security.entity.UserPasswordAuthenticationToken;
+import cn.cxnxs.security.service.impl.AuthService;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 
 /**
@@ -37,8 +35,6 @@ public class UserPasswordAuthorizationProvider implements AuthenticationProvider
     @Autowired
     private SystemService systemService;
 
-    @Autowired
-    private RedisUtils redisUtils;
 
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
@@ -50,7 +46,10 @@ public class UserPasswordAuthorizationProvider implements AuthenticationProvider
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private HttpServletRequest httpServletRequest;
+    private AuthService authService;
+
+    @Autowired
+    private RedisUtils redisUtils;
 
     /**
      * 在此方法进行认证
@@ -98,7 +97,7 @@ public class UserPasswordAuthorizationProvider implements AuthenticationProvider
             throw new AuthenticationServiceException("回调地址为空");
         }
         //获取验证码
-        String key = RedisKeyPrefix.KEY_CAPTCHA + this.getIpAddr();
+        String key = RedisKeyPrefix.KEY_CAPTCHA + authService.getIpAddr();
         String captcha = redisUtils.get(key);
         if (!userPasswordAuthenticationToken.getCaptcha().equalsIgnoreCase(captcha)) {
             throw new AuthenticationServiceException("验证码错误");
@@ -112,63 +111,20 @@ public class UserPasswordAuthorizationProvider implements AuthenticationProvider
         //将用户信息保存到redis
         redisTemplate.opsForValue().set(RedisKeyPrefix.KEY_USER_INFO + userDetails.getId(), JSON.toJSONString(userDetails));
         //删除验证码
-        redisTemplate.delete(key);
+//        redisTemplate.delete(key);
         //更新用户信息
         UserApiEntity userApiEntity = new UserApiEntity();
         userApiEntity.setId(userDetails.getId());
         userApiEntity.setLoginCount(userDetails.getLoginCount() + 1);
         userApiEntity.setCurrentLoginTime(LocalDateTime.now());
         userApiEntity.setLastLoginTime(userDetails.getCurrentLoginTime());
-        userApiEntity.setCurrentLoginIp(getIpAddr());
+        userApiEntity.setCurrentLoginIp(authService.getIpAddr());
         userApiEntity.setLastLoginIp(userDetails.getCurrentLoginIp());
         systemService.updateUser(userApiEntity);
         userPasswordAuthenticationToken.setJwtUser(userDetails);
         //存入SecurityContextHolder
         SecurityContextHolder.getContext().setAuthentication(userPasswordAuthenticationToken);
         return userDetails;
-    }
-
-
-    /**
-     * 获取客户端ip
-     *
-     * @return
-     */
-    private String getIpAddr() {
-        String ipAddress;
-        try {
-            ipAddress = httpServletRequest.getHeader("x-forwarded-for");
-            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
-                ipAddress = httpServletRequest.getHeader("Proxy-Client-IP");
-            }
-            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
-                ipAddress = httpServletRequest.getHeader("WL-Proxy-Client-IP");
-            }
-            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
-                ipAddress = httpServletRequest.getRemoteAddr();
-                String localhost = "127.0.0.1";
-                if (localhost.equals(ipAddress)) {
-                    // 根据网卡取本机配置的IP
-                    InetAddress inet;
-                    try {
-                        inet = InetAddress.getLocalHost();
-                        ipAddress = inet.getHostAddress();
-                    } catch (UnknownHostException e) {
-                        log.error(e.getMessage(), e);
-                    }
-                }
-            }
-            // 对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
-            if (ipAddress != null && ipAddress.length() > 15) {
-                if (ipAddress.indexOf(",") > 0) {
-                    ipAddress = ipAddress.substring(0, ipAddress.indexOf(","));
-                }
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            ipAddress = "";
-        }
-        return "0:0:0:0:0:0:0:1".equals(ipAddress) ? "127.0.0.1" : ipAddress;
     }
 
     /**

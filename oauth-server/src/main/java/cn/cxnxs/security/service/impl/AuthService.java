@@ -1,9 +1,11 @@
 package cn.cxnxs.security.service.impl;
 
 
+import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.security.entity.AuthToken;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpEntity;
@@ -17,7 +19,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +41,9 @@ public class AuthService {
     final RestTemplate restTemplate;
 
     final StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
 
     public AuthService(LoadBalancerClient loadBalancerClient, RestTemplate restTemplate, StringRedisTemplate redisTemplate) {
         this.loadBalancerClient = loadBalancerClient;
@@ -74,7 +82,7 @@ public class AuthService {
      * 存储到redis
      *
      * @param accessToken 用户身份令牌
-     * @param content      内容就是authtoken对象的内容
+     * @param content     内容就是authtoken对象的内容
      * @return
      */
     private boolean saveToken(String accessToken, String content) {
@@ -205,6 +213,49 @@ public class AuthService {
     public void delToken(String uid) {
         String key = "user_token:" + uid;
         redisTemplate.delete(key);
+    }
+
+
+    /**
+     * 获取客户端ip
+     *
+     * @return
+     */
+    public String getIpAddr() {
+        String ipAddress;
+        try {
+            ipAddress = httpServletRequest.getHeader("x-forwarded-for");
+            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = httpServletRequest.getHeader("Proxy-Client-IP");
+            }
+            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = httpServletRequest.getHeader("WL-Proxy-Client-IP");
+            }
+            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = httpServletRequest.getRemoteAddr();
+                String localhost = "127.0.0.1";
+                if (localhost.equals(ipAddress)) {
+                    // 根据网卡取本机配置的IP
+                    InetAddress inet;
+                    try {
+                        inet = InetAddress.getLocalHost();
+                        ipAddress = inet.getHostAddress();
+                    } catch (UnknownHostException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            }
+            // 对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
+            if (ipAddress != null && ipAddress.length() > 15) {
+                if (ipAddress.indexOf(",") > 0) {
+                    ipAddress = ipAddress.substring(0, ipAddress.indexOf(","));
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            ipAddress = "";
+        }
+        return "0:0:0:0:0:0:0:1".equals(ipAddress) ? "127.0.0.1" : ipAddress;
     }
 }
 

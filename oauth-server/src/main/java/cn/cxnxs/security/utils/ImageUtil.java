@@ -1,16 +1,16 @@
-package cn.cxnxs.system.utils;
+package cn.cxnxs.security.utils;
 
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.SecureRandom;
-import javax.imageio.ImageIO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 /**
  * <p></p>
  *

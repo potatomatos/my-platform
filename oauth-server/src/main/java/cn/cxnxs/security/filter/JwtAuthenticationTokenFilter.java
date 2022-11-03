@@ -41,10 +41,15 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         String clientId = request.getHeader("clientId");
-
+        if (StringUtils.isEmpty(clientId)){
+            clientId = request.getParameter("clientId");
+        }
+        if (StringUtils.isEmpty(clientId)){
+            clientId = request.getParameter("client_id");
+        }
         //不需要token的路由可以直接放行
         Result<Boolean> permition = systemService.permit(uri, clientId);
-        if (Result.ResultEnum.SUCCESS.getCode().equals(permition.getCode())&&permition.getData()) {
+        if (permition.ok()&&permition.getData()) {
             filterChain.doFilter(request, response);
             return;
         }

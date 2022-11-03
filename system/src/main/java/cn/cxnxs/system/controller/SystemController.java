@@ -13,17 +13,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
 @Controller
-@RestController
 @RequestMapping("system/api")
 @Slf4j
 public class SystemController {
@@ -74,6 +70,7 @@ public class SystemController {
      * @param clientId 客户端id
      * @return
      */
+    @ResponseBody
     @GetMapping(value = "permit")
     public Result<Boolean> permit(@RequestParam("uri") String uri, @RequestParam("clientId") String clientId) {
         return Result.success(permissionService.permit(uri, clientId));
@@ -85,8 +82,9 @@ public class SystemController {
      * @param userApiEntity 用户信息
      * @return true-成功 false-失败
      */
-    @GetMapping("updateUser")
-    Result<Boolean> updateUser(UserApiEntity userApiEntity) {
+    @ResponseBody
+    @PostMapping("updateUser")
+    Result<Boolean> updateUser(@RequestBody UserApiEntity userApiEntity) {
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(userApiEntity, userVO);
         return Result.success(userService.updateUser(userVO) > 0);
@@ -98,8 +96,9 @@ public class SystemController {
      *
      * @param username 用户名
      */
+    @ResponseBody
     @GetMapping("getUserByName")
-    Result<UserApiEntity> getUserByName(String username) {
+    Result<UserApiEntity> getUserByName(@RequestParam("username") String username) {
         UserApiEntity userByName = userService.getUserByName(username);
         return userByName == null ? Result.failure("用户不存在") : Result.success(userByName);
     }
