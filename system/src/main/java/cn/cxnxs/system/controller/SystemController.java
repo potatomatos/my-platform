@@ -3,23 +3,20 @@ package cn.cxnxs.system.controller;
 import cn.cxnxs.common.api.Oauth2Service;
 import cn.cxnxs.common.api.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.system.service.IPermissionService;
 import cn.cxnxs.system.service.IUserService;
-
 import cn.cxnxs.system.vo.UserVO;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("system/api")
 @Slf4j
 public class SystemController {
@@ -40,17 +37,15 @@ public class SystemController {
     @Value("${oauth.redirectUri}")
     private String redirectUri;
 
-    @RequestMapping("/")
-    public Result<String> test() {
-        return Result.success("登录成功");
-    }
-
     /**
-     * 登陆后回调方法
+     * 获取token
      */
-    @RequestMapping("/callback")
-    public void callback(String code, HttpServletResponse httpServletResponse) throws IOException {
+    @GetMapping("/getAccessToken")
+    public Result<Map<String, String>> getAccessToken(String code) {
         log.info("code:{}", code);
+        if (StringUtil.isEmpty(code)){
+            return Result.failure("code不能为空！");
+        }
         log.info("------开始获取token------");
         Map<String, String> accessToken = oauth2Service.getAccessToken(
                 "authorization_code",
@@ -59,8 +54,7 @@ public class SystemController {
                 code,
                 redirectUri);
         log.info("token信息：{}", JSON.toJSONString(accessToken));
-        httpServletResponse.setHeader("access_token", accessToken.get("access_token"));
-        httpServletResponse.sendRedirect("/");
+       return Result.success(accessToken);
     }
 
     /**
@@ -70,7 +64,6 @@ public class SystemController {
      * @param clientId 客户端id
      * @return
      */
-    @ResponseBody
     @GetMapping(value = "permit")
     public Result<Boolean> permit(@RequestParam("uri") String uri, @RequestParam("clientId") String clientId) {
         return Result.success(permissionService.permit(uri, clientId));
@@ -82,7 +75,6 @@ public class SystemController {
      * @param userApiEntity 用户信息
      * @return true-成功 false-失败
      */
-    @ResponseBody
     @PostMapping("updateUser")
     Result<Boolean> updateUser(@RequestBody UserApiEntity userApiEntity) {
         UserVO userVO = new UserVO();
@@ -96,7 +88,6 @@ public class SystemController {
      *
      * @param username 用户名
      */
-    @ResponseBody
     @GetMapping("getUserByName")
     Result<UserApiEntity> getUserByName(@RequestParam("username") String username) {
         UserApiEntity userByName = userService.getUserByName(username);

@@ -26,10 +26,10 @@ public interface Oauth2Service {
      */
     @GetMapping("/oauth/token")
     Map<String,String> getAccessToken(@RequestParam("grant_type")String grant_type,
-                          @RequestParam("client_id")String client_id,
-                          @RequestParam("client_secret")String client_secret,
-                          @RequestParam("code")String code,
-                          @RequestParam("redirect_uri")String redirect_uri);
+                                      @RequestParam("client_id")String client_id,
+                                      @RequestParam("client_secret")String client_secret,
+                                      @RequestParam("code")String code,
+                                      @RequestParam("redirect_uri")String redirect_uri);
 
     /**
      * 获取公钥
