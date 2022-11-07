@@ -3,6 +3,7 @@ package cn.cxnxs.common.api.factory;
 
 import cn.cxnxs.common.api.Oauth2Service;
 import cn.cxnxs.common.core.entity.response.Result;
+import com.alibaba.fastjson.JSONObject;
 import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,11 @@ public class Oauth2ServiceFallbackFactory implements FallbackFactory<Oauth2Servi
             public Result<Map<String, Object>> getPublicKey() {
                 log.error("公钥获取失败");
                 return Result.failure("公钥获取失败");
+            }
+
+            @Override
+            public Result<JSONObject> currentUser() {
+                return Result.failure("用户信息获取失败");
             }
         };
     }

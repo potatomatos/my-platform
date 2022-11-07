@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -31,9 +32,6 @@ import java.util.Objects;
  **/
 @Slf4j
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
-
-    @Autowired
-    private SystemService systemService;
 
     @Autowired
     private TokenStore jdbcTokenStore;
@@ -79,6 +77,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                     render(request, response, Result.failure(Result.ResultEnum.TOKEN_EXPIRED, null));
                     return;
                 }
+                SecurityContextHolder.getContext().setAuthentication(oAuth2Authentication.getUserAuthentication());
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 //token超时或者非法

@@ -3,10 +3,16 @@ package cn.cxnxs.security.controller;
 
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.StringUtil;
+import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.security.constants.RedisKeyPrefix;
+import cn.cxnxs.security.entity.JwtUser;
+import cn.cxnxs.security.entity.UserPasswordAuthenticationToken;
 import cn.cxnxs.security.service.impl.AuthService;
 import cn.cxnxs.security.utils.ImageUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.KeyPair;
+import java.security.Principal;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 
@@ -64,5 +71,23 @@ public class OauthController {
         os.write(bos.toByteArray());
         os.flush();
         os.close();
+    }
+
+    /**
+     * 获取授权的用户信息
+     *
+     * @param principal 当前用户
+     * @return 授权信息
+     */
+    @ResponseResult
+    @GetMapping("currentUser")
+    public JSONObject user(Principal principal) {
+        if (principal!=null){
+            UserPasswordAuthenticationToken userPasswordAuthenticationToken = (UserPasswordAuthenticationToken) principal;
+            return JSONObject.parseObject(JSON.toJSONString(userPasswordAuthenticationToken.getJwtUser()));
+        }else {
+            throw new CommonException("登录信息获取失败，请登录后再调用");
+        }
+
     }
 }

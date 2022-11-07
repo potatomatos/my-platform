@@ -61,6 +61,11 @@ public class SysMenu extends Model<SysMenu> {
     private String icon;
 
     /**
+     * svg图标
+     */
+    private String iconSvg;
+
+    /**
      * 描述
      */
     private String description;

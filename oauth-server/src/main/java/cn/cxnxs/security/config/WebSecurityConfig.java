@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -113,8 +114,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().disable();
         http.csrf().disable()
                 //不通过Session获取SecurityContext
-//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                .and()
+            /*    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()*/
                 .authorizeRequests()
 //                .antMatchers(securityService.permitPermissions(clientId).toArray(new String[0])).permitAll()
                 .antMatchers(new String[]{"/oauth/**","/captcha","/rsa/publicKey","/login"}).permitAll()
