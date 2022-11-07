@@ -27,6 +27,10 @@ public class FeignConfiguration implements RequestInterceptor {
             while (headerNames.hasMoreElements()) {
                 String name = headerNames.nextElement();
                 String values = request.getHeader(name);
+                // 跳过 content-length
+                if ("content-length".equals(name)){
+                    continue;
+                }
                 requestTemplate.header(name, values);
             }
         }
