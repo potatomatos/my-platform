@@ -1,17 +1,22 @@
 package cn.cxnxs.system.service.impl;
-import cn.cxnxs.common.core.utils.TreeUtil;
-import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
 
 import cn.cxnxs.common.api.Oauth2Service;
 import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.exception.CommonException;
+import cn.cxnxs.common.core.utils.StringUtil;
+import cn.cxnxs.common.core.utils.TreeUtil;
 import cn.cxnxs.system.entity.SysMenu;
 import cn.cxnxs.system.mapper.SysMenuMapper;
 import cn.cxnxs.system.service.IMenuService;
+import cn.cxnxs.system.vo.MenuQueryVO;
 import cn.cxnxs.system.vo.MenuVO;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,5 +61,83 @@ public class MenuServiceImpl implements IMenuService {
         }else {
             throw new CommonException(result.getMsg());
         }
+    }
+
+
+    /**
+     * 添加菜单
+     * @param sysMenu
+     * @return
+     */
+    @Override
+    public Integer addMenu(SysMenu sysMenu){
+        if (sysMenu!=null){
+            return sysMenuMapper.insert(sysMenu);
+        }else {
+            return 0;
+        }
+    }
+
+    /**
+     * 更新菜单
+     * @param sysMenu
+     * @return
+     */
+    @Override
+    public Integer updateMenu(SysMenu sysMenu){
+        if (sysMenu!=null){
+            return sysMenuMapper.updateById(sysMenu);
+        }else {
+            return 0;
+        }
+    }
+
+    /**
+     * 删除菜单
+     * @param id
+     * @return
+     */
+    @Override
+    public Integer deleteMenu(Integer id){
+        //判断是否有子菜单
+        Integer count = sysMenuMapper.selectCount(new LambdaQueryWrapper<SysMenu>().eq(SysMenu::getParentId, id));
+        if (count>0){
+            throw new CommonException("该菜单存在下级，请完全删除子菜单后再删除本菜单！");
+        }
+        return sysMenuMapper.deleteById(id);
+    }
+
+    /**
+     * 分页查询菜单
+     * @param pageWrapper
+     * @return
+     */
+    @Override
+    public PageResult<SysMenu> list(PageWrapper<MenuQueryVO> pageWrapper){
+        MenuQueryVO param = pageWrapper.getParam();
+        LambdaQueryWrapper<SysMenu> queryWrapper = new LambdaQueryWrapper<>();
+        if (param.getId()!=null){
+            queryWrapper.eq(SysMenu::getId,param.getId());
+        }
+        if (param.getPid()!=null){
+            queryWrapper.eq(SysMenu::getParentId,param.getPid());
+        }
+        if (StringUtil.isNotEmpty(param.getMenuName())){
+            queryWrapper.like(SysMenu::getMenuName,param.getMenuName());
+        }
+        if (StringUtil.isNotEmpty(param.getUrl())){
+            queryWrapper.like(SysMenu::getUrl,param.getUrl());
+        }
+        queryWrapper.orderByAsc(SysMenu::getSortNo);
+        Page<SysMenu> page = new Page<>();
+        page.setCurrent(pageWrapper.getPage());
+        page.setSize(pageWrapper.getLimit());
+        Page<SysMenu> sysMenuPage = sysMenuMapper.selectPage(page, queryWrapper);
+        PageResult<SysMenu> pageResult = new PageResult<>(page.getTotal());
+        pageResult.setRows(sysMenuPage.getRecords());
+        pageResult.setPageSize(sysMenuPage.getSize());
+        pageResult.setPages(sysMenuPage.getPages());
+        pageResult.setCurrent(sysMenuPage.getCurrent());
+        return pageResult;
     }
 }

@@ -82,6 +82,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 AuthorityUtils.commaSeparatedStringToAuthorityList(String.join(",", userRoles)));
         userDetails.setId(userApiEntity.getId());
         userDetails.setUsername(userApiEntity.getUsername());
+        userDetails.setRealName(userApiEntity.getRealName());
         userDetails.setAvatar(userApiEntity.getAvatar());
         userDetails.setPhoneNumber(userApiEntity.getPhoneNumber());
         userDetails.setEmail(userApiEntity.getEmail());

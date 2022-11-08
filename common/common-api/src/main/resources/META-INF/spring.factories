@@ -1,4 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   cn.cxnxs.common.api.factory.SystemServiceFallbackFactory,\
-  cn.cxnxs.common.api.factory.Oauth2ServiceFallbackFactory
-
+  cn.cxnxs.common.api.factory.Oauth2ServiceFallbackFactory,\
+  cn.cxnxs.common.api.config.FeignConfiguration

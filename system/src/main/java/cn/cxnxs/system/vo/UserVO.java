@@ -24,6 +24,8 @@ public class UserVO{
 
     private String username;
 
+    private String realName;
+
     private String password;
 
     /**

@@ -1,6 +1,11 @@
 package cn.cxnxs.system.service;
 
 import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.PageResult;
+import cn.cxnxs.system.entity.SysMenu;
+import cn.cxnxs.system.vo.MenuQueryVO;
+import cn.cxnxs.system.vo.PageVO;
 
 import java.util.List;
 
@@ -14,4 +19,32 @@ public interface IMenuService {
      * @return 用户分配的菜单列表树
      */
     List<TreeVo> getUserMenusTree();
+
+    /**
+     * 添加菜单
+     * @param sysMenu
+     * @return
+     */
+    Integer addMenu(SysMenu sysMenu);
+
+    /**
+     * 更新菜单
+     * @param sysMenu
+     * @return
+     */
+    Integer updateMenu(SysMenu sysMenu);
+
+    /**
+     * 删除菜单
+     * @param id
+     * @return
+     */
+    Integer deleteMenu(Integer id);
+
+    /**
+     * 分页查询菜单
+     * @param pageWrapper
+     * @return
+     */
+    PageResult<SysMenu> list(PageWrapper<MenuQueryVO> pageWrapper);
 }

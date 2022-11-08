@@ -18,6 +18,8 @@ public class JwtUser extends User {
 
     private Integer id;
     private String username;
+
+    private String realName;
     /**
      * 头像
      */
@@ -142,6 +144,14 @@ public class JwtUser extends User {
         this.currentLoginIp = currentLoginIp;
     }
 
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
     /**
      * 用户状态
      */
@@ -174,5 +184,24 @@ public class JwtUser extends User {
         public String getDesc() {
             return desc;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "JwtUser{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", realName='" + realName + '\'' +
+                ", avatar='" + avatar + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
+                ", loginCount=" + loginCount +
+                ", currentLoginTime=" + currentLoginTime +
+                ", currentLoginIp='" + currentLoginIp + '\'' +
+                ", userClients=" + userClients +
+                ", userRoles=" + userRoles +
+                ", permissions=" + permissions +
+                ", rolePermissions=" + rolePermissions +
+                '}';
     }
 }

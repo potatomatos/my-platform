@@ -25,6 +25,8 @@ public class UserApiEntity {
 
     private String username;
 
+    private String realName;
+
     private String encryptedPassword;
 
     /**

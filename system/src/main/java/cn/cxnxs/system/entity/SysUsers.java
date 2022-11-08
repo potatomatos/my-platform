@@ -30,6 +30,8 @@ public class SysUsers extends Model<SysUsers> {
 
     private String username;
 
+    private String realName;
+
     /**
      * 头像
      */
