@@ -27,4 +27,10 @@ public class MenuController {
     public List<TreeVo> getUserMenusTree(){
         return menuService.getUserMenusTree();
     }
+
+    @ResponseResult
+    @GetMapping("menuTree")
+    public List<TreeVo> getMenusTree(){
+        return menuService.getMenusTree();
+    }
 }

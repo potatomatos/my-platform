@@ -21,6 +21,12 @@ public interface IMenuService {
     List<TreeVo> getUserMenusTree();
 
     /**
+     * 获得菜单树
+     * @return
+     */
+    List<TreeVo> getMenusTree();
+
+    /**
      * 添加菜单
      * @param sysMenu
      * @return

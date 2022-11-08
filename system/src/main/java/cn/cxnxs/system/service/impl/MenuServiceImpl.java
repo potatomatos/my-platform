@@ -39,31 +39,49 @@ public class MenuServiceImpl implements IMenuService {
         if (result.ok()){
             JSONObject userInfo = result.getData();
             final List<SysMenu> userMenus = sysMenuMapper.getUserMenus(userInfo.getInteger("id"));
-            List<TreeVo> treeVos = new ArrayList<>();
-            userMenus.forEach(sysMenu -> {
-                MenuVO menuVO = new MenuVO();
-                menuVO.setPath(sysMenu.getUrl());
-                menuVO.setTitle(sysMenu.getMenuName());
-                menuVO.setIcon(sysMenu.getIcon());
-                menuVO.setIconSvg(sysMenu.getIconSvg());
-
-                TreeVo treeVo = new TreeVo();
-                treeVo.setId(sysMenu.getId());
-                treeVo.setPid(sysMenu.getParentId());
-                treeVo.setTitle(sysMenu.getMenuName());
-                treeVo.setHref(sysMenu.getUrl());
-                treeVo.setIcon(sysMenu.getIcon());
-                treeVo.setExpandData(JSONObject.parseObject(JSON.toJSONString(menuVO)));
-                treeVo.setCreateTime(sysMenu.getCreatedAt());
-                treeVos.add(treeVo);
-            });
-            return TreeUtil.toTreeVo(treeVos, 0);
+            return this.toTree(userMenus);
         }else {
             throw new CommonException(result.getMsg());
         }
     }
 
+    /**
+     * 获得菜单树
+     * @return
+     */
+    @Override
+    public List<TreeVo> getMenusTree() {
+        List<SysMenu> sysMenus = sysMenuMapper.selectList(new LambdaQueryWrapper<>());
+        return this.toTree(sysMenus);
+    }
 
+
+    /**
+     * 对象转换
+     * @param menus
+     * @return
+     */
+    private List<TreeVo> toTree(List<SysMenu> menus){
+        List<TreeVo> treeVos = new ArrayList<>();
+        menus.forEach(sysMenu -> {
+            MenuVO menuVO = new MenuVO();
+            menuVO.setPath(sysMenu.getUrl());
+            menuVO.setTitle(sysMenu.getMenuName());
+            menuVO.setIcon(sysMenu.getIcon());
+            menuVO.setIconSvg(sysMenu.getIconSvg());
+
+            TreeVo treeVo = new TreeVo();
+            treeVo.setId(sysMenu.getId());
+            treeVo.setPid(sysMenu.getParentId());
+            treeVo.setTitle(sysMenu.getMenuName());
+            treeVo.setHref(sysMenu.getUrl());
+            treeVo.setIcon(sysMenu.getIcon());
+            treeVo.setExpandData(JSONObject.parseObject(JSON.toJSONString(menuVO)));
+            treeVo.setCreateTime(sysMenu.getCreatedAt());
+            treeVos.add(treeVo);
+        });
+        return TreeUtil.toTreeVo(treeVos, 0);
+    }
     /**
      * 添加菜单
      * @param sysMenu
