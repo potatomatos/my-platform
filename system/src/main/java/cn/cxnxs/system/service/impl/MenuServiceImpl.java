@@ -65,10 +65,14 @@ public class MenuServiceImpl implements IMenuService {
         List<TreeVo> treeVos = new ArrayList<>();
         menus.forEach(sysMenu -> {
             MenuVO menuVO = new MenuVO();
+            menuVO.setId(sysMenu.getId());
+            menuVO.setParentId(sysMenu.getParentId());
             menuVO.setPath(sysMenu.getUrl());
             menuVO.setTitle(sysMenu.getMenuName());
             menuVO.setIcon(sysMenu.getIcon());
             menuVO.setIconSvg(sysMenu.getIconSvg());
+            menuVO.setDescription(sysMenu.getDescription());
+            menuVO.setState(sysMenu.getState());
 
             TreeVo treeVo = new TreeVo();
             treeVo.setId(sysMenu.getId());
@@ -78,6 +82,7 @@ public class MenuServiceImpl implements IMenuService {
             treeVo.setIcon(sysMenu.getIcon());
             treeVo.setExpandData(JSONObject.parseObject(JSON.toJSONString(menuVO)));
             treeVo.setCreateTime(sysMenu.getCreatedAt());
+            treeVo.setSort(sysMenu.getSortNo());
             treeVos.add(treeVo);
         });
         return TreeUtil.toTreeVo(treeVos, 0);
