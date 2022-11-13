@@ -51,7 +51,7 @@ public class MenuServiceImpl implements IMenuService {
      */
     @Override
     public List<TreeVo> getMenusTree() {
-        List<SysMenu> sysMenus = sysMenuMapper.selectList(new LambdaQueryWrapper<>());
+        List<SysMenu> sysMenus = sysMenuMapper.selectList(new LambdaQueryWrapper<SysMenu>().orderByAsc(SysMenu::getSortNo));
         return this.toTree(sysMenus);
     }
 
