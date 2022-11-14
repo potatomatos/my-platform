@@ -46,6 +46,7 @@ public class UserVO{
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime currentLoginTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime lastLoginTime;
 
     private String currentLoginIp;

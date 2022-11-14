@@ -76,7 +76,7 @@ public class SysUsers extends Model<SysUsers> {
     /**
      * 0-启用 1-停用 2-账号过期 3-认证过期 4-账号锁定
      */
-    private Boolean state;
+    private Integer state;
 
     private LocalDateTime createdAt;
 
