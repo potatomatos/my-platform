@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface IUserService {
 
-    PageVO<List<UserVO>> selectUsersForPage(PageWrapper<UserVO> wrapper);
+    PageVO<UserVO> selectUsersForPage(PageWrapper<UserVO> wrapper);
 
     Integer updateUser(UserVO userVO);
 

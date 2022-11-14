@@ -73,6 +73,11 @@ public class MenuServiceImpl implements IMenuService {
             menuVO.setIconSvg(sysMenu.getIconSvg());
             menuVO.setDescription(sysMenu.getDescription());
             menuVO.setState(sysMenu.getState());
+            menuVO.setAuth(sysMenu.getAuth());
+            menuVO.setHide(sysMenu.getHide());
+            menuVO.setCache(sysMenu.getCache());
+            menuVO.setRedirect(sysMenu.getRedirect());
+            menuVO.setComponent(sysMenu.getComponent());
 
             TreeVo treeVo = new TreeVo();
             treeVo.setId(sysMenu.getId());
@@ -95,6 +100,7 @@ public class MenuServiceImpl implements IMenuService {
     @Override
     public Integer addMenu(SysMenu sysMenu){
         if (sysMenu!=null){
+            sysMenu.setCreatedAt(System.currentTimeMillis());
             return sysMenuMapper.insert(sysMenu);
         }else {
             return 0;

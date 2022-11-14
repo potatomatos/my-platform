@@ -43,11 +43,14 @@ public class UserServiceImpl implements IUserService {
      * @return
      */
     @Override
-    public PageVO<List<UserVO>> selectUsersForPage(PageWrapper<UserVO> wrapper) {
+    public PageVO<UserVO> selectUsersForPage(PageWrapper<UserVO> wrapper) {
         UserVO param = wrapper.getParam();
         LambdaQueryWrapper<SysUsers> queryWrapper = new LambdaQueryWrapper<>();
         if (StringUtil.isNotEmpty(param.getUsername())) {
             queryWrapper.like(SysUsers::getUsername, param.getUsername());
+        }
+        if (StringUtil.isNotEmpty(param.getRealName())) {
+            queryWrapper.like(SysUsers::getRealName, param.getRealName());
         }
         if (!Objects.isNull(param.getState())) {
             queryWrapper.eq(SysUsers::getState, param.getState());
@@ -60,9 +63,12 @@ public class UserServiceImpl implements IUserService {
         page.setCurrent(wrapper.getPage());
         page.setSize(wrapper.getLimit());
         sysUsersMapper.selectPage(page, queryWrapper);
-        PageVO<List<UserVO>> pageResult = new PageVO<>(page.getTotal());
+        PageVO<UserVO> pageResult = new PageVO<>(page.getTotal());
         pageResult.setCode(Result.ResultEnum.SUCCESS.getCode());
-        pageResult.setData(ObjectUtil.copyListProperties(page.getRecords(), UserVO.class));
+        pageResult.setRows(ObjectUtil.copyListProperties(page.getRecords(), UserVO.class));
+        pageResult.setCount(page.getTotal());
+        pageResult.setPageSize((long)wrapper.getLimit());
+        pageResult.setPages(page.getPages());
         return pageResult;
     }
 

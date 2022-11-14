@@ -40,5 +40,34 @@ public class MenuVO {
      */
     private String description;
 
+    /**
+     * 状态
+     */
     private Integer state;
+
+    /**
+     * 是否鉴权
+     */
+    private Integer auth;
+
+    /**
+     * 是否展示
+     */
+    private Integer hide;
+
+    /**
+     * 页面缓存
+     */
+    private Integer cache;
+
+    /**
+     * 重定向地址
+     */
+    private String redirect;
+
+    /**
+     * 组件地址
+     */
+    private String component;
+
 }
