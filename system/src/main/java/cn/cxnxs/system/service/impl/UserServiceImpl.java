@@ -1,11 +1,14 @@
 package cn.cxnxs.system.service.impl;
 
 import cn.cxnxs.common.api.domain.UserApiEntity;
+import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.system.entity.SysUserRole;
 import cn.cxnxs.system.entity.SysUsers;
+import cn.cxnxs.system.mapper.SysUserRoleMapper;
 import cn.cxnxs.system.mapper.SysUsersMapper;
 import cn.cxnxs.system.service.IUserService;
 import cn.cxnxs.system.vo.PageVO;
@@ -18,12 +21,14 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * <p></p>
@@ -36,6 +41,10 @@ public class UserServiceImpl implements IUserService {
 
     @Resource
     private SysUsersMapper sysUsersMapper;
+
+    @Resource
+    private SysUserRoleMapper sysUserRoleMapper;
+
     /**
      * 分页查询用户信息
      *
@@ -77,11 +86,26 @@ public class UserServiceImpl implements IUserService {
      *
      * @return 变动行数
      */
+    @Transactional
     @Override
     public Integer updateUser(UserVO userVO) {
+        if (userVO.getId() ==null) {
+            throw new CommonException("id不能为空");
+        }
         SysUsers sysUsers = new SysUsers();
         ObjectUtil.transValues(userVO, sysUsers);
         sysUsers.setUpdatedAt(LocalDateTime.now());
+
+        // 先删后插
+        sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId,userVO.getId()));
+        List<Integer> roleIds = userVO.getRoleIds();
+        SysUserRole sysUserRole = new SysUserRole();
+        for (Integer roleId : roleIds) {
+            sysUserRole.setUserId(userVO.getId());
+            sysUserRole.setRoleId(roleId);
+            sysUserRole.setCreatedAt(System.currentTimeMillis());
+            sysUserRoleMapper.insert(sysUserRole);
+        }
         return sysUsersMapper.updateById(sysUsers);
     }
 
@@ -95,7 +119,7 @@ public class UserServiceImpl implements IUserService {
     public Integer addUser(UserVO userVO) {
         SysUsers sysUsers = new SysUsers();
         ObjectUtil.transValues(userVO, sysUsers);
-        sysUsers.setUpdatedAt(LocalDateTime.now());
+        sysUsers.setCreatedAt(LocalDateTime.now());
         return sysUsersMapper.insert(sysUsers);
     }
 
@@ -110,21 +134,27 @@ public class UserServiceImpl implements IUserService {
         return sysUsersMapper.deleteById(userId);
     }
 
+    @Override
+    public UserVO getUser(Integer userId) {
+        SysUsers sysUsers = sysUsersMapper.selectById(userId);
+        UserVO userVO = new UserVO();
+        ObjectUtil.transValues(sysUsers,userVO);
+        RoleVO roleVO = new RoleVO();
+        roleVO.setUserId(userId);
+        List<RoleVO> roles = this.selectUserRoles(roleVO);
+        userVO.setUserRoles(roles);
+        userVO.setRoleIds(roles.stream().map(RoleVO::getId).collect(Collectors.toList()));
+        return userVO;
+    }
+
     /**
      * 查询用户绑定角色
-     * @param wrapper
+     * @param roleVO
      * @return
      */
     @Override
-    public PageVO<List<RoleVO>> selectUserRoles(PageWrapper<RoleVO> wrapper) {
-        RoleVO param = wrapper.getParam();
-        PageHelper.startPage(wrapper.getPage(), wrapper.getLimit());
-        List<RoleVO> userRolesBound = sysUsersMapper.getUserRolesBound(param);
-        PageInfo<RoleVO> pageInfo = new PageInfo<>(userRolesBound);
-        PageVO<List<RoleVO>> pageResult = new PageVO<>(pageInfo.getTotal());
-        pageResult.setCode(Result.ResultEnum.SUCCESS.getCode());
-        pageResult.setData(pageInfo.getList());
-        return pageResult;
+    public List<RoleVO> selectUserRoles(RoleVO roleVO) {
+        return sysUsersMapper.getUserRolesBound(roleVO);
     }
 
     @Override

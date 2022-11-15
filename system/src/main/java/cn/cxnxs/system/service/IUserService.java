@@ -18,7 +18,9 @@ public interface IUserService {
 
     Integer delUser(Integer userId);
 
-    PageVO<List<RoleVO>> selectUserRoles(PageWrapper<RoleVO> wrapper);
+    UserVO getUser(Integer userId);
+
+    List<RoleVO> selectUserRoles(RoleVO roleVO);
 
     UserApiEntity getUserByName(String username);
 }

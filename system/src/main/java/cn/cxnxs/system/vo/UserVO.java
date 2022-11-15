@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -78,6 +79,13 @@ public class UserVO{
     private LocalDateTime updatedAt;
 
     private Integer draw;
+
+    /**
+     * 用户角色
+     */
+    private List<RoleVO> userRoles;
+
+    private List<Integer> roleIds;
 
 
     public String getStateStr(){
