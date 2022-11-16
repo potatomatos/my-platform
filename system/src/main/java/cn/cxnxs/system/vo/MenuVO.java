@@ -70,4 +70,9 @@ public class MenuVO {
      */
     private String component;
 
+    /**
+     * 路由名称
+     */
+    private String routeName;
+
 }

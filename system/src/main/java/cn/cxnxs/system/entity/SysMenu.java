@@ -101,6 +101,11 @@ public class SysMenu extends Model<SysMenu> {
     private String component;
 
     /**
+     * 路由名称
+     */
+    private String routeName;
+
+    /**
      * 创建时间
      */
     private Long createdAt;
