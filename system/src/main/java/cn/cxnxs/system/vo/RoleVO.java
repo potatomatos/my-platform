@@ -2,6 +2,8 @@ package cn.cxnxs.system.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * <p></p>
  *
@@ -42,4 +44,6 @@ public class RoleVO {
     private Long updatedAt;
 
     private Integer draw;
+
+    private List<Integer> menuIds;
 }

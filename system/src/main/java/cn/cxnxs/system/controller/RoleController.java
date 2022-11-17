@@ -1,14 +1,13 @@
 package cn.cxnxs.system.controller;
 
 
+import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.system.service.IRoleService;
+import cn.cxnxs.system.vo.PageVO;
 import cn.cxnxs.system.vo.RoleVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,5 +22,17 @@ public class RoleController {
     @PostMapping("list")
     public List<RoleVO> listRole(@RequestBody RoleVO roleVO){
         return roleService.listRole(roleVO);
+    }
+
+    @ResponseResult
+    @PostMapping("page")
+    public PageVO<RoleVO> listRole(@RequestBody PageWrapper<RoleVO> pageWrapper){
+        return roleService.pageRole(pageWrapper);
+    }
+
+    @ResponseResult
+    @GetMapping("/{id}")
+    public RoleVO getRoleById(@PathVariable("id") Integer id){
+        return roleService.getRoleById(id);
     }
 }

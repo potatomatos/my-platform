@@ -75,4 +75,9 @@ public class MenuVO {
      */
     private String routeName;
 
+    /**
+     * 权限标志
+     */
+    private String permission;
+
 }

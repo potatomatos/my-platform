@@ -160,7 +160,8 @@ public class JwtUser extends User {
         DISABLED(1,"禁用"),
         ACCOUNT_EXPIRED(2,"账号过期"),
         CREDENTIALS_EXPIRED(3,"密码过期"),
-        ACCOUNT_LOCKED(4,"账号锁定")
+        ACCOUNT_LOCKED(4,"账号锁定"),
+        DELETED(5,"账号已删除")
         ;
         /**
          * 码值
@@ -183,6 +184,15 @@ public class JwtUser extends User {
 
         public String getDesc() {
             return desc;
+        }
+
+        public String getDescByCode(Integer code){
+            for (USER_STATE userState:USER_STATE.values()) {
+                if (userState.getCode().equals(code)){
+                    return userState.getDesc();
+                }
+            }
+            return "";
         }
     }
 

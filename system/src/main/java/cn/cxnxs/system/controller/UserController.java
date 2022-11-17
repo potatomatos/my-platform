@@ -34,4 +34,10 @@ public class UserController {
     public Integer update(@RequestBody UserVO userVO) {
         return userService.updateUser(userVO);
     }
+
+    @ResponseResult
+    @PostMapping("del/{id}")
+    public Integer del(@PathVariable("id") Integer id) {
+        return userService.logicDelUser(id);
+    }
 }

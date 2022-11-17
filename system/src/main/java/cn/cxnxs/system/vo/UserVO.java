@@ -87,27 +87,51 @@ public class UserVO{
 
     private List<Integer> roleIds;
 
+    /**
+     * 用户状态
+     */
+    public enum USER_STATE{
+        ENABLED(0,"启用"),
+        DISABLED(1,"禁用"),
+        ACCOUNT_EXPIRED(2,"账号过期"),
+        CREDENTIALS_EXPIRED(3,"密码过期"),
+        ACCOUNT_LOCKED(4,"账号锁定"),
+        DELETED(5,"账号已删除")
+        ;
+        /**
+         * 码值
+         */
+        final private Integer code;
 
-    public String getStateStr(){
-        String stateStr="";
-        if (state!=null){
-            if (0==this.state){
-                stateStr="启用";
-            }
-            if (1==this.state){
-                stateStr="停用";
-            }
-            if (2==this.state){
-                stateStr="账号过期";
-            }
-            if (3==this.state){
-                stateStr="认证过期";
-            }
-            if (4==this.state){
-                stateStr="账号锁定";
-            }
+        /**
+         * 描述
+         */
+        final private String desc;
+
+        USER_STATE(Integer code, String desc) {
+            this.code = code;
+            this.desc = desc;
         }
-        return stateStr;
+
+        public Integer getCode() {
+            return code;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+
+        public static String getDescByCode(Integer code){
+            for (USER_STATE userState:USER_STATE.values()) {
+                if (userState.getCode().equals(code)){
+                    return userState.getDesc();
+                }
+            }
+            return "";
+        }
+    }
+    public String getStateStr(){
+        return USER_STATE.getDescByCode(this.state);
     }
 
 }

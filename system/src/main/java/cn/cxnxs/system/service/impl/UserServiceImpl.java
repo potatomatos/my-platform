@@ -63,6 +63,9 @@ public class UserServiceImpl implements IUserService {
         }
         if (!Objects.isNull(param.getState())) {
             queryWrapper.eq(SysUsers::getState, param.getState());
+        } else {
+            //默认查已删除的
+            queryWrapper.ne(SysUsers::getState,UserVO.USER_STATE.DELETED.getCode());
         }
         if (!Objects.isNull(param.getId())) {
             queryWrapper.eq(SysUsers::getId, param.getId());
@@ -134,6 +137,19 @@ public class UserServiceImpl implements IUserService {
         return sysUsersMapper.deleteById(userId);
     }
 
+    /**
+     * 逻辑删除用户
+     * @param userId
+     * @return
+     */
+    @Override
+    public Integer logicDelUser(Integer userId) {
+        SysUsers sysUsers = new SysUsers();
+        sysUsers.setId(userId);
+        sysUsers.setState(UserVO.USER_STATE.DELETED.getCode());
+        return sysUsersMapper.updateById(sysUsers);
+    }
+
     @Override
     public UserVO getUser(Integer userId) {
         SysUsers sysUsers = sysUsersMapper.selectById(userId);
@@ -159,7 +175,9 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserApiEntity getUserByName(String username){
-        SysUsers sysUsers = sysUsersMapper.selectOne(new LambdaQueryWrapper<SysUsers>().eq(SysUsers::getUsername, username));
+        SysUsers sysUsers = sysUsersMapper.selectOne(new LambdaQueryWrapper<SysUsers>()
+                .eq(SysUsers::getUsername, username).ne(SysUsers::getState,UserVO.USER_STATE.DELETED.getCode())
+        );
         if (sysUsers == null){
             return null;
         }

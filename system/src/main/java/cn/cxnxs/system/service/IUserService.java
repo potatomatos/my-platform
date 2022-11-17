@@ -18,6 +18,8 @@ public interface IUserService {
 
     Integer delUser(Integer userId);
 
+    Integer logicDelUser(Integer userId);
+
     UserVO getUser(Integer userId);
 
     List<RoleVO> selectUserRoles(RoleVO roleVO);

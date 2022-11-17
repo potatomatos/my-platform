@@ -79,6 +79,7 @@ public class MenuServiceImpl implements IMenuService {
             menuVO.setRedirect(sysMenu.getRedirect());
             menuVO.setComponent(sysMenu.getComponent());
             menuVO.setRouteName(sysMenu.getRouteName());
+            menuVO.setPermission(sysMenu.getPermission());
 
             TreeVo treeVo = new TreeVo();
             treeVo.setId(sysMenu.getId());

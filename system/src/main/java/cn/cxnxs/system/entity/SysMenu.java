@@ -106,6 +106,11 @@ public class SysMenu extends Model<SysMenu> {
     private String routeName;
 
     /**
+     * 权限标志
+     */
+    private String permission;
+
+    /**
      * 创建时间
      */
     private Long createdAt;
