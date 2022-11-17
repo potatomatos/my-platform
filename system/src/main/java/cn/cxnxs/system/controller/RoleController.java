@@ -35,4 +35,17 @@ public class RoleController {
     public RoleVO getRoleById(@PathVariable("id") Integer id){
         return roleService.getRoleById(id);
     }
+
+
+    @ResponseResult
+    @PostMapping("update")
+    public Integer update(@RequestBody RoleVO roleVO){
+        return roleService.update(roleVO);
+    }
+
+    @ResponseResult
+    @PostMapping("add")
+    public Integer add(@RequestBody RoleVO roleVO){
+        return roleService.add(roleVO);
+    }
 }

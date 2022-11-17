@@ -20,4 +20,8 @@ public interface IRoleService {
     PageVO<RoleVO> pageRole(PageWrapper<RoleVO> pageWrapper);
 
     RoleVO getRoleById(Integer id);
+
+    Integer update(RoleVO roleVO);
+
+    Integer add(RoleVO roleVO);
 }

@@ -16,10 +16,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author potatomato
+ */
 @Service
 public class RoleServiceImpl implements IRoleService {
 
@@ -76,6 +80,39 @@ public class RoleServiceImpl implements IRoleService {
         return roleVO;
     }
 
+    @Transactional(rollbackFor = {Exception.class})
+    @Override
+    public Integer update(RoleVO roleVO) {
+        SysRole sysRole = new SysRole();
+        ObjectUtil.transValues(roleVO,sysRole);
+        int count = sysRoleMapper.updateById(sysRole);
+        // 角色菜单关系，先删后插
+        sysRoleMenuMapper.delete(new LambdaQueryWrapper<SysRoleMenu>().eq(SysRoleMenu::getRoleId,sysRole.getId()));
+        for (Integer menuId : roleVO.getMenuIds()) {
+            this.insertRoleMenu(sysRole.getId(),menuId);
+        }
+        return count;
+    }
+
+    @Override
+    public Integer add(RoleVO roleVO) {
+        SysRole sysRole = new SysRole();
+        ObjectUtil.transValues(roleVO,sysRole);
+        sysRole.setCreatedAt(System.currentTimeMillis());
+        int count = sysRoleMapper.insert(sysRole);
+        for (Integer menuId : roleVO.getMenuIds()) {
+            this.insertRoleMenu(sysRole.getId(),menuId);
+        }
+        return count;
+    }
+
+    private void insertRoleMenu(Integer roleId,Integer menuId){
+        SysRoleMenu sysRoleMenu = new SysRoleMenu();
+        sysRoleMenu.setRoleId(roleId);
+        sysRoleMenu.setMenuId(menuId);
+        sysRoleMenu.setCreatedAt(System.currentTimeMillis());
+        sysRoleMenu.insert();
+    }
 
     private LambdaQueryWrapper<SysRole> buildCondition(RoleVO param){
         LambdaQueryWrapper<SysRole> queryWrapper = new LambdaQueryWrapper<>();
