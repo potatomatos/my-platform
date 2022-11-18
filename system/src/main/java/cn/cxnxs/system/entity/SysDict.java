@@ -18,8 +18,7 @@ public class SysDict extends Model<SysDict> {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
-    private Integer parentId;
-    private Integer dictType;
+    private String dictType;
     private String code;
     private String label;
     private Integer state;

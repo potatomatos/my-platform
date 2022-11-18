@@ -16,19 +16,19 @@ import java.util.List;
  **/
 public class TreeUtil {
 
-    public static List<TreeVo> toTreeVo(List<TreeVo> treeList, Integer pid) {
-        List<TreeVo> retList = new ArrayList<>();
-        for (TreeVo parent : treeList) {
-            if (pid.equals(parent.getPid())) {
+    public static <T extends TreeVo> List<T> toTreeVo(List<T> treeList, Object pid) {
+        List<T> retList = new ArrayList<>();
+        for (T parent : treeList) {
+            if (pid.equals(parent.getParentNodeId())) {
                 retList.add(findChildren(parent, treeList));
             }
         }
         return retList;
     }
 
-    private static TreeVo findChildren(TreeVo parent, List<TreeVo> treeList) {
-        for (TreeVo child : treeList) {
-            if (parent.getId().equals(child.getPid())) {
+    private static <T extends TreeVo> T findChildren(T parent, List<T> treeList) {
+        for (T child : treeList) {
+            if (parent.getNodeId().equals(child.getParentNodeId())) {
                 if (parent.getChildren() == null) {
                     parent.setChildren(new ArrayList<>());
                 }
@@ -44,9 +44,9 @@ public class TreeUtil {
      * @param trees  树
      * @param treeId 子节点ID
      */
-    public static List<Integer> queryParentIds(Integer treeId, List<TreeVo> trees) {
+    public static List<Object> queryParentIds(Object treeId, List<TreeVo> trees) {
         //递归获取父级ids,不包含自己
-        List<Integer> parentIds = new ArrayList<>();
+        List<Object> parentIds = new ArrayList<>();
         treeParent(trees, treeId, parentIds);
         return parentIds;
     }
@@ -58,15 +58,15 @@ public class TreeUtil {
      * @param treeId
      * @param parentIds
      */
-    private static void treeParent(List<TreeVo> trees, Integer treeId, List<Integer> parentIds) {
+    private static void treeParent(List<TreeVo> trees, Object treeId, List<Object> parentIds) {
         for (TreeVo tree : trees) {
-            if (tree.getPid() == null) {
+            if (tree.getParentNodeId() == null) {
                 continue;
             }
             //判断是否有父节点
-            if (tree.getId().equals(treeId)) {
-                parentIds.add(tree.getPid());
-                treeParent(trees, tree.getPid(), parentIds);
+            if (tree.getNodeId().equals(treeId)) {
+                parentIds.add(tree.getParentNodeId());
+                treeParent(trees, tree.getParentNodeId(), parentIds);
             }
         }
     }

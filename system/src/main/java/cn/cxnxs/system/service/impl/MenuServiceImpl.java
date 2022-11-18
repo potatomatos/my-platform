@@ -82,8 +82,8 @@ public class MenuServiceImpl implements IMenuService {
             menuVO.setPermission(sysMenu.getPermission());
 
             TreeVo treeVo = new TreeVo();
-            treeVo.setId(sysMenu.getId());
-            treeVo.setPid(sysMenu.getParentId());
+            treeVo.setNodeId(sysMenu.getId());
+            treeVo.setParentNodeId(sysMenu.getParentId());
             treeVo.setTitle(sysMenu.getMenuName());
             treeVo.setHref(sysMenu.getUrl());
             treeVo.setIcon(sysMenu.getIcon());
