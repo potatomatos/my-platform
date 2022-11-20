@@ -2,6 +2,7 @@ package cn.cxnxs.system.service.impl;
 
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.common.core.utils.TreeUtil;
@@ -16,10 +17,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -38,7 +36,7 @@ public class DictServiceImpl implements IDictService {
     public PageVO<DictVO> list(PageWrapper<DictVO> pageWrapper) {
         DictVO param = pageWrapper.getParam();
         LambdaQueryWrapper<SysDict> queryWrapper = buildCondition(param);
-        queryWrapper.orderByDesc(SysDict::getId).orderByAsc(SysDict::getCode);
+        queryWrapper.orderByAsc(SysDict::getSort);
         IPage<SysDict> page = new Page<>();
         page.setCurrent(pageWrapper.getPage());
         page.setSize(pageWrapper.getLimit());
@@ -55,7 +53,10 @@ public class DictServiceImpl implements IDictService {
         List<DictVO> dictVOS = ObjectUtil.copyListProperties(records, DictVO.class);
         //去重
         Set<DictVO> dictSet = new HashSet<>(dictVOS);
-        List<DictVO> dictTree = this.toTree(new ArrayList<>(dictSet));
+        // 重新排序
+        ArrayList<DictVO> list = new ArrayList<>(dictSet);
+        list.sort(Comparator.comparing(DictVO::getSort));
+        List<DictVO> dictTree = this.toTree(list);
 
         PageVO<DictVO> pageResult = new PageVO<>(page.getTotal());
         pageResult.setCode(Result.ResultEnum.SUCCESS.getCode());
@@ -64,6 +65,48 @@ public class DictServiceImpl implements IDictService {
         pageResult.setPageSize((long)pageWrapper.getLimit());
         pageResult.setPages(page.getPages());
         return pageResult;
+    }
+
+    /**
+     * 获取字典类型
+     * @return
+     */
+    @Override
+    public List<DictVO> getDictTypes() {
+        List<SysDict> dictTypes = sysDictMapper.selectList(new LambdaQueryWrapper<SysDict>()
+                .eq(SysDict::getDictType,"dict"));
+        return ObjectUtil.copyListProperties(dictTypes,DictVO.class);
+    }
+
+    @Override
+    public Integer addDict(DictVO dictVO) {
+        SysDict sysDict = new SysDict();
+        ObjectUtil.transValues(dictVO,sysDict);
+        return sysDictMapper.insert(sysDict);
+    }
+
+    @Override
+    public SysDict dictInfo(Integer id) {
+        return sysDictMapper.selectById(id);
+    }
+
+    @Override
+    public Integer updateDict(DictVO dictVO) {
+        SysDict sysDict = new SysDict();
+        ObjectUtil.transValues(dictVO,sysDict);
+        return sysDictMapper.updateById(sysDict);
+    }
+
+    @Override
+    public Integer delete(Integer id) {
+        SysDict sysDict = sysDictMapper.selectById(id);
+        if (sysDict == null) {
+            throw new CommonException("数据不存在");
+        }
+        //删除本级+下级
+        return sysDictMapper.deleteById(id)+sysDictMapper.delete(new LambdaQueryWrapper<SysDict>()
+                .eq(SysDict::getDictType,sysDict.getCode()));
+
     }
 
     private List<DictVO> toTree(List<DictVO> dictVOS){

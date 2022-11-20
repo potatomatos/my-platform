@@ -17,6 +17,7 @@ public class DictVO extends TreeVo {
     private String code;
     private String label;
     private Integer state;
+    private Integer sort;
     private Long createdAt;
     private Long updatedAt;
 
@@ -77,15 +78,32 @@ public class DictVO extends TreeVo {
     }
 
     @Override
+    public Integer getSort() {
+        return sort;
+    }
+
+    @Override
+    public void setSort(Integer sort) {
+        this.sort = sort;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DictVO dictVO = (DictVO) o;
-        return Objects.equals(id, dictVO.id) && Objects.equals(dictType, dictVO.dictType) && Objects.equals(code, dictVO.code) && Objects.equals(label, dictVO.label) && Objects.equals(state, dictVO.state) && Objects.equals(createdAt, dictVO.createdAt) && Objects.equals(updatedAt, dictVO.updatedAt);
+        return Objects.equals(id, dictVO.id) &&
+                Objects.equals(dictType, dictVO.dictType) &&
+                Objects.equals(code, dictVO.code) &&
+                Objects.equals(label, dictVO.label) &&
+                Objects.equals(state, dictVO.state) &&
+                Objects.equals(sort, dictVO.sort) &&
+                Objects.equals(createdAt, dictVO.createdAt) &&
+                Objects.equals(updatedAt, dictVO.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dictType, code, label, state, createdAt, updatedAt);
+        return Objects.hash(id, dictType, code, label, state, sort, createdAt, updatedAt);
     }
 }

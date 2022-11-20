@@ -22,6 +22,7 @@ public class SysDict extends Model<SysDict> {
     private String code;
     private String label;
     private Integer state;
+    private Integer sort;
     private Long createdAt;
     private Long updatedAt;
 }

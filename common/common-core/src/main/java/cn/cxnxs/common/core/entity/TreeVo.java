@@ -87,12 +87,6 @@ public class TreeVo {
      */
     private List<TreeVo> children;
 
-    private Boolean hasChildren;
-
-    public Boolean getHasChildren() {
-        return hasChildren=children!=null&&!children.isEmpty();
-    }
-
 
     public Object getNodeId() {
         return nodeId;
@@ -212,9 +206,5 @@ public class TreeVo {
 
     public void setChildren(List<TreeVo> children) {
         this.children = children;
-    }
-
-    public void setHasChildren(Boolean hasChildren) {
-        this.hasChildren = hasChildren;
     }
 }
