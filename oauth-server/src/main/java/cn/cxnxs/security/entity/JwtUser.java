@@ -1,5 +1,6 @@
 package cn.cxnxs.security.entity;
 
+import cn.cxnxs.common.core.entity.TreeVo;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
@@ -34,6 +35,7 @@ public class JwtUser extends User {
     private List<String> userClients;
     private List<String> userRoles;
     private List<Map<String, String>> permissions;
+    private List<TreeVo> userMenus;
     private Map<String,List<Map<String, String>>> rolePermissions;
 
     public JwtUser(String username,
@@ -152,6 +154,14 @@ public class JwtUser extends User {
         this.realName = realName;
     }
 
+    public List<TreeVo>  getUserMenus() {
+        return userMenus;
+    }
+
+    public void setUserMenus(List<TreeVo>  userMenus) {
+        this.userMenus = userMenus;
+    }
+
     /**
      * 用户状态
      */
@@ -195,7 +205,6 @@ public class JwtUser extends User {
             return "";
         }
     }
-
     @Override
     public String toString() {
         return "JwtUser{" +
@@ -211,7 +220,9 @@ public class JwtUser extends User {
                 ", userClients=" + userClients +
                 ", userRoles=" + userRoles +
                 ", permissions=" + permissions +
+                ", userMenus=" + userMenus +
                 ", rolePermissions=" + rolePermissions +
                 '}';
     }
+
 }

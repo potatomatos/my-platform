@@ -92,6 +92,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
         userDetails.setPermissions(permissions);
         userDetails.setUserClients(userClients);
         userDetails.setUserRoles(userRoles);
+        userDetails.setUserMenus(userApiEntity.getUserMenus());
         userDetails.setRolePermissions(rolePermissions);
         return userDetails;
     }

@@ -1,15 +1,19 @@
 package cn.cxnxs.system.service.impl;
 
 import cn.cxnxs.common.api.domain.UserApiEntity;
+import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.system.entity.SysMenu;
 import cn.cxnxs.system.entity.SysUserRole;
 import cn.cxnxs.system.entity.SysUsers;
+import cn.cxnxs.system.mapper.SysMenuMapper;
 import cn.cxnxs.system.mapper.SysUserRoleMapper;
 import cn.cxnxs.system.mapper.SysUsersMapper;
+import cn.cxnxs.system.service.IMenuService;
 import cn.cxnxs.system.service.IUserService;
 import cn.cxnxs.system.vo.PageVO;
 import cn.cxnxs.system.vo.RoleVO;
@@ -20,6 +24,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +49,12 @@ public class UserServiceImpl implements IUserService {
 
     @Resource
     private SysUserRoleMapper sysUserRoleMapper;
+
+    @Resource
+    private SysMenuMapper sysMenuMapper;
+
+    @Autowired
+    private MenuServiceImpl menuService;
 
     /**
      * 分页查询用户信息
@@ -186,8 +197,10 @@ public class UserServiceImpl implements IUserService {
         List<String> userClients = sysUsersMapper.getUserClients(sysUsers.getId());
         List<String> userRoles = sysUsersMapper.getUserRoles(sysUsers.getId());
         List<Map<String, String>> userPermissions = sysUsersMapper.getUserPermissions(sysUsers.getId());
+        final List<SysMenu> userMenus = sysMenuMapper.getUserMenus(sysUsers.getId());
         userApiEntity.setUserClients(userClients);
         userApiEntity.setUserRoles(userRoles);
+        userApiEntity.setUserMenus(menuService.toTree(userMenus));
         userApiEntity.setPermissions(userPermissions);
         return userApiEntity;
     }

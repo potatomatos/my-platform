@@ -61,7 +61,7 @@ public class MenuServiceImpl implements IMenuService {
      * @param menus
      * @return
      */
-    private List<TreeVo> toTree(List<SysMenu> menus){
+    public List<TreeVo> toTree(List<SysMenu> menus){
         List<TreeVo> treeVos = new ArrayList<>();
         menus.forEach(sysMenu -> {
             MenuVO menuVO = new MenuVO();

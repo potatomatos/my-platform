@@ -1,5 +1,6 @@
 package cn.cxnxs.common.api.domain;
 
+import cn.cxnxs.common.core.entity.TreeVo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -80,6 +81,8 @@ public class UserApiEntity {
     private List<String> userClients;
 
     private List<String> userRoles;
+
+    private List<TreeVo> userMenus;
 
     private List<Map<String, String>> permissions;
 
