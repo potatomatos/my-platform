@@ -109,16 +109,17 @@ public class UserServiceImpl implements IUserService {
         SysUsers sysUsers = new SysUsers();
         ObjectUtil.transValues(userVO, sysUsers);
         sysUsers.setUpdatedAt(LocalDateTime.now());
-
-        // 先删后插
-        sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId,userVO.getId()));
         List<Integer> roleIds = userVO.getRoleIds();
-        SysUserRole sysUserRole = new SysUserRole();
-        for (Integer roleId : roleIds) {
-            sysUserRole.setUserId(userVO.getId());
-            sysUserRole.setRoleId(roleId);
-            sysUserRole.setCreatedAt(System.currentTimeMillis());
-            sysUserRoleMapper.insert(sysUserRole);
+        if (roleIds!=null && !roleIds.isEmpty()) {
+            // 先删后插
+            sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId,userVO.getId()));
+            SysUserRole sysUserRole = new SysUserRole();
+            for (Integer roleId : roleIds) {
+                sysUserRole.setUserId(userVO.getId());
+                sysUserRole.setRoleId(roleId);
+                sysUserRole.setCreatedAt(System.currentTimeMillis());
+                sysUserRoleMapper.insert(sysUserRole);
+            }
         }
         return sysUsersMapper.updateById(sysUsers);
     }

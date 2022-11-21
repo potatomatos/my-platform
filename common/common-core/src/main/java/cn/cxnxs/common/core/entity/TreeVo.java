@@ -3,6 +3,7 @@ package cn.cxnxs.common.core.entity;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,7 +12,8 @@ import java.util.List;
  * @author mengjinyuan
  * @date 2020-11-12 17:06
  **/
-public class TreeVo {
+@Data
+public class TreeVo implements Serializable {
 
     /**
      * 节点唯一索引值，用于对指定节点进行各类操作
@@ -86,125 +88,4 @@ public class TreeVo {
      * 子节点。支持设定选项同父节点
      */
     private List<TreeVo> children;
-
-
-    public Object getNodeId() {
-        return nodeId;
-    }
-
-    public void setNodeId(Object nodeId) {
-        this.nodeId = nodeId;
-    }
-
-    public Object getParentNodeId() {
-        return parentNodeId;
-    }
-
-    public void setParentNodeId(Object parentNodeId) {
-        this.parentNodeId = parentNodeId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public String getHref() {
-        return href;
-    }
-
-    public void setHref(String href) {
-        this.href = href;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-
-    public Boolean getSpread() {
-        return spread;
-    }
-
-    public void setSpread(Boolean spread) {
-        this.spread = spread;
-    }
-
-    public Boolean getChecked() {
-        return checked;
-    }
-
-    public void setChecked(Boolean checked) {
-        this.checked = checked;
-    }
-
-    public Boolean getDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
-
-    public Boolean getLeaf() {
-        return leaf;
-    }
-
-    public void setLeaf(Boolean leaf) {
-        this.leaf = leaf;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public JSONObject getExpandData() {
-        return expandData;
-    }
-
-    public void setExpandData(JSONObject expandData) {
-        this.expandData = expandData;
-    }
-
-    public Integer getSort() {
-        return sort;
-    }
-
-    public void setSort(Integer sort) {
-        this.sort = sort;
-    }
-
-    public Long getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Long createTime) {
-        this.createTime = createTime;
-    }
-
-    public List<TreeVo> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<TreeVo> children) {
-        this.children = children;
-    }
 }
