@@ -11,6 +11,12 @@
 
     <artifactId>common-api</artifactId>
     <description>远程调用接口包</description>
+    <modules>
+        <module>system-api</module>
+        <module>oauth-server-api</module>
+        <module>api-config</module>
+    </modules>
+    <packaging>pom</packaging>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
