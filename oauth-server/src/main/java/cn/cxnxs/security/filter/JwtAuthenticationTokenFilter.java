@@ -1,6 +1,5 @@
 package cn.cxnxs.security.filter;
 
-import cn.cxnxs.common.api.SystemService;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.entity.JwtUser;
 import com.alibaba.fastjson.JSONObject;

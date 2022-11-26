@@ -94,7 +94,7 @@
         </dependency>
         <dependency>
             <groupId>cn.cxnxs</groupId>
-            <artifactId>common-api</artifactId>
+            <artifactId>system-api</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

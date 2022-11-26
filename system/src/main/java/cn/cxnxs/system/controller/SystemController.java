@@ -1,7 +1,7 @@
 package cn.cxnxs.system.controller;
 
-import cn.cxnxs.common.api.Oauth2Service;
-import cn.cxnxs.common.api.domain.UserApiEntity;
+import cn.cxnxs.common.api.auth.Oauth2Service;
+import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.system.service.IPermissionService;

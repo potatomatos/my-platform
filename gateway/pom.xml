@@ -49,11 +49,6 @@
         </dependency>
         <dependency>
             <groupId>cn.cxnxs</groupId>
-            <artifactId>common-api</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>cn.cxnxs</groupId>
             <artifactId>common-web</artifactId>
             <version>1.0.0</version>
             <exclusions>

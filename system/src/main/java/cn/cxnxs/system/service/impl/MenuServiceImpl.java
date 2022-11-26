@@ -1,6 +1,6 @@
 package cn.cxnxs.system.service.impl;
 
-import cn.cxnxs.common.api.Oauth2Service;
+import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.PageResult;
@@ -80,6 +80,7 @@ public class MenuServiceImpl implements IMenuService {
             menuVO.setComponent(sysMenu.getComponent());
             menuVO.setRouteName(sysMenu.getRouteName());
             menuVO.setPermission(sysMenu.getPermission());
+            menuVO.setBadgeUrl(sysMenu.getBadgeUrl());
 
             TreeVo treeVo = new TreeVo();
             treeVo.setNodeId(sysMenu.getId());

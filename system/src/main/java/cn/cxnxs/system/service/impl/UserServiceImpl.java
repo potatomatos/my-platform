@@ -1,7 +1,6 @@
 package cn.cxnxs.system.service.impl;
 
-import cn.cxnxs.common.api.domain.UserApiEntity;
-import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;

@@ -80,4 +80,9 @@ public class MenuVO {
      */
     private String permission;
 
+    /**
+     * 右上角标记
+     */
+    private String badgeUrl;
+
 }

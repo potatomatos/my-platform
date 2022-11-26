@@ -110,6 +110,12 @@ public class SysMenu extends Model<SysMenu> {
      */
     private String permission;
 
+
+    /**
+     * 右上角标记
+     */
+    private String badgeUrl;
+
     /**
      * 创建时间
      */

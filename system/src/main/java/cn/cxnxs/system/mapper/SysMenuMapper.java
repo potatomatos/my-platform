@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface SysMenuMapper extends BaseMapper<SysMenu> {
 
-    @Select("SELECT DISTINCT a.* FROM sys_menu a JOIN sys_role_menu b ON a.id = b.menu_id JOIN sys_user_role c ON b.role_id = c.role_id AND c.user_id = #{userId} and a.state=0")
+    @Select("SELECT DISTINCT a.* FROM sys_menu a JOIN sys_role_menu b ON a.id = b.menu_id JOIN sys_user_role c ON b.role_id = c.role_id AND c.user_id = #{userId} and a.state=0 order by a.sort_no asc")
     List<SysMenu> getUserMenus(Integer userId);
 
 }

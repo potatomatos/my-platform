@@ -1,7 +1,7 @@
 package cn.cxnxs.security.provider;
 
-import cn.cxnxs.common.api.SystemService;
-import cn.cxnxs.common.api.domain.UserApiEntity;
+import cn.cxnxs.common.api.system.SystemService;
+import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.security.constants.RedisKeyPrefix;

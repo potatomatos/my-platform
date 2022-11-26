@@ -1,6 +1,6 @@
 package cn.cxnxs.system.service;
 
-import cn.cxnxs.common.api.domain.UserApiEntity;
+import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.system.vo.PageVO;
 import cn.cxnxs.system.vo.RoleVO;

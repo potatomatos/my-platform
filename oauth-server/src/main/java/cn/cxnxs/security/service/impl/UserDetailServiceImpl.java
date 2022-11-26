@@ -1,7 +1,7 @@
 package cn.cxnxs.security.service.impl;
 
-import cn.cxnxs.common.api.SystemService;
-import cn.cxnxs.common.api.domain.UserApiEntity;
+import cn.cxnxs.common.api.system.SystemService;
+import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.entity.JwtUser;
 import org.springframework.beans.factory.annotation.Autowired;

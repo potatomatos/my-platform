@@ -50,4 +50,10 @@ public class MenuController {
     public Integer deleteMenu(@PathVariable("id") Integer id) {
         return menuService.deleteMenu(id);
     }
+
+    @ResponseResult
+    @GetMapping("badge")
+    public Integer badge() {
+        return 500;
+    }
 }
