@@ -120,8 +120,9 @@ public class Result<T> implements Serializable {
         return data;
     }
 
-    public void setData(T data) {
+    public Result<T> setData(T data) {
         this.data = data;
+        return this;
     }
 
     public String getStackInfo() {
