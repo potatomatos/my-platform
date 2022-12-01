@@ -1,10 +1,13 @@
 package cn.cxnxs.system.vo;
 
 
+import cn.cxnxs.common.core.entity.TreeVo;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class MenuVO {
+public class MenuVO extends TreeVo {
 
     /**
      * 主键id
@@ -16,14 +19,21 @@ public class MenuVO {
      */
     private Integer parentId;
 
+    private MenuVO parent;
+
     /**
      * 路由 path
      */
     private String path;
+
+    private String url;
+
     /**
      * 菜单名称
      */
     private String title;
+
+    private String menuName;
 
     /**
      * 菜单图标
@@ -84,5 +94,10 @@ public class MenuVO {
      * 右上角标记
      */
     private String badgeUrl;
+
+    /**
+     * 菜单排序
+     */
+    private Integer sortNo;
 
 }

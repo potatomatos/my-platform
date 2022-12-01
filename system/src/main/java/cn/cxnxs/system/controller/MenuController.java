@@ -2,9 +2,11 @@ package cn.cxnxs.system.controller;
 
 
 import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.system.entity.SysMenu;
 import cn.cxnxs.system.service.IMenuService;
+import cn.cxnxs.system.vo.MenuVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,6 +51,23 @@ public class MenuController {
     @PostMapping("delete/{id}")
     public Integer deleteMenu(@PathVariable("id") Integer id) {
         return menuService.deleteMenu(id);
+    }
+
+    @ResponseResult
+    @GetMapping("{id}")
+    public MenuVO menuDetail(@PathVariable("id") Integer id) {
+        SysMenu sysMenu = new SysMenu().selectById(id);
+        MenuVO menuVO = new MenuVO();
+        ObjectUtil.transValues(sysMenu,menuVO);
+        MenuVO parent = new MenuVO();
+        if (menuVO.getParentId()!=null){
+            SysMenu sysParent = new SysMenu().selectById(menuVO.getParentId());
+            if (sysParent!=null){
+                ObjectUtil.transValues(sysParent,parent);
+            }
+        }
+        menuVO.setParent(parent);
+        return menuVO;
     }
 
     @ResponseResult

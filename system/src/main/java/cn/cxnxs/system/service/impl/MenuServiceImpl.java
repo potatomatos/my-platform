@@ -81,17 +81,11 @@ public class MenuServiceImpl implements IMenuService {
             menuVO.setRouteName(sysMenu.getRouteName());
             menuVO.setPermission(sysMenu.getPermission());
             menuVO.setBadgeUrl(sysMenu.getBadgeUrl());
-
-            TreeVo treeVo = new TreeVo();
-            treeVo.setNodeId(sysMenu.getId());
-            treeVo.setParentNodeId(sysMenu.getParentId());
-            treeVo.setTitle(sysMenu.getMenuName());
-            treeVo.setHref(sysMenu.getUrl());
-            treeVo.setIcon(sysMenu.getIcon());
-            treeVo.setExpandData(JSONObject.parseObject(JSON.toJSONString(menuVO)));
-            treeVo.setCreateTime(sysMenu.getCreatedAt());
-            treeVo.setSort(sysMenu.getSortNo());
-            treeVos.add(treeVo);
+            menuVO.setNodeId(sysMenu.getId());
+            menuVO.setParentNodeId(sysMenu.getParentId());
+            menuVO.setExpandData(JSONObject.parseObject(JSON.toJSONString(menuVO)));
+            menuVO.setSortNo(sysMenu.getSortNo());
+            treeVos.add(menuVO);
         });
         return TreeUtil.toTreeVo(treeVos, 0);
     }
