@@ -84,6 +84,8 @@ public class UserApiEntity {
 
     private List<TreeVo> userMenus;
 
+    private List<String> userMenuPaths;
+
     private List<Map<String, String>> permissions;
 
     public String getStateStr() {

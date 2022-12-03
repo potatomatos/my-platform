@@ -48,4 +48,20 @@ public interface Oauth2Service {
     @GetMapping("/currentUser")
     Result<JSONObject> currentUser();
 
+    /**
+     * 校验token
+     * @param accessToken
+     * @return
+     */
+    @GetMapping("/verifyToken")
+    Result<JSONObject> verifyToken(String accessToken);
+
+    /**
+     * 校验前端路由
+     * @param accessToken
+     * @param path
+     * @return
+     */
+    @GetMapping("/verifyPage")
+    Result<JSONObject> verifyPage(@RequestParam("accessToken")String accessToken, @RequestParam("path")String path);
 }

@@ -201,6 +201,7 @@ public class UserServiceImpl implements IUserService {
         userApiEntity.setUserClients(userClients);
         userApiEntity.setUserRoles(userRoles);
         userApiEntity.setUserMenus(menuService.toTree(userMenus));
+        userApiEntity.setUserMenuPaths(userMenus.stream().map(SysMenu::getUrl).collect(Collectors.toList()));
         userApiEntity.setPermissions(userPermissions);
         return userApiEntity;
     }

@@ -36,6 +36,7 @@ public class JwtUser extends User {
     private List<String> userRoles;
     private List<Map<String, String>> permissions;
     private List<TreeVo> userMenus;
+    private List<String> userMenuPaths;
     private Map<String,List<Map<String, String>>> rolePermissions;
 
     public JwtUser(String username,
@@ -162,6 +163,14 @@ public class JwtUser extends User {
         this.userMenus = userMenus;
     }
 
+    public List<String> getUserMenuPaths() {
+        return userMenuPaths;
+    }
+
+    public void setUserMenuPaths(List<String> userMenuPaths) {
+        this.userMenuPaths = userMenuPaths;
+    }
+
     /**
      * 用户状态
      */
@@ -205,6 +214,7 @@ public class JwtUser extends User {
             return "";
         }
     }
+
     @Override
     public String toString() {
         return "JwtUser{" +
@@ -221,8 +231,8 @@ public class JwtUser extends User {
                 ", userRoles=" + userRoles +
                 ", permissions=" + permissions +
                 ", userMenus=" + userMenus +
+                ", userMenuPaths=" + userMenuPaths +
                 ", rolePermissions=" + rolePermissions +
-                '}';
+                "} " + super.toString();
     }
-
 }

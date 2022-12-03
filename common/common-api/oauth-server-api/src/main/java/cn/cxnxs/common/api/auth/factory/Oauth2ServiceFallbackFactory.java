@@ -40,6 +40,31 @@ public class Oauth2ServiceFallbackFactory implements FallbackFactory<Oauth2Servi
                 log.error("用户信息获取失败",throwable);
                 return Result.failure("用户信息获取失败");
             }
+
+            /**
+             * 校验token
+             *
+             * @param accessToken
+             * @return
+             */
+            @Override
+            public Result<JSONObject> verifyToken(String accessToken) {
+                log.error("token校验失败",throwable);
+                return Result.failure("token校验失败");
+            }
+
+            /**
+             * 校验前端路由
+             *
+             * @param accessToken
+             * @param path
+             * @return
+             */
+            @Override
+            public Result<JSONObject> verifyPage(String accessToken, String path) {
+                log.error("菜单校验失败",throwable);
+                return Result.failure("菜单校验失败");
+            }
         };
     }
 }

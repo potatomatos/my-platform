@@ -1,1 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=cn.cxnxs.common.api.config.FeignConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  cn.cxnxs.common.api.config.FeignConfiguration,\
+  cn.cxnxs.common.api.interceptor.FeignInterceptor

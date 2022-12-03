@@ -15,7 +15,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,8 +30,10 @@ import java.io.OutputStream;
 import java.security.KeyPair;
 import java.security.Principal;
 import java.security.interfaces.RSAPublicKey;
+import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 public class OauthController {
 
@@ -44,6 +48,9 @@ public class OauthController {
 
     @Autowired
     private RedisUtils redisUtils;
+
+    @Autowired
+    private TokenStore jdbcTokenStore;
 
     /**
      * 获取公钥
@@ -89,5 +96,30 @@ public class OauthController {
             throw new CommonException("登录信息获取失败，请登录后再调用");
         }
 
+    }
+
+    @GetMapping("verifyToken")
+    public Result<JwtUser> verifyToken(String accessToken) {
+        return authService.verifyToken(accessToken);
+    }
+
+    /**
+     * 菜单权限校验
+     * @param accessToken
+     * @return
+     */
+    @GetMapping("verifyPage")
+    public Result<JwtUser> verifyPage(String accessToken, String path) {
+        Result<JwtUser> result = authService.verifyToken(accessToken);
+        if (Result.ResultEnum.SUCCESS.getCode().equals(result.getCode())){
+            JwtUser jwtUser = result.getData();
+            List<String> userMenus = jwtUser.getUserMenuPaths();
+            if (!userMenus.contains(path)){
+                return Result.failure();
+            }
+        }else {
+            return result;
+        }
+        return result;
     }
 }

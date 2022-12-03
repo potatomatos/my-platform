@@ -1,8 +1,10 @@
 package cn.cxnxs.security.service.impl;
 
 
-import cn.cxnxs.common.cache.RedisUtils;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.entity.AuthToken;
+import cn.cxnxs.security.entity.JwtUser;
+import cn.cxnxs.security.entity.UserPasswordAuthenticationToken;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +14,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,6 +30,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,6 +51,9 @@ public class AuthService {
 
     @Autowired
     private HttpServletRequest httpServletRequest;
+
+    @Autowired
+    private TokenStore jdbcTokenStore;
 
     public AuthService(LoadBalancerClient loadBalancerClient, RestTemplate restTemplate, StringRedisTemplate redisTemplate) {
         this.loadBalancerClient = loadBalancerClient;
@@ -256,6 +266,29 @@ public class AuthService {
             ipAddress = "";
         }
         return "0:0:0:0:0:0:0:1".equals(ipAddress) ? "127.0.0.1" : ipAddress;
+    }
+
+    public Result<JwtUser> verifyToken(String accessToken) {
+        if (!StringUtils.hasText(accessToken)) {
+            return Result.failure(Result.ResultEnum.NEED_LOGIN, null);
+        }
+        try {
+            OAuth2Authentication oAuth2Authentication = jdbcTokenStore.readAuthentication(accessToken);
+            if (Objects.isNull(oAuth2Authentication)) {
+                return Result.failure(Result.ResultEnum.TOKEN_REQUIRED, null);
+            }
+            OAuth2AccessToken oAuth2AccessToken = jdbcTokenStore.readAccessToken(accessToken);
+            if (oAuth2AccessToken.isExpired()) {
+                //token过期
+                return Result.failure(Result.ResultEnum.TOKEN_EXPIRED, null);
+            }
+            UserPasswordAuthenticationToken userAuthentication = (UserPasswordAuthenticationToken) oAuth2Authentication.getUserAuthentication();
+            return Result.success(userAuthentication.getJwtUser());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            //token超时或者非法
+            return Result.failure(Result.ResultEnum.NEED_LOGIN, e.getMessage());
+        }
     }
 }
 
