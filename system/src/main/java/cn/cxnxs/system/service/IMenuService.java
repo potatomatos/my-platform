@@ -5,7 +5,6 @@ import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.system.entity.SysMenu;
 import cn.cxnxs.system.vo.MenuQueryVO;
-import cn.cxnxs.system.vo.PageVO;
 
 import java.util.List;
 

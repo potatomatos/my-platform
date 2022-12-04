@@ -3,6 +3,7 @@ package cn.cxnxs.security.service.impl;
 import cn.cxnxs.common.api.system.SystemService;
 import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.security.entity.CustomGrantedAuthority;
 import cn.cxnxs.security.entity.JwtUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -73,13 +74,20 @@ public class UserDetailServiceImpl implements UserDetailsService {
         //根据角色分组权限
         Map<String,List<Map<String, String>>> rolePermissions=permissions.stream().collect(Collectors.groupingBy(e->e.get("role_code")));
 
-        JwtUser userDetails = new JwtUser(username,
-                password,
-                enabled,
-                accountNonExpired,
-                credentialsNonExpired,
-                accountNonLocked,
-                AuthorityUtils.commaSeparatedStringToAuthorityList(String.join(",", userRoles)));
+//        JwtUser userDetails = new JwtUser(username,
+//                password,
+//                enabled,
+//                accountNonExpired,
+//                credentialsNonExpired,
+//                accountNonLocked,
+//                AuthorityUtils.commaSeparatedStringToAuthorityList(String.join(",", userRoles)));
+        JwtUser userDetails = new JwtUser();
+        userDetails.setEnabled(enabled);
+        userDetails.setAccountNonExpired(accountNonExpired);
+        userDetails.setCredentialsNonExpired(credentialsNonExpired);
+        userDetails.setAccountNonLocked(accountNonLocked);
+        userDetails.setAuthorities(userRoles.stream().map(CustomGrantedAuthority::new).collect(Collectors.toList()));
+        userDetails.setPassword(password);
         userDetails.setId(userApiEntity.getId());
         userDetails.setUsername(userApiEntity.getUsername());
         userDetails.setRealName(userApiEntity.getRealName());
@@ -87,7 +95,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
         userDetails.setPhoneNumber(userApiEntity.getPhoneNumber());
         userDetails.setEmail(userApiEntity.getEmail());
         userDetails.setLoginCount(userApiEntity.getLoginCount());
-        userDetails.setCurrentLoginTime(userApiEntity.getCurrentLoginTime());
         userDetails.setCurrentLoginIp(userApiEntity.getCurrentLoginIp());
         userDetails.setPermissions(permissions);
         userDetails.setUserClients(userClients);

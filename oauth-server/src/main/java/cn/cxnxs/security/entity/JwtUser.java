@@ -1,11 +1,12 @@
 package cn.cxnxs.security.entity;
 
 import cn.cxnxs.common.core.entity.TreeVo;
+import com.alibaba.fastjson.annotation.JSONField;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -15,10 +16,14 @@ import java.util.Map;
  * @author mengjinyuan
  * @date 2022-04-10 23:11
  **/
-public class JwtUser extends User {
+@Getter
+@Setter
+public class JwtUser implements UserDetails {
 
     private Integer id;
     private String username;
+    @JSONField(serialize = false)
+    private String password;
 
     private String realName;
     /**
@@ -29,7 +34,6 @@ public class JwtUser extends User {
     private String email;
 
     private Integer loginCount;
-    private LocalDateTime currentLoginTime;
     private String currentLoginIp;
 
     private List<String> userClients;
@@ -37,151 +41,24 @@ public class JwtUser extends User {
     private List<Map<String, String>> permissions;
     private List<TreeVo> userMenus;
     private List<String> userMenuPaths;
-    private Map<String,List<Map<String, String>>> rolePermissions;
+    private Map<String, List<Map<String, String>>> rolePermissions;
 
-    public JwtUser(String username,
-                   String password,
-                   boolean enabled,
-                   boolean accountNonExpired,
-                   boolean credentialsNonExpired,
-                   boolean accountNonLocked,
-                   Collection<? extends GrantedAuthority> authorities) {
-        super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
-        this.username=username;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public List<String> getUserClients() {
-        return userClients;
-    }
-
-    public void setUserClients(List<String> userClients) {
-        this.userClients = userClients;
-    }
-
-    public List<String> getUserRoles() {
-        return userRoles;
-    }
-
-    public void setUserRoles(List<String> userRoles) {
-        this.userRoles = userRoles;
-    }
-
-    public List<Map<String, String>> getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(List<Map<String, String>> permissions) {
-        this.permissions = permissions;
-    }
-
-    public Map<String, List<Map<String, String>>> getRolePermissions() {
-        return rolePermissions;
-    }
-
-    public void setRolePermissions(Map<String, List<Map<String, String>>> rolePermissions) {
-        this.rolePermissions = rolePermissions;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Integer getLoginCount() {
-        return loginCount;
-    }
-
-    public void setLoginCount(Integer loginCount) {
-        this.loginCount = loginCount;
-    }
-
-    public LocalDateTime getCurrentLoginTime() {
-        return currentLoginTime;
-    }
-
-    public void setCurrentLoginTime(LocalDateTime currentLoginTime) {
-        this.currentLoginTime = currentLoginTime;
-    }
-
-    public String getCurrentLoginIp() {
-        return currentLoginIp;
-    }
-
-    public void setCurrentLoginIp(String currentLoginIp) {
-        this.currentLoginIp = currentLoginIp;
-    }
-
-    public String getRealName() {
-        return realName;
-    }
-
-    public void setRealName(String realName) {
-        this.realName = realName;
-    }
-
-    public List<TreeVo>  getUserMenus() {
-        return userMenus;
-    }
-
-    public void setUserMenus(List<TreeVo>  userMenus) {
-        this.userMenus = userMenus;
-    }
-
-    public List<String> getUserMenuPaths() {
-        return userMenuPaths;
-    }
-
-    public void setUserMenuPaths(List<String> userMenuPaths) {
-        this.userMenuPaths = userMenuPaths;
-    }
+    private List<GrantedAuthority> authorities;
+    private boolean accountNonExpired;
+    private boolean accountNonLocked;
+    private boolean credentialsNonExpired;
+    private boolean enabled;
 
     /**
      * 用户状态
      */
-    public enum USER_STATE{
-        ENABLED(0,"启用"),
-        DISABLED(1,"禁用"),
-        ACCOUNT_EXPIRED(2,"账号过期"),
-        CREDENTIALS_EXPIRED(3,"密码过期"),
-        ACCOUNT_LOCKED(4,"账号锁定"),
-        DELETED(5,"账号已删除")
-        ;
+    public enum USER_STATE {
+        ENABLED(0, "启用"),
+        DISABLED(1, "禁用"),
+        ACCOUNT_EXPIRED(2, "账号过期"),
+        CREDENTIALS_EXPIRED(3, "密码过期"),
+        ACCOUNT_LOCKED(4, "账号锁定"),
+        DELETED(5, "账号已删除");
         /**
          * 码值
          */
@@ -205,34 +82,13 @@ public class JwtUser extends User {
             return desc;
         }
 
-        public String getDescByCode(Integer code){
-            for (USER_STATE userState:USER_STATE.values()) {
-                if (userState.getCode().equals(code)){
+        public String getDescByCode(Integer code) {
+            for (USER_STATE userState : USER_STATE.values()) {
+                if (userState.getCode().equals(code)) {
                     return userState.getDesc();
                 }
             }
             return "";
         }
-    }
-
-    @Override
-    public String toString() {
-        return "JwtUser{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", realName='" + realName + '\'' +
-                ", avatar='" + avatar + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", email='" + email + '\'' +
-                ", loginCount=" + loginCount +
-                ", currentLoginTime=" + currentLoginTime +
-                ", currentLoginIp='" + currentLoginIp + '\'' +
-                ", userClients=" + userClients +
-                ", userRoles=" + userRoles +
-                ", permissions=" + permissions +
-                ", userMenus=" + userMenus +
-                ", userMenuPaths=" + userMenuPaths +
-                ", rolePermissions=" + rolePermissions +
-                "} " + super.toString();
     }
 }

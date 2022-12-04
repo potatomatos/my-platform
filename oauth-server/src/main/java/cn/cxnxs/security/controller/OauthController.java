@@ -17,12 +17,14 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,6 +53,8 @@ public class OauthController {
 
     @Autowired
     private TokenStore jdbcTokenStore;
+
+    private static final String REDIS_KEY = "USER_PAGES:";
 
     /**
      * 获取公钥
@@ -99,27 +103,24 @@ public class OauthController {
     }
 
     @GetMapping("verifyToken")
-    public Result<JwtUser> verifyToken(String accessToken) {
-        return authService.verifyToken(accessToken);
+    public Result<Object> verifyToken() {
+        return Result.success();
     }
 
     /**
      * 菜单权限校验
-     * @param accessToken
      * @return
      */
     @GetMapping("verifyPage")
-    public Result<JwtUser> verifyPage(String accessToken, String path) {
-        Result<JwtUser> result = authService.verifyToken(accessToken);
-        if (Result.ResultEnum.SUCCESS.getCode().equals(result.getCode())){
-            JwtUser jwtUser = result.getData();
-            List<String> userMenus = jwtUser.getUserMenuPaths();
-            if (!userMenus.contains(path)){
-                return Result.failure();
-            }
-        }else {
-            return result;
+    public Result<Object> verifyPage(Principal principal,String path) {
+        UserPasswordAuthenticationToken userPasswordAuthenticationToken = (UserPasswordAuthenticationToken) principal;
+        JwtUser jwtUser = userPasswordAuthenticationToken.getJwtUser();
+        List<String> userMenus = jwtUser.getUserMenuPaths();
+        if (!userMenus.contains(path)){
+            return Result.failure(Result.ResultEnum.FORBIDDEN,
+                    Result.ResultEnum.FORBIDDEN.getInfo(),
+                    Result.ResultEnum.FORBIDDEN.getResult());
         }
-        return result;
+        return Result.success();
     }
 }

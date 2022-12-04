@@ -1,6 +1,8 @@
 package cn.cxnxs.security.config;
 
+import cn.cxnxs.security.entity.JwtUser;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,6 +20,8 @@ public class JSONAuthentication {
     public void writeJSON(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,Object result) throws IOException {
         httpServletResponse.setHeader("Content-Type","application/json");
         httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        httpServletResponse.getWriter().write(JSONObject.toJSONString(result));
+        SimplePropertyPreFilter filter = new SimplePropertyPreFilter(JwtUser.class);
+        filter.getExcludes().add("password");
+        httpServletResponse.getWriter().write(JSONObject.toJSONString(result,filter));
     }
 }

@@ -151,12 +151,13 @@ public class Result<T> implements Serializable {
         USER_ACCOUNT_EXPIRED(5001, "账号过期", "user_account_expired"),
         USER_CREDENTIALS_ERROR(5002, "密码错误", "user_credentials_error"),
         USER_CREDENTIALS_EXPIRED(5003, "密码过期", "user_credentials_expired"),
-        USER_ACCOUNT_DISABLE(5004, "密码过期", "user_account_disable"),
+        USER_ACCOUNT_DISABLE(5004, "账号禁用", "user_account_disable"),
         USER_ACCOUNT_LOCKED(5005, "账号锁定", "user_account_locked"),
         USER_ACCOUNT_NOT_EXIST(5006, "用户不存在", "user_account_not_exist"),
         NEED_LOGIN(6001, "权限未认证", "NEED_LOGIN"),
         TOKEN_REQUIRED(6002, "TOKEN不存在", "TOKEN_REQUIRED_EXCEPTION"),
-        TOKEN_EXPIRED(6003, "登录信息已过期", "TOKEN_EXPIRED");
+        TOKEN_EXPIRED(6003, "登录信息已过期", "TOKEN_EXPIRED"),
+        FORBIDDEN(6004, "无访问权限", "FORBIDDEN");
 
         /**
          * 状态码

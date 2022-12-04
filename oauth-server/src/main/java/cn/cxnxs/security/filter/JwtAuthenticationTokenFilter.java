@@ -1,7 +1,9 @@
 package cn.cxnxs.security.filter;
 
+import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.entity.JwtUser;
+import cn.cxnxs.security.entity.UserPasswordAuthenticationToken;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,11 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     @Autowired
     private TokenStore jdbcTokenStore;
 
+    @Autowired
+    private RedisUtils redisUtils;
+
+    private static final String REDIS_KEY = "USER_INFO:";
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -44,12 +51,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         list.add(new AntPathRequestMatcher("/rsa/publicKey"));
         list.add(new AntPathRequestMatcher("/login"));
         boolean match = false;
-        for(AntPathRequestMatcher ant : list){
-            if(ant.matches(request)){
+        for (AntPathRequestMatcher ant : list) {
+            if (ant.matches(request)) {
                 match = true;
             }
         }
-        if (!match){
+        if (!match) {
             //1、获取请求头携带的token
             String accessToken = request.getHeader("access_token");
             //header中没有就从参数中获取
@@ -61,22 +68,28 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 render(request, response, Result.failure(Result.ResultEnum.NEED_LOGIN, null));
                 return;
             }
-
-            //2、解析出userId
-            JwtUser jwtUser;
+            String key=REDIS_KEY + accessToken;
             try {
-                OAuth2Authentication oAuth2Authentication = jdbcTokenStore.readAuthentication(accessToken);
-                if (Objects.isNull(oAuth2Authentication)) {
-                    render(request, response, Result.failure(Result.ResultEnum.TOKEN_REQUIRED, null));
-                    return;
+                UserPasswordAuthenticationToken passwordAuthenticationToken;
+                if (redisUtils.hasKey(key)) {
+                    passwordAuthenticationToken= redisUtils.get(key);
+                }else {
+                    OAuth2Authentication oAuth2Authentication = jdbcTokenStore.readAuthentication(accessToken);
+                    if (Objects.isNull(oAuth2Authentication)) {
+                        render(request, response, Result.failure(Result.ResultEnum.TOKEN_REQUIRED, null));
+                        return;
+                    }
+                    passwordAuthenticationToken = (UserPasswordAuthenticationToken) oAuth2Authentication.getUserAuthentication();
+                    redisUtils.set(REDIS_KEY + accessToken,passwordAuthenticationToken,3600);
                 }
+                SecurityContextHolder.getContext().setAuthentication(passwordAuthenticationToken);
+
                 OAuth2AccessToken oAuth2AccessToken = jdbcTokenStore.readAccessToken(accessToken);
                 if (oAuth2AccessToken.isExpired()) {
                     //token过期
                     render(request, response, Result.failure(Result.ResultEnum.TOKEN_EXPIRED, null));
                     return;
                 }
-                SecurityContextHolder.getContext().setAuthentication(oAuth2Authentication.getUserAuthentication());
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 //token超时或者非法

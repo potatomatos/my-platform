@@ -24,6 +24,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * <p>统一鉴权过滤器</p>
@@ -60,6 +61,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
         list.add("/oauth-server/captcha");
         list.add("/oauth-server/rsa/publicKey");
         list.add("/oauth-server/login");
+        list.add("/oauth-server/verifyPage");
         list.add("/system/system/api/getAccessToken");
 
         boolean match = false;
@@ -72,14 +74,22 @@ public class PermissionFilter implements GlobalFilter, Ordered {
             if (accessToken == null) {
                 return this.setUnauthorizedResponse(exchange, Result.failure(Result.ResultEnum.NEED_LOGIN, null));
             } else {
-                CompletableFuture<Result<JSONObject>> completableFuture = CompletableFuture.supplyAsync(()-> {
+                CompletableFuture<Result<Object>> completableFuture = CompletableFuture.supplyAsync(()-> {
                     Mono<Result> userMono = webBuilder.baseUrl("http://oauth-server")
-                            .build().get().uri("/verifyToken?accessToken={accessToken}",accessToken)
+                            .build().get().uri("/verifyToken")
                             .header("access_token",accessToken)
                             .retrieve().bodyToMono(Result.class);
                     return userMono.block();
                 });
-                Result result = completableFuture.get();
+                Result result;
+                try {
+                    result = completableFuture.get();
+                } catch (InterruptedException e) {
+                    throw e;
+                } catch (ExecutionException e) {
+                    log.error(e.getMessage(),e);
+                    return this.setUnauthorizedResponse(exchange, Result.failure("token校验失败，请重新登录"));
+                }
                 if (!Result.ResultEnum.SUCCESS.getCode().equals(result.getCode())) {
                      return this.setUnauthorizedResponse(exchange, result);
                 }

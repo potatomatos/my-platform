@@ -1,27 +1,26 @@
 package cn.cxnxs.system.service.impl;
 
 import cn.cxnxs.common.api.system.domain.UserApiEntity;
+import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.common.core.entity.request.PageWrapper;
-import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.system.entity.SysMenu;
 import cn.cxnxs.system.entity.SysUserRole;
 import cn.cxnxs.system.entity.SysUsers;
 import cn.cxnxs.system.mapper.SysMenuMapper;
 import cn.cxnxs.system.mapper.SysUserRoleMapper;
 import cn.cxnxs.system.mapper.SysUsersMapper;
-import cn.cxnxs.system.service.IMenuService;
 import cn.cxnxs.system.service.IUserService;
+import cn.cxnxs.system.vo.MenuVO;
 import cn.cxnxs.system.vo.PageVO;
 import cn.cxnxs.system.vo.RoleVO;
 import cn.cxnxs.system.vo.UserVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,7 +75,7 @@ public class UserServiceImpl implements IUserService {
             queryWrapper.eq(SysUsers::getState, param.getState());
         } else {
             //默认查已删除的
-            queryWrapper.ne(SysUsers::getState,UserVO.USER_STATE.DELETED.getCode());
+            queryWrapper.ne(SysUsers::getState, UserVO.USER_STATE.DELETED.getCode());
         }
         if (!Objects.isNull(param.getId())) {
             queryWrapper.eq(SysUsers::getId, param.getId());
@@ -89,7 +89,7 @@ public class UserServiceImpl implements IUserService {
         pageResult.setCode(Result.ResultEnum.SUCCESS.getCode());
         pageResult.setRows(ObjectUtil.copyListProperties(page.getRecords(), UserVO.class));
         pageResult.setCount(page.getTotal());
-        pageResult.setPageSize((long)wrapper.getLimit());
+        pageResult.setPageSize((long) wrapper.getLimit());
         pageResult.setPages(page.getPages());
         return pageResult;
     }
@@ -102,16 +102,16 @@ public class UserServiceImpl implements IUserService {
     @Transactional
     @Override
     public Integer updateUser(UserVO userVO) {
-        if (userVO.getId() ==null) {
+        if (userVO.getId() == null) {
             throw new CommonException("id不能为空");
         }
         SysUsers sysUsers = new SysUsers();
         ObjectUtil.transValues(userVO, sysUsers);
         sysUsers.setUpdatedAt(LocalDateTime.now());
         List<Integer> roleIds = userVO.getRoleIds();
-        if (roleIds!=null && !roleIds.isEmpty()) {
+        if (roleIds != null && !roleIds.isEmpty()) {
             // 先删后插
-            sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId,userVO.getId()));
+            sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userVO.getId()));
             SysUserRole sysUserRole = new SysUserRole();
             for (Integer roleId : roleIds) {
                 sysUserRole.setUserId(userVO.getId());
@@ -150,6 +150,7 @@ public class UserServiceImpl implements IUserService {
 
     /**
      * 逻辑删除用户
+     *
      * @param userId
      * @return
      */
@@ -165,7 +166,7 @@ public class UserServiceImpl implements IUserService {
     public UserVO getUser(Integer userId) {
         SysUsers sysUsers = sysUsersMapper.selectById(userId);
         UserVO userVO = new UserVO();
-        ObjectUtil.transValues(sysUsers,userVO);
+        ObjectUtil.transValues(sysUsers, userVO);
         RoleVO roleVO = new RoleVO();
         roleVO.setUserId(userId);
         List<RoleVO> roles = this.selectUserRoles(roleVO);
@@ -176,6 +177,7 @@ public class UserServiceImpl implements IUserService {
 
     /**
      * 查询用户绑定角色
+     *
      * @param roleVO
      * @return
      */
@@ -185,24 +187,47 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserApiEntity getUserByName(String username){
+    public UserApiEntity getUserByName(String username) {
         SysUsers sysUsers = sysUsersMapper.selectOne(new LambdaQueryWrapper<SysUsers>()
-                .eq(SysUsers::getUsername, username).ne(SysUsers::getState,UserVO.USER_STATE.DELETED.getCode())
+                .eq(SysUsers::getUsername, username).ne(SysUsers::getState, UserVO.USER_STATE.DELETED.getCode())
         );
-        if (sysUsers == null){
+        if (sysUsers == null) {
             return null;
         }
         UserApiEntity userApiEntity = new UserApiEntity();
-        BeanUtils.copyProperties(sysUsers,userApiEntity);
+        BeanUtils.copyProperties(sysUsers, userApiEntity);
         List<String> userClients = sysUsersMapper.getUserClients(sysUsers.getId());
         List<String> userRoles = sysUsersMapper.getUserRoles(sysUsers.getId());
         List<Map<String, String>> userPermissions = sysUsersMapper.getUserPermissions(sysUsers.getId());
         final List<SysMenu> userMenus = sysMenuMapper.getUserMenus(sysUsers.getId());
         userApiEntity.setUserClients(userClients);
         userApiEntity.setUserRoles(userRoles);
-        userApiEntity.setUserMenus(menuService.toTree(userMenus));
-        userApiEntity.setUserMenuPaths(userMenus.stream().map(SysMenu::getUrl).collect(Collectors.toList()));
+        List<TreeVo> userMenuTree = menuService.toTree(userMenus);
+        List<MenuVO> menuVOS = this.buildPath(userMenuTree, null, null);
+        userApiEntity.setUserMenus(userMenuTree);
+        userApiEntity.setUserMenuPaths(menuVOS.stream().map(MenuVO::getPath).collect(Collectors.toList()));
         userApiEntity.setPermissions(userPermissions);
         return userApiEntity;
+    }
+
+    private List<MenuVO> buildPath(List<TreeVo> menuTree, List<MenuVO> list, MenuVO parent) {
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        for (TreeVo treeVo : menuTree) {
+            MenuVO menuVO = (MenuVO) treeVo;
+            if (parent != null) {
+                if (menuVO.getPath().indexOf("/") != 0) {
+                    menuVO.setPath(parent.getPath() + "/" + menuVO.getPath());
+                } else {
+                    menuVO.setPath(parent.getPath() + menuVO.getPath());
+                }
+            }
+            list.add(menuVO);
+            if (menuVO.getChildren()!=null&&!menuVO.getChildren().isEmpty()) {
+                buildPath(menuVO.getChildren(), list, menuVO);
+            }
+        }
+        return list;
     }
 }

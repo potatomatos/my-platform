@@ -117,7 +117,6 @@ public class UserPasswordAuthorizationProvider implements AuthenticationProvider
         userApiEntity.setId(userDetails.getId());
         userApiEntity.setLoginCount(userDetails.getLoginCount() + 1);
         userApiEntity.setCurrentLoginTime(LocalDateTime.now());
-        userApiEntity.setLastLoginTime(userDetails.getCurrentLoginTime());
         userApiEntity.setCurrentLoginIp(authService.getIpAddr());
         userApiEntity.setLastLoginIp(userDetails.getCurrentLoginIp());
         systemService.updateUser(userApiEntity);
