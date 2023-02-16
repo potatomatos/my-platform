@@ -2,7 +2,6 @@ package cn.cxnxs.gateway.filter;
 
 import cn.cxnxs.common.core.entity.response.Result;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +62,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
         list.add("/oauth-server/login");
         list.add("/oauth-server/verifyPage");
         list.add("/system/system/api/getAccessToken");
+        list.add("/cloud-disk/system/getAccessToken");
 
         boolean match = false;
         for (String path : list) {
