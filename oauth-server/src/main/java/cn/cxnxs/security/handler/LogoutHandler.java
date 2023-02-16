@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -37,14 +38,15 @@ public class LogoutHandler extends JSONAuthentication implements LogoutSuccessHa
     @Override
     public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException {
         //删除token信息
-        String token = httpServletRequest.getHeader("token");
-        UserPasswordAuthenticationToken authenticationToken= (UserPasswordAuthenticationToken) authentication;
-        JwtUser jwtUser = authenticationToken.getJwtUser();
-        OAuth2AccessToken oAuth2AccessToken = jdbcTokenStore.readAccessToken(token);
+        String accessToken = httpServletRequest.getHeader("access_token");
+        OAuth2AccessToken oAuth2AccessToken = jdbcTokenStore.readAccessToken(accessToken);
+        OAuth2Authentication oAuth2Authentication = jdbcTokenStore.readAuthentication(accessToken);
+        UserPasswordAuthenticationToken userAuthentication = (UserPasswordAuthenticationToken) oAuth2Authentication.getUserAuthentication();
         if (!Objects.isNull(oAuth2AccessToken)){
             jdbcTokenStore.removeAccessToken(oAuth2AccessToken);
         }
         //删除缓存信息
+        JwtUser jwtUser = userAuthentication.getJwtUser();
         redisTemplate.delete(RedisKeyPrefix.KEY_USER_INFO+jwtUser.getId());
         Result<String> result = Result.success("注销成功");
         this.writeJSON(httpServletRequest,httpServletResponse,result);
