@@ -4,21 +4,10 @@
 
     <select id="selectList" resultType="cn.cxnxs.system.vo.ClientDetailVO">
         SELECT
-            a.*, b.app_name,
-            b.`index`,
-            b.created_at,
-            b.updated_at
+            *
         FROM
-            oauth_client_details a
-                JOIN sys_app b ON a.client_id = b.client_id
-        <where>
-            <if test="clientId!=null and clientId!=''">
-                AND a.client_id=#{clientId}
-            </if>
-            <if test="appName!=null and appName!=''">
-                AND b.app_name like "%"#{appName}"%"
-            </if>
-        </where>
-        ORDER BY b.index ASC
+            oauth_client_details
+                JOIN sys_app  ON oauth_client_details.client_id = sys_app.client_id
+            ${ew.customSqlSegment}
     </select>
 </mapper>

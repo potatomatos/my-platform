@@ -1,9 +1,9 @@
 package cn.cxnxs.system.service;
 
+import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.system.vo.ClientDetailVO;
-
-import java.util.List;
+import cn.cxnxs.system.vo.PageVO;
 
 public interface IClientDetailService {
-    List<ClientDetailVO> clientDetailList(ClientDetailVO clientDetailVO);
+    PageVO<ClientDetailVO> clientDetailList(PageWrapper<ClientDetailVO> pageWrapper);
 }
