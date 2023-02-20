@@ -13,6 +13,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ClientDetailServiceImpl implements IClientDetailService {
 
@@ -32,10 +34,10 @@ public class ClientDetailServiceImpl implements IClientDetailService {
         IPage<ClientDetailVO> page = new Page<>();
         page.setCurrent(pageWrapper.getPage());
         page.setSize(pageWrapper.getLimit());
-        oauthClientDetailsMapper.selectList(page,queryWrapper);
+        List<ClientDetailVO> clientDetailVOS = oauthClientDetailsMapper.selectList(page, queryWrapper);
         PageVO<ClientDetailVO> pageResult = new PageVO<>(page.getTotal());
         pageResult.setCode(Result.ResultEnum.SUCCESS.getCode());
-        pageResult.setRows(page.getRecords());
+        pageResult.setRows(clientDetailVOS);
         pageResult.setCount(page.getTotal());
         pageResult.setPageSize((long)pageWrapper.getLimit());
         pageResult.setPages(page.getPages());
