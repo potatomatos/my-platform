@@ -22,4 +22,6 @@ public interface OauthClientDetailsMapper extends BaseMapper<OauthClientDetails>
 
     List<ClientDetailVO> selectList(IPage<ClientDetailVO> page, @Param(Constants.WRAPPER) LambdaQueryWrapper<ClientDetailVO> wrapper);
 
+    List<ClientDetailVO> selectList(@Param(Constants.WRAPPER) LambdaQueryWrapper<ClientDetailVO> wrapper);
+
 }

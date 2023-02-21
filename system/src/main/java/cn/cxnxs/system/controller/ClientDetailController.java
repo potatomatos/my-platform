@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RequestMapping("client")
 @RestController
 public class ClientDetailController {
@@ -22,5 +24,11 @@ public class ClientDetailController {
     @PostMapping("clientDetails")
     private PageVO<ClientDetailVO> clientDetails(@RequestBody PageWrapper<ClientDetailVO> pageWrapper){
         return clientDetailService.clientDetailList(pageWrapper);
+    }
+
+    @ResponseResult
+    @PostMapping("list")
+    private List<ClientDetailVO> clientDetails(@RequestBody ClientDetailVO clientDetailVO){
+        return clientDetailService.allClients(clientDetailVO);
     }
 }

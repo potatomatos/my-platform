@@ -24,13 +24,7 @@ public class ClientDetailServiceImpl implements IClientDetailService {
     @Override
     public PageVO<ClientDetailVO> clientDetailList(PageWrapper<ClientDetailVO> pageWrapper){
         ClientDetailVO param = pageWrapper.getParam();
-        LambdaQueryWrapper<ClientDetailVO> queryWrapper = new LambdaQueryWrapper<>(ClientDetailVO.class);
-        if (StringUtil.isNotEmpty(param.getClientId())) {
-            queryWrapper.eq(ClientDetailVO::getClientId,param.getClientId());
-        }
-        if (StringUtil.isNotEmpty(param.getAppName())) {
-            queryWrapper.eq(ClientDetailVO::getAppName,param.getAppName());
-        }
+        LambdaQueryWrapper<ClientDetailVO> queryWrapper = this.buildCondition(param);
         IPage<ClientDetailVO> page = new Page<>();
         page.setCurrent(pageWrapper.getPage());
         page.setSize(pageWrapper.getLimit());
@@ -44,4 +38,21 @@ public class ClientDetailServiceImpl implements IClientDetailService {
         return pageResult;
 
     }
+
+    @Override
+    public List<ClientDetailVO> allClients(ClientDetailVO clientDetailVO) {
+        LambdaQueryWrapper<ClientDetailVO> queryWrapper = this.buildCondition(clientDetailVO);
+        return oauthClientDetailsMapper.selectList(queryWrapper);
+    }
+    LambdaQueryWrapper<ClientDetailVO> buildCondition(ClientDetailVO clientDetailVO) {
+        LambdaQueryWrapper<ClientDetailVO> queryWrapper = new LambdaQueryWrapper<>(ClientDetailVO.class);
+        if (StringUtil.isNotEmpty(clientDetailVO.getClientId())) {
+            queryWrapper.eq(ClientDetailVO::getClientId,clientDetailVO.getClientId());
+        }
+        if (StringUtil.isNotEmpty(clientDetailVO.getAppName())) {
+            queryWrapper.eq(ClientDetailVO::getAppName,clientDetailVO.getAppName());
+        }
+        return queryWrapper;
+    }
+
 }
