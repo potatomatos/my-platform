@@ -10,4 +10,8 @@ public interface IClientDetailService {
     PageVO<ClientDetailVO> clientDetailList(PageWrapper<ClientDetailVO> pageWrapper);
 
     List<ClientDetailVO> allClients(ClientDetailVO clientDetailVO);
+
+    void addApp(ClientDetailVO clientDetailVO);
+
+    ClientDetailVO clientDetail(String clientId);
 }

@@ -157,7 +157,8 @@ public class Result<T> implements Serializable {
         NEED_LOGIN(6001, "权限未认证", "NEED_LOGIN"),
         TOKEN_REQUIRED(6002, "TOKEN不存在", "TOKEN_REQUIRED_EXCEPTION"),
         TOKEN_EXPIRED(6003, "登录信息已过期", "TOKEN_EXPIRED"),
-        FORBIDDEN(6004, "无访问权限", "FORBIDDEN");
+        FORBIDDEN(6004, "无访问权限", "FORBIDDEN"),
+        BAD_REQUEST(4000, "无访问权限", "FORBIDDEN");
 
         /**
          * 状态码

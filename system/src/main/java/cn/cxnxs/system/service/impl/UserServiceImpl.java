@@ -23,6 +23,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +55,9 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private MenuServiceImpl menuService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 分页查询用户信息
@@ -133,6 +137,7 @@ public class UserServiceImpl implements IUserService {
     public Integer addUser(UserVO userVO) {
         SysUsers sysUsers = new SysUsers();
         ObjectUtil.transValues(userVO, sysUsers);
+        sysUsers.setEncryptedPassword(passwordEncoder.encode(userVO.getPassword()));
         sysUsers.setCreatedAt(LocalDateTime.now());
         return sysUsersMapper.insert(sysUsers);
     }
