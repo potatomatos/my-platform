@@ -9,10 +9,7 @@ import cn.cxnxs.system.service.IClientDetailService;
 import cn.cxnxs.system.vo.ClientDetailVO;
 import cn.cxnxs.system.vo.PageVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -26,19 +23,19 @@ public class ClientDetailController {
 
     @ResponseResult
     @PostMapping("clientDetails")
-    private PageVO<ClientDetailVO> clientDetails(@RequestBody PageWrapper<ClientDetailVO> pageWrapper){
+    private PageVO<ClientDetailVO> clientDetails(@RequestBody PageWrapper<ClientDetailVO> pageWrapper) {
         return clientDetailService.clientDetailList(pageWrapper);
     }
 
     @ResponseResult
     @PostMapping("list")
-    private List<ClientDetailVO> clientDetails(@RequestBody ClientDetailVO clientDetailVO){
+    private List<ClientDetailVO> clientDetails(@RequestBody ClientDetailVO clientDetailVO) {
         return clientDetailService.allClients(clientDetailVO);
     }
 
     @ResponseResult
     @PostMapping("add")
-    private Boolean addClient(@RequestBody ClientDetailVO clientDetailVO){
+    private Boolean addClient(@RequestBody ClientDetailVO clientDetailVO) {
         // 参数校验
         ValidationUtil.validate(clientDetailVO);
         clientDetailService.addApp(clientDetailVO);
@@ -46,9 +43,16 @@ public class ClientDetailController {
     }
 
     @ResponseResult
-    @PostMapping("detail")
-    private ClientDetailVO addClient(String clientId){
+    @GetMapping("detail")
+    private ClientDetailVO addClient(String clientId) {
         return clientDetailService.clientDetail(clientId);
+    }
+
+    @ResponseResult
+    @PostMapping("update")
+    private Boolean update(@RequestBody ClientDetailVO clientDetailVO) {
+        clientDetailService.update(clientDetailVO);
+        return true;
     }
 
 }

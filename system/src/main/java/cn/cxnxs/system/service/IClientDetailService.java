@@ -14,4 +14,6 @@ public interface IClientDetailService {
     void addApp(ClientDetailVO clientDetailVO);
 
     ClientDetailVO clientDetail(String clientId);
+
+    void update(ClientDetailVO clientDetailVO);
 }

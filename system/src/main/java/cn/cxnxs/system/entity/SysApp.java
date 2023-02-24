@@ -20,7 +20,7 @@ public class SysApp extends Model<SysApp> {
     private Integer id;
     private String clientId;
     private String appName;
-    private String index;
+    private String homePage;
     private Long createdAt;
     private Long updatedAt;
 }

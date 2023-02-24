@@ -5,9 +5,11 @@ import lombok.Data;
 @Data
 public class AppVO {
 
+    private Long id;
+
     private String appName;
 
-    private Integer index;
+    private String homePage;
 
     private Long createdAt;
 
