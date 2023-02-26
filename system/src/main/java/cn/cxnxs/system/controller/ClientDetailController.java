@@ -9,10 +9,7 @@ import cn.cxnxs.system.service.IClientDetailService;
 import cn.cxnxs.system.vo.ClientDetailVO;
 import cn.cxnxs.system.vo.PageVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -46,8 +43,8 @@ public class ClientDetailController {
     }
 
     @ResponseResult
-    @PostMapping("detail")
-    private ClientDetailVO addClient(String clientId){
+    @GetMapping("detail")
+    private ClientDetailVO detail(String clientId){
         return clientDetailService.clientDetail(clientId);
     }
 

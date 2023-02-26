@@ -2,14 +2,17 @@ package cn.cxnxs.system.vo;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
+
 @Data
 public class AppVO {
 
-    private String appName;
+    @NotEmpty(message = "应用名不能为空")
+    protected String appName;
 
-    private Integer index;
+    protected String homePage;
 
-    private Long createdAt;
+    protected Long createdAt;
 
-    private Long updatedAt;
+    protected Long updatedAt;
 }
