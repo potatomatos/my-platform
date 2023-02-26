@@ -10,6 +10,7 @@
         <module>system</module>
         <module>gateway</module>
         <module>oauth-server</module>
+        <module>bookmark</module>
     </modules>
     <name>my-platform</name>
     <packaging>pom</packaging>
