@@ -10,7 +10,6 @@ import cn.cxnxs.system.service.IClientDetailService;
 import cn.cxnxs.system.vo.ClientDetailVO;
 import cn.cxnxs.system.vo.PageVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -83,6 +83,17 @@ public class ClientDetailServiceImpl implements IClientDetailService {
             BeanUtils.copyProperties(sysApp,clientDetailVO);
         }
         return clientDetailVO;
+    }
+
+    @Override
+    public void update(ClientDetailVO clientDetailVO) {
+        OauthClientDetails oauthClientDetails = new OauthClientDetails();
+        BeanUtils.copyProperties(clientDetailVO, oauthClientDetails);
+        SysApp sysApp = new SysApp();
+        BeanUtils.copyProperties(clientDetailVO, sysApp);
+        sysApp.setUpdatedAt(new Date().getTime());
+        oauthClientDetails.updateById();
+        sysApp.updateById();
     }
 
 }

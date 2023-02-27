@@ -43,6 +43,15 @@ public class ClientDetailController {
     }
 
     @ResponseResult
+    @PostMapping("update")
+    private Boolean update(@RequestBody ClientDetailVO clientDetailVO){
+        // 参数校验
+        ValidationUtil.validate(clientDetailVO);
+        clientDetailService.update(clientDetailVO);
+        return true;
+    }
+
+    @ResponseResult
     @GetMapping("detail")
     private ClientDetailVO detail(String clientId){
         return clientDetailService.clientDetail(clientId);

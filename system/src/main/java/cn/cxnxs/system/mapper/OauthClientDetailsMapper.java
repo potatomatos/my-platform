@@ -3,7 +3,6 @@ package cn.cxnxs.system.mapper;
 import cn.cxnxs.system.entity.OauthClientDetails;
 import cn.cxnxs.system.vo.ClientDetailVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
