@@ -23,19 +23,19 @@ public class ClientDetailController {
 
     @ResponseResult
     @PostMapping("clientDetails")
-    private PageVO<ClientDetailVO> clientDetails(@RequestBody PageWrapper<ClientDetailVO> pageWrapper) {
+    private PageVO<ClientDetailVO> clientDetails(@RequestBody PageWrapper<ClientDetailVO> pageWrapper){
         return clientDetailService.clientDetailList(pageWrapper);
     }
 
     @ResponseResult
     @PostMapping("list")
-    private List<ClientDetailVO> clientDetails(@RequestBody ClientDetailVO clientDetailVO) {
+    private List<ClientDetailVO> clientDetails(@RequestBody ClientDetailVO clientDetailVO){
         return clientDetailService.allClients(clientDetailVO);
     }
 
     @ResponseResult
     @PostMapping("add")
-    private Boolean addClient(@RequestBody ClientDetailVO clientDetailVO) {
+    private Boolean addClient(@RequestBody ClientDetailVO clientDetailVO){
         // 参数校验
         ValidationUtil.validate(clientDetailVO);
         clientDetailService.addApp(clientDetailVO);
@@ -44,15 +44,8 @@ public class ClientDetailController {
 
     @ResponseResult
     @GetMapping("detail")
-    private ClientDetailVO addClient(String clientId) {
+    private ClientDetailVO detail(String clientId){
         return clientDetailService.clientDetail(clientId);
-    }
-
-    @ResponseResult
-    @PostMapping("update")
-    private Boolean update(@RequestBody ClientDetailVO clientDetailVO) {
-        clientDetailService.update(clientDetailVO);
-        return true;
     }
 
 }

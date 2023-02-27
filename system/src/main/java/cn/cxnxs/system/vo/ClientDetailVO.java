@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public class ClientDetailVO extends AppVO {
 
-    @NotEmpty(message = "clientId")
+    @NotEmpty(message = "clientId不能为空")
     private String clientId;
 
     private String resourceIds;
