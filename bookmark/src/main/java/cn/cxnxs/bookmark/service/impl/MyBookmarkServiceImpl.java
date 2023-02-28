@@ -10,6 +10,7 @@ import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.bookmark.vo.response.WebsocketVo;
 import cn.cxnxs.bookmark.websocket.WebSocketServer;
+import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.response.Result;
@@ -60,6 +61,9 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     private BmBookmarkMapper bmBookmarkMapper;
 
     @Autowired
+    private Oauth2Service oauth2Service;
+
+    @Autowired
     private RedisUtils redisUtils;
 
     private static final int ROOT_ID = 0;
@@ -84,7 +88,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         //计算序号
         bmFolder.setSortNo(new BmFolder().selectCount(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getParentId, folderVo.getParentId())) + 1);
-        bmFolder.setUserId(null);
+        bmFolder.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
         bmFolder.insert();
         return bmFolder.getId();
     }
@@ -103,7 +107,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         if (bookmarkVo.getCreateTime()==null){
             bmBookmark.setCreateTime(System.currentTimeMillis());
         }
-        bmBookmark.setUserId(null);
+        bmBookmark.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
         bmBookmark.setFavoriteFlg(0);
         bmBookmark.setSortNo(new BmBookmark().selectCount(new LambdaQueryWrapper<BmBookmark>().eq(BmBookmark::getFolderId, bmBookmark.getFolderId())) + 1);
         if (StringUtil.isEmpty(bmBookmark.getIconUrl())) {
@@ -131,7 +135,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     public List<TreeVo> getAllFolder() {
         //查出所有的文件夹
         LambdaQueryWrapper<BmFolder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BmFolder::getUserId, null);
+        queryWrapper.eq(BmFolder::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
         queryWrapper.orderByAsc(BmFolder::getSortNo);
         List<BmFolder> bmFolders = new BmFolder().selectList(queryWrapper);
         List<TreeVo> treeVos = new ArrayList<>();
@@ -153,7 +157,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         List<TreeVo> treeVos = new ArrayList<>();
         //查出书签
         LambdaQueryWrapper<BmBookmark> bookmarkLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        bookmarkLambdaQueryWrapper.eq(BmBookmark::getUserId, null);
+        bookmarkLambdaQueryWrapper.eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
         if (searchVo.getSort() != null) {
             if (SearchVo.SORT_TITLE.equals(searchVo.getSort())) {
                 bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getTitle, BmBookmark::getSortNo);
@@ -174,7 +178,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             //计算收藏夹下收藏数
             LambdaQueryWrapper<BmFolder> folderLambdaQueryWrapper = new LambdaQueryWrapper<>();
             folderLambdaQueryWrapper.eq(BmFolder::getParentId, pid);
-            folderLambdaQueryWrapper.eq(BmFolder::getUserId, null);
+            folderLambdaQueryWrapper.eq(BmFolder::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
             folderLambdaQueryWrapper.orderByAsc(BmFolder::getSortNo);
             List<BmFolder> bmFolders = new BmFolder().selectList(folderLambdaQueryWrapper);
             List<TreeVo> allFolder = this.getAllFolder();
@@ -247,11 +251,11 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         //删除本级
         BmFolder bmFolder = new BmFolder();
         bmFolder.setId(id);
-        bmFolder.setUserId(null);
+        bmFolder.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
         bmFolder.deleteById();
         new BmBookmark().delete(new LambdaQueryWrapper<BmBookmark>()
                 .eq(BmBookmark::getFolderId, id)
-                .eq(BmBookmark::getUserId, null));
+                .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
         //递归删除下级
         deleteFolderRecursion(folderTree);
         return false;
@@ -267,11 +271,11 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         for (TreeVo treeVo : folderTree) {
             BmFolder bmFolder = new BmFolder();
             bmFolder.setId((int)treeVo.getNodeId());
-            bmFolder.setUserId(null);
+            bmFolder.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
             bmFolder.deleteById();
             new BmBookmark().delete(new LambdaQueryWrapper<BmBookmark>()
                     .eq(BmBookmark::getFolderId, treeVo.getNodeId())
-                    .eq(BmBookmark::getUserId, null));
+                    .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
             if (treeVo.getChildren() != null && !treeVo.getChildren().isEmpty()) {
                 deleteFolderRecursion(treeVo.getChildren());
             }
@@ -288,7 +292,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     public Boolean deleteBookmark(Integer id) {
         BmBookmark bmBookmark = new BmBookmark();
         bmBookmark.setId(id);
-        bmBookmark.setUserId(null);
+        bmBookmark.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
         return bmBookmark.deleteById();
     }
 
@@ -321,7 +325,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         BmFolder bmFolder = new BmFolder().selectOne(new LambdaQueryWrapper<BmFolder>()
                 .eq(BmFolder::getId, folderVo.getId())
-                .eq(BmFolder::getUserId, null));
+                .eq(BmFolder::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
         if (bmFolder == null) {
             return false;
         }
@@ -344,7 +348,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
         BmBookmark bmBookmark = new BmBookmark().selectOne(new LambdaQueryWrapper<BmBookmark>()
                 .eq(BmBookmark::getId, bookmarkVo.getId())
-                .eq(BmBookmark::getUserId, null));
+                .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
         if (bmBookmark == null) {
             return false;
         }
@@ -369,7 +373,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                     .like(BmBookmark::getUrl, searchVo.getKeyword());
         }
         queryWrapper.eq(BmBookmark::getFavoriteFlg, 1);
-        queryWrapper.eq(BmBookmark::getUserId, null);
+        queryWrapper.eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
         queryWrapper.orderByAsc(BmBookmark::getSortNo);
         List<BmBookmark> bmBookmarks = new BmBookmark().selectList(queryWrapper);
         //对象转换
@@ -490,9 +494,9 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         Document doc = Jsoup.parse(new String(multipartFile.getBytes(), StandardCharsets.UTF_8));
         if (StringUtil.isNotEmpty(clearFlag)) {
             //删除所有数据
-            new BmFolder().delete(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getUserId, null));
-            new BmBookmark().delete(new LambdaQueryWrapper<BmBookmark>().eq(BmBookmark::getUserId, null));
-            new BmRecentVisited().delete(new LambdaQueryWrapper<BmRecentVisited>().eq(BmRecentVisited::getUserId, null));
+            new BmFolder().delete(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
+            new BmBookmark().delete(new LambdaQueryWrapper<BmBookmark>().eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
+            new BmRecentVisited().delete(new LambdaQueryWrapper<BmRecentVisited>().eq(BmRecentVisited::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
         }
         Integer pid = null;
         if (StringUtil.isNotEmpty(newFolderFlag)) {
@@ -572,7 +576,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         BmBookmark bmBookmark = new BmBookmark();
         List<BmBookmark> list = bmBookmark.selectList(new LambdaQueryWrapper<BmBookmark>()
-                .eq(BmBookmark::getUserId, null)
+                .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id"))
                 .eq(BmBookmark::getUrl, url));
         CheckRespVo checkRespVo=new CheckRespVo();
         checkRespVo.setExist(list.size() > 0);
@@ -623,7 +627,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             folderId = ROOT_ID;
         }
         LambdaQueryWrapper<BmBookmark> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BmBookmark::getUserId, null);
+        lambdaQueryWrapper.eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
         //根节点查所有
         if (ROOT_ID != folderId) {
             lambdaQueryWrapper.eq(BmBookmark::getFolderId, folderId);
