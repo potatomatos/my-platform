@@ -63,6 +63,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
         list.add("/oauth-server/verifyPage");
         list.add("/system/system/api/getAccessToken");
         list.add("/cloud-disk/system/getAccessToken");
+        list.add("/bookmark/system/getAccessToken");
 
         boolean match = false;
         for (String path : list) {
