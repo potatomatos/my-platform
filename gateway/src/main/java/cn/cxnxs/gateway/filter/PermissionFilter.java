@@ -89,7 +89,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
                     throw e;
                 } catch (ExecutionException e) {
                     log.error(e.getMessage(),e);
-                    return this.setUnauthorizedResponse(exchange, Result.failure("token校验失败，请重新登录"));
+                    return this.setUnauthorizedResponse(exchange, Result.failure(Result.ResultEnum.TOKEN_REQUIRED,null));
                 }
                 if (!Result.ResultEnum.SUCCESS.getCode().equals(result.getCode())) {
                      return this.setUnauthorizedResponse(exchange, result);

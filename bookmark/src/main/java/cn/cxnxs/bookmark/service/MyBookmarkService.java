@@ -97,4 +97,6 @@ public interface MyBookmarkService {
     void cancelCheckInvalidUrl();
 
     Boolean moveBookmark(List<MoveVo> moves, Integer pid);
+
+    void saveHistory(String url);
 }

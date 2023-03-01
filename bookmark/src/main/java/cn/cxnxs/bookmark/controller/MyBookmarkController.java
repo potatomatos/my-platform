@@ -20,7 +20,7 @@ import java.util.List;
  * @author mengjinyuan
  * @date 2022-02-17 16:29
  **/
-@RestController()
+@RestController
 @RequestMapping("my-bookmark")
 public class MyBookmarkController {
 
@@ -135,6 +135,12 @@ public class MyBookmarkController {
         //计算收藏夹下收藏数
         Integer bookmarkCount = ((MyBookmarkServiceImpl) myBookmarkService).getBookmarkCount(folderTree);
         return Result.success(bookmarkCount);
+    }
+
+    @GetMapping("/redirect")
+    public Result<String> redirect(String url) {
+        myBookmarkService.saveHistory(url);
+        return Result.success("成功",url);
     }
 
 }
