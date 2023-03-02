@@ -1,6 +1,7 @@
 package cn.cxnxs.bookmark.service;
 
 import cn.cxnxs.bookmark.vo.request.*;
+import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +36,9 @@ public interface MyBookmarkService {
 
     List<TreeVo> getAllFolder();
 
-    List<TreeVo> getBookmark(Integer pid, SearchVo searchVo);
+    List<TreeVo> getAllParents(Integer pid);
+
+    BookmarkInfoVo getBookmark(Integer pid, SearchVo searchVo);
     /**
      * 删除文件夹
      *

@@ -7,6 +7,7 @@ import cn.cxnxs.bookmark.mapper.BmBookmarkMapper;
 import cn.cxnxs.bookmark.service.MyBookmarkService;
 import cn.cxnxs.bookmark.service.SystemService;
 import cn.cxnxs.bookmark.vo.request.*;
+import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.bookmark.vo.response.WebsocketVo;
 import cn.cxnxs.bookmark.websocket.WebSocketServer;
@@ -149,8 +150,30 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         return treeVos;
     }
 
+    /**
+     * 获得所有上级（包括自己）
+     * @param pid
+     * @return
+     */
     @Override
-    public List<TreeVo> getBookmark(Integer pid, SearchVo searchVo) {
+    public List<TreeVo> getAllParents(Integer pid){
+        List<TreeVo> allFolder = this.getAllFolder();
+        List<TreeVo> parents = new ArrayList<>();
+        this.parents(allFolder,parents,pid);
+        return parents;
+    }
+
+    private void parents(List<TreeVo> allFolder,List<TreeVo> parents,Object id) {
+        for (TreeVo treeVo : allFolder) {
+            if (treeVo.getNodeId().equals(id)){
+                parents.add(treeVo);
+                this.parents(allFolder,parents,treeVo.getParentNodeId());
+            }
+        }
+    }
+
+    @Override
+    public BookmarkInfoVo getBookmark(Integer pid, SearchVo searchVo) {
         if (pid == null) {
             pid = ROOT_ID;
         }
@@ -218,7 +241,12 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             treeVo.setExpandData(json);
             treeVos.add(treeVo);
         });
-        return treeVos;
+        List<TreeVo> parents = this.getAllParents(pid);
+        BookmarkInfoVo bookmarkInfoVo = new BookmarkInfoVo();
+        bookmarkInfoVo.setBookmarks(treeVos);
+        Collections.reverse(parents);
+        bookmarkInfoVo.setParents(parents);
+        return bookmarkInfoVo;
     }
 
     /**

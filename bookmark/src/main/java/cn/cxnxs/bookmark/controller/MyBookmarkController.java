@@ -3,6 +3,7 @@ package cn.cxnxs.bookmark.controller;
 import cn.cxnxs.bookmark.service.MyBookmarkService;
 import cn.cxnxs.bookmark.service.impl.MyBookmarkServiceImpl;
 import cn.cxnxs.bookmark.vo.request.*;
+import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.response.Result;
@@ -45,8 +46,8 @@ public class MyBookmarkController {
 
     @ResponseResult
     @PostMapping("/bookmarks/{pid}")
-    public List<TreeVo> getBookmark(@PathVariable("pid") Integer pid,
-                                    @RequestBody SearchVo searchVo) {
+    public BookmarkInfoVo getBookmark(@PathVariable("pid") Integer pid,
+                                      @RequestBody SearchVo searchVo) {
         return myBookmarkService.getBookmark(pid, searchVo);
     }
 
