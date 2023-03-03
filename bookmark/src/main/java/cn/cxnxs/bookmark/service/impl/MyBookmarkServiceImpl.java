@@ -187,8 +187,10 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                 bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getTitle, BmBookmark::getSortNo);
             } else if (SearchVo.SORT_DOMAIN.equals(searchVo.getSort())) {
                 bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getUrl, BmBookmark::getSortNo);
-            } else {
-                bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getSortNo);
+            } else if(SearchVo.SORT_LATEST.equals(searchVo.getSort())){
+                bookmarkLambdaQueryWrapper.orderByDesc(BmBookmark::getAccessCount);
+            }else {
+                bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getTitle, BmBookmark::getSortNo);
             }
         } else {
             bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getSortNo);

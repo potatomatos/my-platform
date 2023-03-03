@@ -26,4 +26,5 @@ public class SearchVo extends BaseVo {
     public static final Integer SORT_DEFAULT=0;
     public static final Integer SORT_TITLE=1;
     public static final Integer SORT_DOMAIN=2;
+    public static final Integer SORT_LATEST=3;
 }
