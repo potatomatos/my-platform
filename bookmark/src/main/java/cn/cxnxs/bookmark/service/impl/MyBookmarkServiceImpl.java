@@ -110,6 +110,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         bmBookmark.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
         bmBookmark.setFavoriteFlg(0);
+        bmBookmark.setAccessCount(0);
         bmBookmark.setSortNo(new BmBookmark().selectCount(new LambdaQueryWrapper<BmBookmark>().eq(BmBookmark::getFolderId, bmBookmark.getFolderId())) + 1);
         if (StringUtil.isEmpty(bmBookmark.getIconUrl())) {
             bmBookmark.setIconUrl(this.getWebsiteIcon(bmBookmark.getUrl()));
@@ -778,7 +779,8 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                 .eq(BmBookmark::getUrl, url)
                 .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
         if (bmBookmark != null) {
-            //先删后插
+            bmBookmark.setAccessCount(bmBookmark.getAccessCount()+1);
+            bmBookmark.updateById();
             BmRecentVisited bmRecentVisited = new BmRecentVisited().selectOne(new LambdaQueryWrapper<BmRecentVisited>()
                     .eq(BmRecentVisited::getBookmarkId, bmBookmark.getId())
                     .eq(BmRecentVisited::getUserId, oauth2Service.currentUser().getData().getInteger("id")));

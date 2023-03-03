@@ -63,6 +63,11 @@ public class BmBookmark extends Model<BmBookmark> {
     private Integer favoriteFlg;
 
     /**
+     * 访问次数
+     */
+    private Integer accessCount;
+
+    /**
      * 创建时间
      */
     private Long createTime;
