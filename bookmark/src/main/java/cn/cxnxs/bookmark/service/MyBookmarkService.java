@@ -4,6 +4,7 @@ import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.entity.request.PageWrapper;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -93,7 +94,7 @@ public interface MyBookmarkService {
      */
     CheckRespVo urlExist(String url);
 
-    List<BookmarkVo> recentVisited();
+    List<BookmarkVo> recentVisited(PageWrapper pageWrapper);
 
     CheckVo checkInvalidUrl(Integer folderId);
 

@@ -6,6 +6,7 @@ import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.web.annotation.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,8 +106,8 @@ public class MyBookmarkController {
 
     @ResponseResult
     @PostMapping("/recent")
-    public List<BookmarkVo> recentVisited() {
-        return myBookmarkService.recentVisited();
+    public List<BookmarkVo> recentVisited(@RequestBody PageWrapper pageWrapper) {
+        return myBookmarkService.recentVisited(pageWrapper);
     }
 
     @ResponseResult

@@ -5,7 +5,6 @@ import cn.cxnxs.bookmark.entity.BmFolder;
 import cn.cxnxs.bookmark.entity.BmRecentVisited;
 import cn.cxnxs.bookmark.mapper.BmBookmarkMapper;
 import cn.cxnxs.bookmark.service.MyBookmarkService;
-import cn.cxnxs.bookmark.service.SystemService;
 import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
@@ -14,6 +13,7 @@ import cn.cxnxs.bookmark.websocket.WebSocketServer;
 import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.ObjectUtil;
@@ -25,6 +25,7 @@ import com.arronlong.httpclientutil.builder.HCB;
 import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.PageHelper;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.jsoup.Jsoup;
@@ -632,10 +633,12 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
      * 获取最近访问的收藏
      *
      * @return
+     * @param pageWrapper
      */
     @Override
-    public List<BookmarkVo> recentVisited() {
-        List<BmBookmark> recentVisited = bmBookmarkMapper.getRecentVisited(null);
+    public List<BookmarkVo> recentVisited(PageWrapper pageWrapper) {
+        PageHelper.startPage(pageWrapper.getPage(),pageWrapper.getLimit());
+        List<BmBookmark> recentVisited = bmBookmarkMapper.getRecentVisited(oauth2Service.currentUser().getData().getInteger("id"));
         //对象转换
         return ObjectUtil.copyListProperties(recentVisited, BookmarkVo.class);
     }
