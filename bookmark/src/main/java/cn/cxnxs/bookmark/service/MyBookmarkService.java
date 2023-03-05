@@ -102,5 +102,5 @@ public interface MyBookmarkService {
 
     Boolean moveBookmark(List<MoveVo> moves, Integer pid);
 
-    void saveHistory(String url);
+    void saveHistory(Integer id);
 }

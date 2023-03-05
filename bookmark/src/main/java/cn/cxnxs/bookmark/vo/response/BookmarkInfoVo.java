@@ -16,4 +16,5 @@ public class BookmarkInfoVo {
 
     private List<TreeVo> bookmarks;
     private List<TreeVo> parents;
+    private TreeVo cwd;
 }

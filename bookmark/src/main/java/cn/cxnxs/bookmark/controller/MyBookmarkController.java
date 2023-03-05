@@ -140,8 +140,8 @@ public class MyBookmarkController {
     }
 
     @GetMapping("/redirect")
-    public Result<String> redirect(String url) {
-        myBookmarkService.saveHistory(url);
+    public Result<String> redirect(Integer id,String url) {
+        myBookmarkService.saveHistory(id);
         return Result.success("成功",url);
     }
 
