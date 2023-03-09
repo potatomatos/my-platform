@@ -5,10 +5,12 @@ import cn.cxnxs.bookmark.service.impl.MyBookmarkServiceImpl;
 import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
+import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.web.annotation.ResponseResult;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +30,9 @@ public class MyBookmarkController {
 
     @Autowired
     private MyBookmarkService myBookmarkService;
+
+    @Autowired
+    private RedisUtils redisUtils;
 
     @PostMapping("/save/folder")
     public Result<Object> saveFolder(@RequestBody FolderVo folderVo) {
@@ -96,6 +101,12 @@ public class MyBookmarkController {
                                   @RequestParam(value = "newFolderFlag", required = false) String newFolderFlag) throws IOException {
         myBookmarkService.importBookmark(multipartFile, clearFlag, newFolderFlag);
         return true;
+    }
+
+    @ResponseResult
+    @GetMapping("/import/progress")
+    public JSONObject  getImportProgress () {
+        return myBookmarkService.getImportProgress();
     }
 
     @ResponseResult

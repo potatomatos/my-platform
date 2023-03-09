@@ -5,6 +5,7 @@ import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -86,6 +87,8 @@ public interface MyBookmarkService {
      * @throws IOException
      */
     void importBookmark(MultipartFile multipartFile, String clearFlag, String newFolderFlag) throws IOException;
+
+    JSONObject getImportProgress();
 
     /**
      * 判断url是否存在
