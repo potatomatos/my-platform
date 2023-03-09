@@ -534,14 +534,14 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     @Override
     public void importBookmark(MultipartFile multipartFile, String clearFlag, String newFolderFlag) throws IOException {
         Document doc = Jsoup.parse(new String(multipartFile.getBytes(), StandardCharsets.UTF_8));
-        if (StringUtil.isNotEmpty(clearFlag)) {
+        if (StringUtil.isNotEmpty(clearFlag)&&clearFlag.equals("1")) {
             //删除所有数据
             new BmFolder().delete(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
             new BmBookmark().delete(new LambdaQueryWrapper<BmBookmark>().eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
             new BmRecentVisited().delete(new LambdaQueryWrapper<BmRecentVisited>().eq(BmRecentVisited::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
         }
         Integer pid = null;
-        if (StringUtil.isNotEmpty(newFolderFlag)) {
+        if (StringUtil.isNotEmpty(newFolderFlag)&&newFolderFlag.equals("1")) {
             //新建收藏夹
             FolderVo folderVo = new FolderVo();
             folderVo.setFolderName("新导入收藏夹" + System.currentTimeMillis());
