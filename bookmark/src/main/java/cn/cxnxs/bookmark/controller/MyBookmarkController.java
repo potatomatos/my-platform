@@ -5,17 +5,21 @@ import cn.cxnxs.bookmark.service.impl.MyBookmarkServiceImpl;
 import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
+import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.web.annotation.ResponseResult;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -24,6 +28,7 @@ import java.util.List;
  * @author mengjinyuan
  * @date 2022-02-17 16:29
  **/
+@Slf4j
 @RestController
 @RequestMapping("my-bookmark")
 public class MyBookmarkController {
@@ -32,7 +37,7 @@ public class MyBookmarkController {
     private MyBookmarkService myBookmarkService;
 
     @Autowired
-    private RedisUtils redisUtils;
+    private Oauth2Service oauth2Service;
 
     @PostMapping("/save/folder")
     public Result<Object> saveFolder(@RequestBody FolderVo folderVo) {
@@ -99,8 +104,19 @@ public class MyBookmarkController {
     public Boolean importBookmark(@RequestParam("file") MultipartFile multipartFile,
                                   @RequestParam(value = "clearFlag", required = false) String clearFlag,
                                   @RequestParam(value = "newFolderFlag", required = false) String newFolderFlag) throws IOException {
-        myBookmarkService.importBookmark(multipartFile, clearFlag, newFolderFlag);
-        return true;
+        if (multipartFile!=null) {
+            // 由于安全信息是线程绑定的，所以只能从这里先取出来再调异步接口了
+            Result<JSONObject> currentUser = oauth2Service.currentUser();
+            log.info("用户信息：{}",currentUser);
+            if (currentUser == null || !currentUser.getCode().equals(Result.ResultEnum.SUCCESS.getCode())) {
+                throw new CommonException("用户信息获取失败");
+            }
+            Integer userId = currentUser.getData().getInteger("id");
+            myBookmarkService.importBookmark(userId,new String(multipartFile.getBytes(), StandardCharsets.UTF_8), clearFlag, newFolderFlag);
+            return true;
+        }else {
+            return false;
+        }
     }
 
     @ResponseResult

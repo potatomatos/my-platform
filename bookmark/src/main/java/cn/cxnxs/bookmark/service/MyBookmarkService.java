@@ -6,7 +6,6 @@ import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -81,12 +80,12 @@ public interface MyBookmarkService {
 
     /**
      * 导入书签
-     * @param multipartFile
+     * @param content
      * @param clearFlag
      * @param newFolderFlag
      * @throws IOException
      */
-    void importBookmark(MultipartFile multipartFile, String clearFlag, String newFolderFlag) throws IOException;
+    void importBookmark(Integer userId,String content, String clearFlag, String newFolderFlag) throws IOException;
 
     JSONObject getImportProgress();
 

@@ -38,7 +38,9 @@ public class Oauth2ServiceFallbackFactory implements FallbackFactory<Oauth2Servi
             @Override
             public Result<JSONObject> currentUser() {
                 log.error("用户信息获取失败",throwable);
-                return Result.success("用户信息获取失败",new JSONObject());
+                Result<JSONObject> result = Result.failure("用户信息获取失败");
+                result.setData(new JSONObject());
+                return result;
             }
 
             /**

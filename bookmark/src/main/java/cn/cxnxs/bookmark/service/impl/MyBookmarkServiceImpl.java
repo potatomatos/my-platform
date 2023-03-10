@@ -35,9 +35,9 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -531,19 +531,15 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     }
 
     /**
-     * @param multipartFile
+     * @param content
      * @param clearFlag
      * @param newFolderFlag
      */
+    @Async
     @Transactional(rollbackFor = {Exception.class})
     @Override
-    public void importBookmark(MultipartFile multipartFile, String clearFlag, String newFolderFlag) throws IOException {
-        Document doc = Jsoup.parse(new String(multipartFile.getBytes(), StandardCharsets.UTF_8));
-        JSONObject currentUser = oauth2Service.currentUser().getData();
-        if (currentUser == null) {
-            throw new CommonException("用户信息获取失败");
-        }
-        Integer userId = currentUser.getInteger("id");
+    public void importBookmark(Integer userId,String content, String clearFlag, String newFolderFlag) {
+        Document doc = Jsoup.parse(content);
         if (StringUtil.isNotEmpty(clearFlag)&& "1".equals(clearFlag)) {
             //删除所有数据
             new BmFolder().delete(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getUserId, userId));

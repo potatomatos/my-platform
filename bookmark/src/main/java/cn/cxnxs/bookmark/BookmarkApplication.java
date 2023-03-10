@@ -6,6 +6,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
  * 书签服务
  * @author potatomato
  */
+@EnableAsync
 @SpringBootApplication(scanBasePackages = {"cn.cxnxs"})
 @ServletComponentScan
 @EnableTransactionManagement
