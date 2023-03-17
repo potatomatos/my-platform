@@ -6,7 +6,6 @@ import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.api.auth.Oauth2Service;
-import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
@@ -150,7 +149,7 @@ public class MyBookmarkController {
     }
 
     @PostMapping("/move/{pid}")
-    public Result<Boolean> move(@RequestBody List<MoveVo> moves, @PathVariable("pid") Integer pid) {
+    public Result<Boolean> move(@RequestBody List<BatchVo> moves, @PathVariable("pid") Integer pid) {
         myBookmarkService.moveBookmark(moves, pid);
         return Result.success();
     }

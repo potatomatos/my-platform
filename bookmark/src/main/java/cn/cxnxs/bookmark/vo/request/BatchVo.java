@@ -4,13 +4,13 @@ import cn.cxnxs.common.core.entity.request.BaseVo;
 import lombok.Data;
 
 /**
- * <p>移动收藏夹实体</p>
+ * <p>收藏夹实体</p>
  *
  * @author mengjinyuan
  * @date 2022-04-05 11:14
  **/
 @Data
-public class MoveVo extends BaseVo {
+public class BatchVo extends BaseVo {
 
     /**
      * id

@@ -102,7 +102,7 @@ public interface MyBookmarkService {
 
     void cancelCheckInvalidUrl();
 
-    Boolean moveBookmark(List<MoveVo> moves, Integer pid);
+    Boolean moveBookmark(List<BatchVo> moves, Integer pid);
 
     void saveHistory(Integer id);
 }

@@ -4,6 +4,7 @@ import cn.cxnxs.bookmark.entity.BmBookmark;
 import cn.cxnxs.bookmark.entity.BmFolder;
 import cn.cxnxs.bookmark.entity.BmRecentVisited;
 import cn.cxnxs.bookmark.mapper.BmBookmarkMapper;
+import cn.cxnxs.bookmark.mapper.BmFolderMapper;
 import cn.cxnxs.bookmark.service.MyBookmarkService;
 import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
@@ -25,6 +26,7 @@ import com.arronlong.httpclientutil.builder.HCB;
 import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
@@ -45,10 +47,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p></p>
@@ -61,6 +63,8 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
     @Resource
     private BmBookmarkMapper bmBookmarkMapper;
+    @Resource
+    private BmFolderMapper bmFolderMapper;
 
     @Autowired
     private Oauth2Service oauth2Service;
@@ -286,6 +290,18 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         return count;
     }
 
+
+    @Transactional(rollbackFor = RuntimeException.class)
+    public Boolean delete(List<BatchVo> batchVos){
+        // 筛选出文件夹和书签
+        List<BatchVo> folders = batchVos.stream().filter(item -> item.getType().equals(1)).collect(Collectors.toList());
+        List<BatchVo> bookmarks = batchVos.stream().filter(item -> item.getType().equals(2)).collect(Collectors.toList());
+        this.deleteBookmarkBatch(bookmarks.stream().map(BatchVo::getId).collect(Collectors.toList()));
+        for (BatchVo folder : folders) {
+            this.deleteFolder(folder.getId());
+        }
+        return Boolean.TRUE;
+    }
 
     /**
      * 删除文件夹
@@ -769,13 +785,13 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
      * @return
      */
     @Override
-    public Boolean moveBookmark(List<MoveVo> moves, Integer pid) {
+    public Boolean moveBookmark(List<BatchVo> moves, Integer pid) {
         if (pid == null) {
             throw new CommonException(Result.ResultEnum.BAD_REQUEST.getInfo());
         }
         List<TreeVo> folderTree = new ArrayList<>();
-        for (MoveVo move : moves) {
-            if (MoveVo.TYPE_FOLDER.equals(move.getType())) {
+        for (BatchVo move : moves) {
+            if (BatchVo.TYPE_FOLDER.equals(move.getType())) {
                 BmFolder bmFolder = new BmFolder().selectById(move.getId());
                 if (bmFolder != null) {
                     //判断是否移动到了自己的子级
@@ -796,7 +812,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                     bmFolder.setParentId(pid);
                     bmFolder.updateById();
                 }
-            } else if (MoveVo.TYPE_BOOKMARK.equals(move.getType())) {
+            } else if (BatchVo.TYPE_BOOKMARK.equals(move.getType())) {
                 BmBookmark bmBookmark = new BmBookmark().selectById(move.getId());
                 if (bmBookmark != null) {
                     bmBookmark.setFolderId(pid);
