@@ -74,9 +74,9 @@ public class MyBookmarkController {
     }
 
     @ResponseResult
-    @PostMapping("/batchDelete/bookmark")
-    public Boolean deleteBookmark(@RequestBody List<Integer> ids) {
-        return myBookmarkService.deleteBookmarkBatch(ids);
+    @PostMapping("/batchDelete")
+    public Boolean batchDelete(@RequestBody List<BatchVo> batchVos) {
+        return myBookmarkService.delete(batchVos);
     }
 
     @ResponseResult

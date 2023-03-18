@@ -6,6 +6,7 @@ import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +41,10 @@ public interface MyBookmarkService {
     List<TreeVo> getAllParents(Integer pid);
 
     BookmarkInfoVo getBookmark(Integer pid, SearchVo searchVo);
+
+    @Transactional(rollbackFor = RuntimeException.class)
+    Boolean delete(List<BatchVo> batchVos);
+
     /**
      * 删除文件夹
      *

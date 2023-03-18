@@ -291,6 +291,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     }
 
 
+    @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public Boolean delete(List<BatchVo> batchVos){
         // 筛选出文件夹和书签
