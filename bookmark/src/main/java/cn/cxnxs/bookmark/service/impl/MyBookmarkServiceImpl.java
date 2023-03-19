@@ -4,14 +4,12 @@ import cn.cxnxs.bookmark.entity.BmBookmark;
 import cn.cxnxs.bookmark.entity.BmFolder;
 import cn.cxnxs.bookmark.entity.BmRecentVisited;
 import cn.cxnxs.bookmark.mapper.BmBookmarkMapper;
-import cn.cxnxs.bookmark.mapper.BmFolderMapper;
 import cn.cxnxs.bookmark.service.MyBookmarkService;
 import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.bookmark.vo.response.WebsocketVo;
 import cn.cxnxs.bookmark.websocket.WebSocketServer;
-import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
@@ -63,11 +61,9 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
     @Resource
     private BmBookmarkMapper bmBookmarkMapper;
-    @Resource
-    private BmFolderMapper bmFolderMapper;
 
     @Autowired
-    private Oauth2Service oauth2Service;
+    private UserInfoService userInfoService;
 
     @Autowired
     private RedisUtils redisUtils;
@@ -76,11 +72,6 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
     private static final String REDIS_KEY = "checkInvalidUrl:";
 
-    /**
-     * 存放文件上传处理进度
-     */
-    public static final String PROGRESS_KEY = "IMPORT_PROGRESS_";
-
     private static final Logger logger = LoggerFactory.getLogger(MyBookmarkServiceImpl.class);
 
     @Autowired
@@ -88,8 +79,8 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
     @Override
     public Integer saveFolder(FolderVo folderVo) {
-        Integer count = new BmFolder().selectCount(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getFolderName, folderVo.getFolderName()));
-        if (count == 0) {
+        BmFolder one = new BmFolder().selectOne(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getFolderName, folderVo.getFolderName()));
+        if (one == null) {
             //对象转换
             BmFolder bmFolder = new BmFolder();
             ObjectUtil.transValues(folderVo, bmFolder);
@@ -99,22 +90,21 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             if (bmFolder.getCreateTime()==null){
                 bmFolder.setCreateTime(System.currentTimeMillis());
             }
+            if (bmFolder.getUserId() == null) {
+                bmFolder.setUserId(userInfoService.currentUser().getId());
+            }
             //计算序号
             bmFolder.setSortNo(new BmFolder().selectCount(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getParentId, folderVo.getParentId())) + 1);
-            bmFolder.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
             bmFolder.insert();
             return bmFolder.getId();
         } else {
-            throw new CommonException("收藏夹名称已存在");
+            return one.getId();
         }
 
     }
 
     @Override
     public Integer saveBookmark(BookmarkVo bookmarkVo) {
-        if (this.urlExist(bookmarkVo.getUrl()).getExist()) {
-            throw new CommonException("url已存在！");
-        }
         //对象转换
         BmBookmark bmBookmark = new BmBookmark();
         ObjectUtil.transValues(bookmarkVo, bmBookmark);
@@ -124,7 +114,14 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         if (bookmarkVo.getCreateTime()==null){
             bmBookmark.setCreateTime(System.currentTimeMillis());
         }
-        bmBookmark.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
+        if (bmBookmark.getUserId() == null) {
+            bmBookmark.setUserId(userInfoService.currentUser().getId());
+        }
+        Integer count = bmBookmarkMapper.selectCount(new LambdaQueryWrapper<BmBookmark>()
+                .eq(BmBookmark::getUrl,bookmarkVo.getUrl()).eq(BmBookmark::getUserId,bookmarkVo.getUserId()));
+        if (count>0) {
+            return -1;
+        }
         bmBookmark.setFavoriteFlg(0);
         bmBookmark.setAccessCount(0);
         bmBookmark.setSortNo(new BmBookmark().selectCount(new LambdaQueryWrapper<BmBookmark>().eq(BmBookmark::getFolderId, bmBookmark.getFolderId())) + 1);
@@ -153,7 +150,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     public List<TreeVo> getAllFolder() {
         //查出所有的文件夹
         LambdaQueryWrapper<BmFolder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BmFolder::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
+        queryWrapper.eq(BmFolder::getUserId, userInfoService.currentUser().getId());
         queryWrapper.orderByAsc(BmFolder::getSortNo);
         List<BmFolder> bmFolders = new BmFolder().selectList(queryWrapper);
         List<TreeVo> treeVos = new ArrayList<>();
@@ -196,8 +193,9 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         List<TreeVo> treeVos = new ArrayList<>();
         //查出书签
+        Integer userId = userInfoService.currentUser().getId();
         LambdaQueryWrapper<BmBookmark> bookmarkLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        bookmarkLambdaQueryWrapper.eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
+        bookmarkLambdaQueryWrapper.eq(BmBookmark::getUserId, userId);
         if (searchVo.getSort() != null) {
             if (SearchVo.SORT_TITLE.equals(searchVo.getSort())) {
                 bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getTitle, BmBookmark::getSortNo);
@@ -220,7 +218,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             //计算收藏夹下收藏数
             LambdaQueryWrapper<BmFolder> folderLambdaQueryWrapper = new LambdaQueryWrapper<>();
             folderLambdaQueryWrapper.eq(BmFolder::getParentId, pid);
-            folderLambdaQueryWrapper.eq(BmFolder::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
+            folderLambdaQueryWrapper.eq(BmFolder::getUserId, userId);
             folderLambdaQueryWrapper.orderByAsc(BmFolder::getSortNo);
             List<BmFolder> bmFolders = new BmFolder().selectList(folderLambdaQueryWrapper);
             bmFolders.forEach(bmFolder -> {
@@ -312,14 +310,15 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     @Override
     public Boolean deleteFolder(Integer id) {
         List<TreeVo> folderTree = getFolderTree(id);
+        Integer userId = userInfoService.currentUser().getId();
         //删除本级
         BmFolder bmFolder = new BmFolder();
         bmFolder.setId(id);
-        bmFolder.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
+        bmFolder.setUserId(userId);
         bmFolder.deleteById();
         new BmBookmark().delete(new LambdaQueryWrapper<BmBookmark>()
                 .eq(BmBookmark::getFolderId, id)
-                .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
+                .eq(BmBookmark::getUserId, userId));
         //递归删除下级
         deleteFolderRecursion(folderTree);
         return false;
@@ -332,14 +331,15 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
      * @return
      */
     public void deleteFolderRecursion(List<TreeVo> folderTree) {
+        Integer userId = userInfoService.currentUser().getId();
         for (TreeVo treeVo : folderTree) {
             BmFolder bmFolder = new BmFolder();
             bmFolder.setId((int)treeVo.getNodeId());
-            bmFolder.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
+            bmFolder.setUserId(userId);
             bmFolder.deleteById();
             new BmBookmark().delete(new LambdaQueryWrapper<BmBookmark>()
                     .eq(BmBookmark::getFolderId, treeVo.getNodeId())
-                    .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
+                    .eq(BmBookmark::getUserId, userId));
             if (treeVo.getChildren() != null && !treeVo.getChildren().isEmpty()) {
                 deleteFolderRecursion(treeVo.getChildren());
             }
@@ -356,7 +356,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     public Boolean deleteBookmark(Integer id) {
         BmBookmark bmBookmark = new BmBookmark();
         bmBookmark.setId(id);
-        bmBookmark.setUserId(oauth2Service.currentUser().getData().getInteger("id"));
+        bmBookmark.setUserId(userInfoService.currentUser().getId());
         return bmBookmark.deleteById();
     }
 
@@ -389,7 +389,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         BmFolder bmFolder = new BmFolder().selectOne(new LambdaQueryWrapper<BmFolder>()
                 .eq(BmFolder::getId, folderVo.getId())
-                .eq(BmFolder::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
+                .eq(BmFolder::getUserId, userInfoService.currentUser().getId()));
         if (bmFolder == null) {
             return false;
         }
@@ -412,7 +412,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
         BmBookmark bmBookmark = new BmBookmark().selectOne(new LambdaQueryWrapper<BmBookmark>()
                 .eq(BmBookmark::getId, bookmarkVo.getId())
-                .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id")));
+                .eq(BmBookmark::getUserId, userInfoService.currentUser().getId()));
         if (bmBookmark == null) {
             return false;
         }
@@ -437,7 +437,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                     .like(BmBookmark::getUrl, searchVo.getKeyword());
         }
         queryWrapper.eq(BmBookmark::getFavoriteFlg, 1);
-        queryWrapper.eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
+        queryWrapper.eq(BmBookmark::getUserId, userInfoService.currentUser().getId());
         queryWrapper.orderByAsc(BmBookmark::getSortNo);
         List<BmBookmark> bmBookmarks = new BmBookmark().selectList(queryWrapper);
         //对象转换
@@ -568,6 +568,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             //新建收藏夹
             FolderVo folderVo = new FolderVo();
             folderVo.setFolderName("新导入收藏夹" + System.currentTimeMillis());
+            folderVo.setUserId(userId);
             pid = this.saveFolder(folderVo);
         }
 
@@ -580,15 +581,14 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             throw new CommonException();
         }
         for (int i = 0; i < total; i++) {
+            bookmarkVos.get(i).setUserId(userId);
             this.saveBookmark(bookmarkVos.get(i));
             //通知前端进度
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("total", total);
             jsonObject.put("index", (i + 1));
             jsonObject.put("title", bookmarkVos.get(i).getTitle());
-            redisUtils.set(PROGRESS_KEY+userId,jsonObject,24*3600);
         }
-        redisUtils.del(PROGRESS_KEY+userId);
     }
 
     private void parseHtml(Element element, Integer userId, Integer pid, List<BookmarkVo> bmBookmarks) {
@@ -631,23 +631,6 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     }
 
     /**
-     * 获取文件导入进度条
-     * @return
-     */
-    @Override
-    public JSONObject  getImportProgress() {
-        JSONObject currentUser = oauth2Service.currentUser().getData();
-        if (currentUser == null) {
-            throw new CommonException("用户信息获取失败");
-        }
-        Integer userId = currentUser.getInteger("id");
-        if (redisUtils.hasKey(PROGRESS_KEY+userId)) {
-            return redisUtils.get(PROGRESS_KEY+userId);
-        } else {
-            return new JSONObject();
-        }
-    }
-    /**
      * 判断url是否存在
      *
      * @param url 网址
@@ -660,7 +643,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         BmBookmark bmBookmark = new BmBookmark();
         List<BmBookmark> list = bmBookmark.selectList(new LambdaQueryWrapper<BmBookmark>()
-                .eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id"))
+                .eq(BmBookmark::getUserId, userInfoService.currentUser().getId())
                 .eq(BmBookmark::getUrl, url));
         CheckRespVo checkRespVo=new CheckRespVo();
         checkRespVo.setExist(list.size() > 0);
@@ -690,7 +673,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     @Override
     public List<BookmarkVo> recentVisited(PageWrapper pageWrapper) {
         PageHelper.startPage(pageWrapper.getPage(),pageWrapper.getLimit());
-        List<BmBookmark> recentVisited = bmBookmarkMapper.getRecentVisited(oauth2Service.currentUser().getData().getInteger("id"));
+        List<BmBookmark> recentVisited = bmBookmarkMapper.getRecentVisited(userInfoService.currentUser().getId());
         //对象转换
         return ObjectUtil.copyListProperties(recentVisited, BookmarkVo.class);
     }
@@ -713,7 +696,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             folderId = ROOT_ID;
         }
         LambdaQueryWrapper<BmBookmark> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BmBookmark::getUserId, oauth2Service.currentUser().getData().getInteger("id"));
+        lambdaQueryWrapper.eq(BmBookmark::getUserId, userInfoService.currentUser().getId());
         //根节点查所有
         if (ROOT_ID != folderId) {
             lambdaQueryWrapper.eq(BmBookmark::getFolderId, folderId);
@@ -836,21 +819,25 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         if (bmBookmark != null) {
             bmBookmark.setAccessCount(bmBookmark.getAccessCount()+1);
             bmBookmark.updateById();
-            JSONObject data = oauth2Service.currentUser().getData();
+            Integer userId = userInfoService.currentUser().getId();
             BmRecentVisited bmRecentVisited = new BmRecentVisited().selectOne(new LambdaQueryWrapper<BmRecentVisited>()
                     .eq(BmRecentVisited::getBookmarkId, id)
-                    .eq(BmRecentVisited::getUserId,data.getInteger("id")));
+                    .eq(BmRecentVisited::getUserId,userId));
             if (bmRecentVisited != null) {
                 bmRecentVisited.setAccessTime(System.currentTimeMillis());
                 bmRecentVisited.updateById();
             }else{
                 bmRecentVisited=new BmRecentVisited();
                 bmRecentVisited.setBookmarkId(bmBookmark.getId());
-                bmRecentVisited.setUserId(data.getInteger("id"));
+                bmRecentVisited.setUserId(userId);
                 bmRecentVisited.setAccessTime(System.currentTimeMillis());
                 bmRecentVisited.insert();
             }
         }
 
+    }
+
+    public static void main(String[] args) {
+        System.out.println(System.currentTimeMillis());
     }
 }

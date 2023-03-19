@@ -92,7 +92,6 @@ public interface MyBookmarkService {
      */
     void importBookmark(Integer userId,String content, String clearFlag, String newFolderFlag) throws IOException;
 
-    JSONObject getImportProgress();
 
     /**
      * 判断url是否存在
