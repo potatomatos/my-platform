@@ -5,9 +5,10 @@ import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
@@ -83,15 +84,6 @@ public interface MyBookmarkService {
      */
     List<BookmarkVo> getFavoriteBookmark(SearchVo searchVo);
 
-    /**
-     * 导入书签
-     * @param content
-     * @param clearFlag
-     * @param newFolderFlag
-     * @throws IOException
-     */
-    void importBookmark(Integer userId,String content, String clearFlag, String newFolderFlag) throws IOException;
-
 
     /**
      * 判断url是否存在
@@ -109,4 +101,14 @@ public interface MyBookmarkService {
     Boolean moveBookmark(List<BatchVo> moves, Integer pid);
 
     void saveHistory(Integer id);
+    /**
+     * 导入书签
+     *
+     * @param request
+     * @param multipartFile
+     * @param clearFlag
+     * @param newFolderFlag
+     * @throws IOException
+     */
+    void importBookmark(HttpServletRequest request, MultipartFile multipartFile, String clearFlag, String newFolderFlag) throws IOException;
 }

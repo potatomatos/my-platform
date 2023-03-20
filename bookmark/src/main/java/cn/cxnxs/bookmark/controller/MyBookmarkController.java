@@ -7,18 +7,16 @@ import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
 import cn.cxnxs.common.core.entity.TreeVo;
-import cn.cxnxs.common.core.entity.UserInfo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.web.annotation.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -100,16 +98,12 @@ public class MyBookmarkController {
 
     @ResponseResult
     @PostMapping("/import/bookmark")
-    public Boolean importBookmark(@RequestParam("file") MultipartFile multipartFile,
+    public Boolean importBookmark(HttpServletRequest request,
+                                  @RequestParam("file") MultipartFile multipartFile,
                                   @RequestParam(value = "clearFlag", required = false) String clearFlag,
                                   @RequestParam(value = "newFolderFlag", required = false) String newFolderFlag) throws IOException {
         if (multipartFile!=null) {
-            // 由于安全信息是线程绑定的，所以只能从这里先取出来再调异步接口了
-            UserInfo userInfo = userInfoService.currentUser();
-            Integer userId = userInfo.getId();
-            // 子线程共享request
-            RequestContextHolder.setRequestAttributes(RequestContextHolder.getRequestAttributes(),true);
-            myBookmarkService.importBookmark(userId,new String(multipartFile.getBytes(), StandardCharsets.UTF_8), clearFlag, newFolderFlag);
+            myBookmarkService.importBookmark(request,multipartFile, clearFlag, newFolderFlag);
             return true;
         }else {
             return false;

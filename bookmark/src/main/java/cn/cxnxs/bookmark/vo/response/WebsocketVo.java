@@ -22,6 +22,15 @@ public class WebsocketVo {
     private String msgType;
 
     /**
+     * 发送者
+     */
+    private String fromUser;
+
+    /**
+     * 接收者
+     */
+    private String toUser;
+    /**
      * 消息体
      */
     private Object msg;

@@ -1,5 +1,6 @@
 package cn.cxnxs.bookmark.websocket;
 
+import cn.cxnxs.bookmark.vo.response.WebsocketVo;
 import cn.cxnxs.common.core.entity.response.Result;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -106,8 +107,9 @@ public class WebSocketServer {
      * @param <T>
      * @throws IOException
      */
-    public static <T>void sendInfo(Result<T> result, String token) throws IOException {
-        WebSocketServer webSocketServer = WEB_SOCKET_MAP.get(token);
+    public static void sendInfo(Result<WebsocketVo> result) throws IOException {
+        WebsocketVo data = result.getData();
+        WebSocketServer webSocketServer = WEB_SOCKET_MAP.get(data.getToUser());
         if (webSocketServer!=null){
             webSocketServer.sendMessage(result);
         }else{

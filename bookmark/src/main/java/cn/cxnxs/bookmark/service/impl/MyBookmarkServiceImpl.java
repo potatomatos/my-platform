@@ -4,6 +4,7 @@ import cn.cxnxs.bookmark.entity.BmBookmark;
 import cn.cxnxs.bookmark.entity.BmFolder;
 import cn.cxnxs.bookmark.entity.BmRecentVisited;
 import cn.cxnxs.bookmark.mapper.BmBookmarkMapper;
+import cn.cxnxs.bookmark.mapper.BmFolderMapper;
 import cn.cxnxs.bookmark.service.MyBookmarkService;
 import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
@@ -12,6 +13,7 @@ import cn.cxnxs.bookmark.vo.response.WebsocketVo;
 import cn.cxnxs.bookmark.websocket.WebSocketServer;
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.entity.UserInfo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.exception.CommonException;
@@ -38,6 +40,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -45,9 +49,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -61,6 +70,9 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
     @Resource
     private BmBookmarkMapper bmBookmarkMapper;
+
+    @Resource
+    private BmFolderMapper bmFolderMapper;
 
     @Autowired
     private UserInfoService userInfoService;
@@ -94,7 +106,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                 bmFolder.setUserId(userInfoService.currentUser().getId());
             }
             //计算序号
-            bmFolder.setSortNo(new BmFolder().selectCount(new LambdaQueryWrapper<BmFolder>().eq(BmFolder::getParentId, folderVo.getParentId())) + 1);
+            bmFolder.setSortNo(this.getSortNo(folderVo.getParentId(),1));
             bmFolder.insert();
             return bmFolder.getId();
         } else {
@@ -103,6 +115,34 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
     }
 
+    /**
+     * 获取序号
+     * @return 序号
+     */
+    private int getSortNo(Integer pid,int type){
+        if (type==1) {
+            //文件夹
+            QueryWrapper<BmFolder> queryWrapper=new QueryWrapper<>();
+            queryWrapper.select("IFNULL( max(sort_no),0) as maxSort");
+            queryWrapper.eq("parent_id",pid);
+            List<Map<String, Object>> maps = bmFolderMapper.selectMaps(queryWrapper);
+            if (!maps.isEmpty()) {
+                Object sort = maps.get(0).get("maxSort");
+                return Integer.parseInt(sort.toString())+1;
+            }
+        } else if (type==2){
+            //书签
+            QueryWrapper<BmBookmark> queryWrapper=new QueryWrapper<>();
+            queryWrapper.select("IFNULL( max(sort_no),0) as maxSort");
+            queryWrapper.eq("folder_id",pid);
+            List<Map<String, Object>> maps = bmBookmarkMapper.selectMaps(queryWrapper);
+            if (!maps.isEmpty()) {
+                Object sort = maps.get(0).get("maxSort");
+                return Integer.parseInt(sort.toString())+1;
+            }
+        }
+        return 1;
+    }
     @Override
     public Integer saveBookmark(BookmarkVo bookmarkVo) {
         //对象转换
@@ -124,11 +164,12 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         bmBookmark.setFavoriteFlg(0);
         bmBookmark.setAccessCount(0);
-        bmBookmark.setSortNo(new BmBookmark().selectCount(new LambdaQueryWrapper<BmBookmark>().eq(BmBookmark::getFolderId, bmBookmark.getFolderId())) + 1);
+        bmBookmark.setSortNo(this.getSortNo(bookmarkVo.getFolderId(),2));
+        bmBookmark.insert();
         if (StringUtil.isEmpty(bmBookmark.getIconUrl())) {
             bmBookmark.setIconUrl(this.getWebsiteIcon(bmBookmark.getUrl()));
         }
-        bmBookmark.insert();
+        bmBookmark.updateById();
         return bmBookmark.getId();
     }
 
@@ -547,15 +588,13 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         return iconUrl;
     }
 
-    /**
-     * @param content
-     * @param clearFlag
-     * @param newFolderFlag
-     */
-    @Async
     @Transactional(rollbackFor = {Exception.class})
     @Override
-    public void importBookmark(Integer userId,String content, String clearFlag, String newFolderFlag) {
+    public void importBookmark(HttpServletRequest request, MultipartFile multipartFile, String clearFlag, String newFolderFlag) throws IOException {
+        long startTime = System.currentTimeMillis();
+        Integer userId = userInfoService.currentUser().getId();
+        String content = new String(multipartFile.getBytes(), StandardCharsets.UTF_8);
+        String token = request.getHeader("access_token");
         Document doc = Jsoup.parse(content);
         if (StringUtil.isNotEmpty(clearFlag)&& "1".equals(clearFlag)) {
             //删除所有数据
@@ -578,17 +617,38 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         parseHtml(element, userId,pid, bookmarkVos);
         int total = bookmarkVos.size();
         if (total == 0) {
-            throw new CommonException();
+            throw new CommonException("文件内容无法解析");
         }
+        // 子线程共享request
+        RequestContextHolder.setRequestAttributes(RequestContextHolder.getRequestAttributes(),true);
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        CountDownLatch countDownLatch = new CountDownLatch(total);
         for (int i = 0; i < total; i++) {
-            bookmarkVos.get(i).setUserId(userId);
-            this.saveBookmark(bookmarkVos.get(i));
-            //通知前端进度
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("total", total);
-            jsonObject.put("index", (i + 1));
-            jsonObject.put("title", bookmarkVos.get(i).getTitle());
+            BookmarkVo bookmarkVo = bookmarkVos.get(i);
+            bookmarkVo.setUserId(userId);
+            executorService.submit(() -> {
+                countDownLatch.countDown();
+                this.saveBookmark(bookmarkVo);
+                //通知前端进度
+                WebsocketVo websocketVo = new WebsocketVo();
+                websocketVo.setTimestamp(System.currentTimeMillis());
+                websocketVo.setMsgType("uploadBookmark");
+                websocketVo.setToUser(token);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("total", total);
+                jsonObject.put("progress", total-countDownLatch.getCount());
+                jsonObject.put("title", bookmarkVo.getTitle());
+                websocketVo.setMsg(jsonObject);
+                try {
+                    WebSocketServer.sendInfo(Result.success(websocketVo));
+                } catch (IOException e) {
+                    logger.error("消息发送失败！",e);
+                }
+                long endTime = System.currentTimeMillis();
+                logger.info("------导入完成，用时：{}s",(endTime-startTime)/1000);
+            });
         }
+        executorService.shutdown();
     }
 
     private void parseHtml(Element element, Integer userId, Integer pid, List<BookmarkVo> bmBookmarks) {
@@ -735,6 +795,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                 websocketVo.setTimestamp(System.currentTimeMillis());
                 websocketVo.setMsgType("checkUrl");
                 websocketVo.setMsg(checkVo);
+                websocketVo.setToUser(request.getHeader("access_token"));
                 if (checkVo.getValid()) {
                     bmBookmark.setState(0);
                 } else {
@@ -743,7 +804,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                 }
                 bmBookmark.updateById();
                 try {
-                    WebSocketServer.sendInfo(Result.success(websocketVo), request.getHeader("access_token"));
+                    WebSocketServer.sendInfo(Result.success(websocketVo));
                 } catch (IOException e) {
                     logger.error("websocket消息发送失败：{}", e.getMessage(), e);
                 }
@@ -773,6 +834,9 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         if (pid == null) {
             throw new CommonException(Result.ResultEnum.BAD_REQUEST.getInfo());
         }
+        int sortNo1 = getSortNo(pid, 1);
+        int sortNo2 = getSortNo(pid, 2);
+
         List<TreeVo> folderTree = new ArrayList<>();
         for (BatchVo move : moves) {
             if (BatchVo.TYPE_FOLDER.equals(move.getType())) {
@@ -794,13 +858,17 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                     }
 
                     bmFolder.setParentId(pid);
+                    bmFolder.setSortNo(sortNo1);
                     bmFolder.updateById();
+                    sortNo1 ++;
                 }
             } else if (BatchVo.TYPE_BOOKMARK.equals(move.getType())) {
                 BmBookmark bmBookmark = new BmBookmark().selectById(move.getId());
                 if (bmBookmark != null) {
                     bmBookmark.setFolderId(pid);
+                    bmBookmark.setSortNo(sortNo2);
                     bmBookmark.updateById();
+                    sortNo2 ++;
                 }
             } else {
                 logger.error("type不存在");
@@ -835,9 +903,5 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             }
         }
 
-    }
-
-    public static void main(String[] args) {
-        System.out.println(System.currentTimeMillis());
     }
 }
