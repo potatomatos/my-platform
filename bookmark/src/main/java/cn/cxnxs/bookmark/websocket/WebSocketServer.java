@@ -104,7 +104,6 @@ public class WebSocketServer {
     /**
      * 外部调用发送消息接口
      * @param result
-     * @param <T>
      * @throws IOException
      */
     public static void sendInfo(Result<WebsocketVo> result) throws IOException {

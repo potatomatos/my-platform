@@ -52,6 +52,9 @@ public class PermissionFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String accessToken = exchange.getRequest().getHeaders().getFirst("access_token");
+        if (accessToken == null) {
+            accessToken = exchange.getRequest().getQueryParams().getFirst("token");
+        }
         String url = exchange.getRequest().getURI().getPath();
         log.info("访问地址：{}, token: {}", url, accessToken);
 
@@ -75,10 +78,11 @@ public class PermissionFilter implements GlobalFilter, Ordered {
             if (accessToken == null) {
                 return this.setUnauthorizedResponse(exchange, Result.failure(Result.ResultEnum.NEED_LOGIN, null));
             } else {
+                String finalAccessToken = accessToken;
                 CompletableFuture<Result<Object>> completableFuture = CompletableFuture.supplyAsync(()-> {
                     Mono<Result> userMono = webBuilder.baseUrl("http://oauth-server")
                             .build().get().uri("/verifyToken")
-                            .header("access_token",accessToken)
+                            .header("access_token", finalAccessToken)
                             .retrieve().bodyToMono(Result.class);
                     return userMono.block();
                 });

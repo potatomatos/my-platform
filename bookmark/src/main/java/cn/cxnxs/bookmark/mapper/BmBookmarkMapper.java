@@ -23,4 +23,7 @@ public interface BmBookmarkMapper extends BaseMapper<BmBookmark> {
      */
     @Select("SELECT b.id,b.title,b.url,b.icon_url,b.state,b.folder_id,b.user_id,b.favorite_flg,a.access_time create_time from bm_recent_visited a LEFT JOIN bm_bookmark b on a.bookmark_id=b.id WHERE b.user_id=#{userId} ORDER BY a.access_time DESC")
     List<BmBookmark> getRecentVisited(Integer userId);
+
+    @Select("select IFNULL( max(sort_no)+1,1) as maxSort from bm_bookmark  where folder_id = #{pid} for update")
+    Integer getNewSortNo(Integer pid);
 }

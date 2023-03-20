@@ -13,7 +13,6 @@ import cn.cxnxs.bookmark.vo.response.WebsocketVo;
 import cn.cxnxs.bookmark.websocket.WebSocketServer;
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
-import cn.cxnxs.common.core.entity.UserInfo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.exception.CommonException;
@@ -26,7 +25,6 @@ import com.arronlong.httpclientutil.builder.HCB;
 import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
@@ -37,7 +35,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -53,10 +50,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -106,7 +104,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                 bmFolder.setUserId(userInfoService.currentUser().getId());
             }
             //计算序号
-            bmFolder.setSortNo(this.getSortNo(folderVo.getParentId(),1));
+            bmFolder.setSortNo(bmFolderMapper.getNewSortNo(folderVo.getParentId()));
             bmFolder.insert();
             return bmFolder.getId();
         } else {
@@ -122,24 +120,10 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     private int getSortNo(Integer pid,int type){
         if (type==1) {
             //文件夹
-            QueryWrapper<BmFolder> queryWrapper=new QueryWrapper<>();
-            queryWrapper.select("IFNULL( max(sort_no),0) as maxSort");
-            queryWrapper.eq("parent_id",pid);
-            List<Map<String, Object>> maps = bmFolderMapper.selectMaps(queryWrapper);
-            if (!maps.isEmpty()) {
-                Object sort = maps.get(0).get("maxSort");
-                return Integer.parseInt(sort.toString())+1;
-            }
+            return bmFolderMapper.getNewSortNo(pid);
         } else if (type==2){
             //书签
-            QueryWrapper<BmBookmark> queryWrapper=new QueryWrapper<>();
-            queryWrapper.select("IFNULL( max(sort_no),0) as maxSort");
-            queryWrapper.eq("folder_id",pid);
-            List<Map<String, Object>> maps = bmBookmarkMapper.selectMaps(queryWrapper);
-            if (!maps.isEmpty()) {
-                Object sort = maps.get(0).get("maxSort");
-                return Integer.parseInt(sort.toString())+1;
-            }
+            return bmBookmarkMapper.getNewSortNo(pid);
         }
         return 1;
     }
@@ -164,7 +148,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         bmBookmark.setFavoriteFlg(0);
         bmBookmark.setAccessCount(0);
-        bmBookmark.setSortNo(this.getSortNo(bookmarkVo.getFolderId(),2));
+        bmBookmark.setSortNo(bmBookmarkMapper.getNewSortNo(bookmarkVo.getFolderId()));
         bmBookmark.insert();
         if (StringUtil.isEmpty(bmBookmark.getIconUrl())) {
             bmBookmark.setIconUrl(this.getWebsiteIcon(bmBookmark.getUrl()));
@@ -621,14 +605,14 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         // 子线程共享request
         RequestContextHolder.setRequestAttributes(RequestContextHolder.getRequestAttributes(),true);
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        CountDownLatch countDownLatch = new CountDownLatch(total);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(50, 100, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(total));
+        AtomicInteger atomicCount = new AtomicInteger();
         for (int i = 0; i < total; i++) {
             BookmarkVo bookmarkVo = bookmarkVos.get(i);
             bookmarkVo.setUserId(userId);
-            executorService.submit(() -> {
-                countDownLatch.countDown();
+            executor.submit(() -> {
                 this.saveBookmark(bookmarkVo);
+                int index = atomicCount.incrementAndGet();
                 //通知前端进度
                 WebsocketVo websocketVo = new WebsocketVo();
                 websocketVo.setTimestamp(System.currentTimeMillis());
@@ -636,19 +620,22 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                 websocketVo.setToUser(token);
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("total", total);
-                jsonObject.put("progress", total-countDownLatch.getCount());
+                jsonObject.put("progress", index);
                 jsonObject.put("title", bookmarkVo.getTitle());
                 websocketVo.setMsg(jsonObject);
+                logger.info("----total={},index={}",total,index);
                 try {
                     WebSocketServer.sendInfo(Result.success(websocketVo));
                 } catch (IOException e) {
                     logger.error("消息发送失败！",e);
                 }
-                long endTime = System.currentTimeMillis();
-                logger.info("------导入完成，用时：{}s",(endTime-startTime)/1000);
+                if (index == total) {
+                    long endTime = System.currentTimeMillis();
+                    logger.info("------导入完成，用时：{}s",(endTime-startTime)/1000);
+                }
             });
         }
-        executorService.shutdown();
+        executor.shutdown();
     }
 
     private void parseHtml(Element element, Integer userId, Integer pid, List<BookmarkVo> bmBookmarks) {
