@@ -40,4 +40,6 @@ public class FolderVo extends BaseVo {
      * 更新时间
      */
     private Long updateTime;
+
+    private Integer sortNo;
 }

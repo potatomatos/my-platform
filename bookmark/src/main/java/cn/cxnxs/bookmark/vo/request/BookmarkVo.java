@@ -62,4 +62,6 @@ public class BookmarkVo extends BaseVo {
      */
     private Integer state;
 
+    private Integer sortNo;
+
 }

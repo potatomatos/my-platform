@@ -13,6 +13,7 @@ import cn.cxnxs.bookmark.vo.response.WebsocketVo;
 import cn.cxnxs.bookmark.websocket.WebSocketServer;
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.TreeVo;
+import cn.cxnxs.common.core.entity.UserInfo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.exception.CommonException;
@@ -50,7 +51,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -103,8 +103,10 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             if (bmFolder.getUserId() == null) {
                 bmFolder.setUserId(userInfoService.currentUser().getId());
             }
-            //计算序号
-            bmFolder.setSortNo(bmFolderMapper.getNewSortNo(folderVo.getParentId()));
+            if (bmFolder.getSortNo() == null ) {
+                //计算序号
+                bmFolder.setSortNo(bmFolderMapper.getNewSortNo(bmFolder.getUserId(),folderVo.getParentId()));
+            }
             bmFolder.insert();
             return bmFolder.getId();
         } else {
@@ -113,20 +115,6 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
 
     }
 
-    /**
-     * 获取序号
-     * @return 序号
-     */
-    private int getSortNo(Integer pid,int type){
-        if (type==1) {
-            //文件夹
-            return bmFolderMapper.getNewSortNo(pid);
-        } else if (type==2){
-            //书签
-            return bmBookmarkMapper.getNewSortNo(pid);
-        }
-        return 1;
-    }
     @Override
     public Integer saveBookmark(BookmarkVo bookmarkVo) {
         //对象转换
@@ -148,7 +136,9 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         bmBookmark.setFavoriteFlg(0);
         bmBookmark.setAccessCount(0);
-        bmBookmark.setSortNo(bmBookmarkMapper.getNewSortNo(bookmarkVo.getFolderId()));
+        if(bmBookmark.getSortNo() == null) {
+            bmBookmark.setSortNo(bmBookmarkMapper.getNewSortNo(bmBookmark.getUserId(),bookmarkVo.getFolderId()));
+        }
         bmBookmark.insert();
         if (StringUtil.isEmpty(bmBookmark.getIconUrl())) {
             bmBookmark.setIconUrl(this.getWebsiteIcon(bmBookmark.getUrl()));
@@ -641,6 +631,8 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     private void parseHtml(Element element, Integer userId, Integer pid, List<BookmarkVo> bmBookmarks) {
         Elements children = element.children();
         int size = children.size();
+        Integer newSortNo = bmBookmarkMapper.getNewSortNo(userId,pid);
+        Integer newSortNo1 = bmFolderMapper.getNewSortNo(userId,pid);
         if (size > 0) {
             for (int i = 0; i < size; i++) {
                 Element el = children.get(i);
@@ -654,7 +646,8 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                     folderVo.setFolderName(folderName);
                     folderVo.setParentId(pid);
                     folderVo.setUserId(userId);
-                    folderVo.setCreateTime(Long.parseLong(addDate));
+                    folderVo.setCreateTime(this.getAddDate(addDate));
+                    folderVo.setSortNo(newSortNo1++);
                     Integer id = this.saveFolder(folderVo);
                     parseHtml(dl, userId, id, bmBookmarks);
                 } else {
@@ -669,7 +662,8 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                         bookmarkVo.setUrl(url);
                         bookmarkVo.setTitle(title);
                         bookmarkVo.setUserId(userId);
-                        bookmarkVo.setCreateTime(Long.parseLong(addDate));
+                        bookmarkVo.setCreateTime(getAddDate(addDate));
+                        bookmarkVo.setSortNo(newSortNo++);
                         bmBookmarks.add(bookmarkVo);
                     }
                 }
@@ -677,6 +671,19 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
     }
 
+    private Long getAddDate(String addDate) {
+        if (StringUtil.isEmpty(addDate)||"0".equals(addDate)) {
+            return System.currentTimeMillis();
+        } else {
+            if (addDate.length()==13) {
+                return Long.parseLong(addDate);
+            } else if (addDate.length() ==10) {
+                return Long.parseLong(addDate)*1000;
+            } else {
+                return System.currentTimeMillis();
+            }
+        }
+    }
     /**
      * 判断url是否存在
      *
@@ -821,8 +828,9 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         if (pid == null) {
             throw new CommonException(Result.ResultEnum.BAD_REQUEST.getInfo());
         }
-        int sortNo1 = getSortNo(pid, 1);
-        int sortNo2 = getSortNo(pid, 2);
+        UserInfo userInfo = userInfoService.currentUser();
+        int sortNo1 = bmFolderMapper.getNewSortNo(userInfo.getId(),pid);
+        int sortNo2 = bmBookmarkMapper.getNewSortNo(userInfo.getId(),pid);
 
         List<TreeVo> folderTree = new ArrayList<>();
         for (BatchVo move : moves) {
