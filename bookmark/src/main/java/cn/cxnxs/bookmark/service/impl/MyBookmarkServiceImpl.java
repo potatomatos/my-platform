@@ -142,8 +142,8 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         bmBookmark.insert();
         if (StringUtil.isEmpty(bmBookmark.getIconUrl())) {
             bmBookmark.setIconUrl(this.getWebsiteIcon(bmBookmark.getUrl()));
+            bmBookmark.updateById();
         }
-        bmBookmark.updateById();
         return bmBookmark.getId();
     }
 
