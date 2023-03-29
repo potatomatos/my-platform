@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -695,6 +696,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         if (StringUtil.isEmpty(url)) {
             throw new CommonException("url不能为空");
         }
+        url = URLDecoder.decode(url);
         BmBookmark bmBookmark = new BmBookmark();
         List<BmBookmark> list = bmBookmark.selectList(new LambdaQueryWrapper<BmBookmark>()
                 .eq(BmBookmark::getUserId, userInfoService.currentUser().getId())
