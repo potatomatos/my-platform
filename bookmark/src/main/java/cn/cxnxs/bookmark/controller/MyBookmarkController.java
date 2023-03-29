@@ -2,7 +2,6 @@ package cn.cxnxs.bookmark.controller;
 
 import cn.cxnxs.bookmark.service.MyBookmarkService;
 import cn.cxnxs.bookmark.service.impl.MyBookmarkServiceImpl;
-import cn.cxnxs.bookmark.service.impl.UserInfoService;
 import cn.cxnxs.bookmark.vo.request.*;
 import cn.cxnxs.bookmark.vo.response.BookmarkInfoVo;
 import cn.cxnxs.bookmark.vo.response.CheckRespVo;
@@ -33,9 +32,6 @@ public class MyBookmarkController {
     @Autowired
     private MyBookmarkService myBookmarkService;
 
-    @Autowired
-    private UserInfoService userInfoService;
-
     @PostMapping("/save/folder")
     public Result<Object> saveFolder(@RequestBody FolderVo folderVo) {
         return Result.success("保存成功", myBookmarkService.saveFolder(folderVo));
@@ -50,6 +46,12 @@ public class MyBookmarkController {
     @PostMapping("/foldersTree")
     public List<TreeVo> getFolderTree() {
         return myBookmarkService.getFolderTree(null);
+    }
+
+    @ResponseResult
+    @PostMapping("/bookmarksTree")
+    public List<TreeVo> getBookmarkTree() {
+        return myBookmarkService.getBookmarkTree();
     }
 
     @ResponseResult

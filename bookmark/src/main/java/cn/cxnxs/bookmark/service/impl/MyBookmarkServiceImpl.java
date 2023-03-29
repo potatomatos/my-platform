@@ -202,6 +202,52 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
     }
 
+    /**
+     * 获得书签树
+     * @return
+     */
+    @Override
+    public List<TreeVo> getBookmarkTree() {
+        List<TreeVo> treeVos = new ArrayList<>();
+        Integer userId = userInfoService.currentUser().getId();
+        // 先获取收藏夹再获取书签
+        LambdaQueryWrapper<BmFolder> folderLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        folderLambdaQueryWrapper.eq(BmFolder::getUserId, userId);
+        folderLambdaQueryWrapper.orderByAsc(BmFolder::getSortNo);
+        List<BmFolder> bmFolders = new BmFolder().selectList(folderLambdaQueryWrapper);
+        bmFolders.forEach(bmFolder -> {
+            TreeVo treeVo = new TreeVo();
+            treeVo.setNodeId(bmFolder.getId());
+            treeVo.setParentNodeId(bmFolder.getParentId());
+            treeVo.setTitle(bmFolder.getFolderName());
+            treeVo.setType(1);
+            treeVo.setSort(bmFolder.getSortNo());
+            treeVo.setCreateTime(bmFolder.getCreateTime());
+            treeVos.add(treeVo);
+        });
+        LambdaQueryWrapper<BmBookmark> bookmarkLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        bookmarkLambdaQueryWrapper.eq(BmBookmark::getUserId, userId);
+        bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getSortNo);
+        List<BmBookmark> bmBookmarks = new BmBookmark().selectList(bookmarkLambdaQueryWrapper);
+        bmBookmarks.forEach(bmBookmark -> {
+            TreeVo treeVo = new TreeVo();
+            treeVo.setNodeId(bmBookmark.getId());
+            treeVo.setParentNodeId(bmBookmark.getFolderId());
+            treeVo.setTitle(bmBookmark.getTitle());
+            treeVo.setHref(bmBookmark.getUrl());
+            treeVo.setIcon(bmBookmark.getIconUrl());
+            treeVo.setType(2);
+            treeVo.setSort(bmBookmark.getSortNo());
+            treeVo.setCreateTime(bmBookmark.getCreateTime());
+            JSONObject json = new JSONObject();
+            json.put("favoriteFlg", bmBookmark.getFavoriteFlg());
+            json.put("state", bmBookmark.getState());
+            treeVo.setExpandData(json);
+            treeVos.add(treeVo);
+        });
+        // 形成树形
+        return TreeUtil.toTreeVo(treeVos, ROOT_ID);
+    }
     @Override
     public BookmarkInfoVo getBookmark(Integer pid, SearchVo searchVo) {
         if (pid == null) {

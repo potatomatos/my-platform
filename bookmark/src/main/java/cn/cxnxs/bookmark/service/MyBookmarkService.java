@@ -41,6 +41,8 @@ public interface MyBookmarkService {
 
     List<TreeVo> getAllParents(Integer pid);
 
+    List<TreeVo> getBookmarkTree();
+
     BookmarkInfoVo getBookmark(Integer pid, SearchVo searchVo);
 
     @Transactional(rollbackFor = RuntimeException.class)
