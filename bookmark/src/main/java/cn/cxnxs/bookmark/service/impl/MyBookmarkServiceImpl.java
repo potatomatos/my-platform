@@ -213,7 +213,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         // 先获取收藏夹再获取书签
         LambdaQueryWrapper<BmFolder> folderLambdaQueryWrapper = new LambdaQueryWrapper<>();
         folderLambdaQueryWrapper.eq(BmFolder::getUserId, userId);
-        folderLambdaQueryWrapper.orderByAsc(BmFolder::getSortNo);
+        folderLambdaQueryWrapper.orderByAsc(BmFolder::getParentId,BmFolder::getSortNo);
         List<BmFolder> bmFolders = new BmFolder().selectList(folderLambdaQueryWrapper);
         bmFolders.forEach(bmFolder -> {
             TreeVo treeVo = new TreeVo();
@@ -227,7 +227,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         });
         LambdaQueryWrapper<BmBookmark> bookmarkLambdaQueryWrapper = new LambdaQueryWrapper<>();
         bookmarkLambdaQueryWrapper.eq(BmBookmark::getUserId, userId);
-        bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getSortNo);
+        bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getFolderId,BmBookmark::getSortNo);
         List<BmBookmark> bmBookmarks = new BmBookmark().selectList(bookmarkLambdaQueryWrapper);
         bmBookmarks.forEach(bmBookmark -> {
             TreeVo treeVo = new TreeVo();
