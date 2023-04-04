@@ -1,5 +1,6 @@
 package cn.cxnxs.gateway.filter;
 
+import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.core.entity.response.Result;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
@@ -22,6 +23,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -37,6 +39,9 @@ public class PermissionFilter implements GlobalFilter, Ordered {
 
     @Autowired
     private WebClient.Builder webBuilder;
+
+    @Autowired
+    private Oauth2Service oauth2Service;
 
     private final PathMatcher matcher = new AntPathMatcher();
 
@@ -78,25 +83,9 @@ public class PermissionFilter implements GlobalFilter, Ordered {
             if (accessToken == null) {
                 return this.setUnauthorizedResponse(exchange, Result.failure(Result.ResultEnum.NEED_LOGIN, null));
             } else {
-                String finalAccessToken = accessToken;
-                CompletableFuture<Result<Object>> completableFuture = CompletableFuture.supplyAsync(()-> {
-                    Mono<Result> userMono = webBuilder.baseUrl("http://oauth-server")
-                            .build().get().uri("/verifyToken")
-                            .header("access_token", finalAccessToken)
-                            .retrieve().bodyToMono(Result.class);
-                    return userMono.block();
-                });
-                Result result;
-                try {
-                    result = completableFuture.get();
-                } catch (InterruptedException e) {
-                    throw e;
-                } catch (ExecutionException e) {
-                    log.error(e.getMessage(),e);
-                    return this.setUnauthorizedResponse(exchange, Result.failure(Result.ResultEnum.TOKEN_REQUIRED,null));
-                }
-                if (!Result.ResultEnum.SUCCESS.getCode().equals(result.getCode())) {
-                     return this.setUnauthorizedResponse(exchange, result);
+                Map<String, ?> stringMap = oauth2Service.checkToken(accessToken);
+                if (stringMap.get("active") == null) {
+                     return this.setUnauthorizedResponse(exchange, Result.failure());
                 }
             }
         }
