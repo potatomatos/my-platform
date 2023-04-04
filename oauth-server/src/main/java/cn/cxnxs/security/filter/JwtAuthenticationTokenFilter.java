@@ -61,7 +61,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             String accessToken = request.getHeader("access_token");
             //header中没有就从参数中获取
             if (StringUtils.isEmpty(accessToken)) {
-                accessToken = request.getParameter("access_token");
+                accessToken = request.getParameter("token");
             }
 
             if (!StringUtils.hasText(accessToken)) {

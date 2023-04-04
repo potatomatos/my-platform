@@ -8,6 +8,7 @@ import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -25,19 +26,25 @@ public class Oauth2ServiceFallbackFactory implements FallbackFactory<Oauth2Servi
 
             @Override
             public Map<String, String> getAccessToken(String grant_type, String client_id, String client_secret, String code, String redirect_uri) {
-                log.error("accessToken获取失败",throwable);
-                return null;
+                log.error("accessToken获取失败", throwable);
+                return new HashMap<>();
+            }
+
+            @Override
+            public Map<String, ?> checkToken(String token) {
+                log.error("accessToken校验失败", throwable);
+                return new HashMap<>();
             }
 
             @Override
             public Result<Map<String, Object>> getPublicKey() {
-                log.error("公钥获取失败",throwable);
+                log.error("公钥获取失败", throwable);
                 return Result.failure("公钥获取失败");
             }
 
             @Override
             public Result<JSONObject> currentUser() {
-                log.error("用户信息获取失败",throwable);
+                log.error("用户信息获取失败", throwable);
                 Result<JSONObject> result = Result.failure("用户信息获取失败");
                 result.setData(new JSONObject());
                 return result;
@@ -51,7 +58,7 @@ public class Oauth2ServiceFallbackFactory implements FallbackFactory<Oauth2Servi
              */
             @Override
             public Result<JSONObject> verifyToken(String accessToken) {
-                log.error("token校验失败",throwable);
+                log.error("token校验失败", throwable);
                 return Result.failure("token校验失败");
             }
 
@@ -64,7 +71,7 @@ public class Oauth2ServiceFallbackFactory implements FallbackFactory<Oauth2Servi
              */
             @Override
             public Result<JSONObject> verifyPage(String accessToken, String path) {
-                log.error("菜单校验失败",throwable);
+                log.error("菜单校验失败", throwable);
                 return Result.failure("菜单校验失败");
             }
         };

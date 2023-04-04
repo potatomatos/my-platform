@@ -33,6 +33,8 @@ public interface Oauth2Service {
                                        @RequestParam("code") String code,
                                        @RequestParam("redirect_uri") String redirect_uri);
 
+    @GetMapping("/oauth/check_token")
+    Map<String,?> checkToken(@RequestParam("token")String token);
     /**
      * 获取公钥
      */
