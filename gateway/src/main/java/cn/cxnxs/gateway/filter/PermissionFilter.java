@@ -85,7 +85,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
             } else {
                 Map<String, ?> stringMap = oauth2Service.checkToken(accessToken);
                 if (stringMap.get("active") == null) {
-                     return this.setUnauthorizedResponse(exchange, Result.failure());
+                     return this.setUnauthorizedResponse(exchange, Result.failure(Result.ResultEnum.INVALID_TOKEN,null));
                 }
             }
         }
