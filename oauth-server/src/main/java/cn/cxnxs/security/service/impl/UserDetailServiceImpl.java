@@ -44,7 +44,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
         if (userApiEntity ==null){
             //表示用户不存在
-            throw  new UsernameNotFoundException("用户名或密码错误");
+            throw  new UsernameNotFoundException("用户不存在");
         }
         //取出正确密码（密文）
         String password = userApiEntity.getEncryptedPassword();
@@ -73,14 +73,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
         List<Map<String, String>> permissions = userApiEntity.getPermissions();
         //根据角色分组权限
         Map<String,List<Map<String, String>>> rolePermissions=permissions.stream().collect(Collectors.groupingBy(e->e.get("role_code")));
-
-//        JwtUser userDetails = new JwtUser(username,
-//                password,
-//                enabled,
-//                accountNonExpired,
-//                credentialsNonExpired,
-//                accountNonLocked,
-//                AuthorityUtils.commaSeparatedStringToAuthorityList(String.join(",", userRoles)));
         JwtUser userDetails = new JwtUser();
         userDetails.setEnabled(enabled);
         userDetails.setAccountNonExpired(accountNonExpired);
