@@ -158,6 +158,7 @@ public class Result<T> implements Serializable {
         TOKEN_REQUIRED(6002, "TOKEN不存在", "TOKEN_REQUIRED_EXCEPTION"),
         TOKEN_EXPIRED(6003, "登录信息已过期", "TOKEN_EXPIRED"),
         FORBIDDEN(6004, "无访问权限", "FORBIDDEN"),
+        INVALID_TOKEN(6005, "token无效", "INVALID_TOKEN"),
         BAD_REQUEST(4000, "无访问权限", "FORBIDDEN");
 
         /**
