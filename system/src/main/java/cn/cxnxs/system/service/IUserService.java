@@ -25,4 +25,6 @@ public interface IUserService {
     List<RoleVO> selectUserRoles(RoleVO roleVO);
 
     UserApiEntity getUserByName(String username);
+
+    Boolean resetPassword(Integer userId);
 }

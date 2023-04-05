@@ -215,6 +215,20 @@ public class UserServiceImpl implements IUserService {
         return userApiEntity;
     }
 
+    /**
+     * 重置密码
+     * @param userId
+     * @return
+     */
+    @Override
+    public Boolean resetPassword(Integer userId) {
+        SysUsers sysUsers = new SysUsers();
+        sysUsers.setId(userId);
+        sysUsers.setEncryptedPassword(passwordEncoder.encode("123456"));
+        sysUsersMapper.updateById(sysUsers);
+        return true;
+    }
+
     private List<MenuVO> buildPath(List<TreeVo> menuTree, List<MenuVO> list, MenuVO parent) {
         if (list == null) {
             list = new ArrayList<>();

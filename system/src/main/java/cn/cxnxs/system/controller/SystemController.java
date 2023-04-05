@@ -13,11 +13,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("system/api")
+@RequestMapping("system")
 @Slf4j
 public class SystemController {
 
@@ -40,7 +41,7 @@ public class SystemController {
     /**
      * 获取token
      */
-    @GetMapping("/getAccessToken")
+    @GetMapping("api/getAccessToken")
     public Result<Map<String, String>> getAccessToken(String code) {
         log.info("code:{}", code);
         if (StringUtil.isEmpty(code)){
@@ -64,7 +65,7 @@ public class SystemController {
      * @param clientId 客户端id
      * @return
      */
-    @GetMapping(value = "permit")
+    @GetMapping(value = "api/permit")
     public Result<Boolean> permit(@RequestParam("uri") String uri, @RequestParam("clientId") String clientId) {
         return Result.success(permissionService.permit(uri, clientId));
     }
@@ -75,7 +76,7 @@ public class SystemController {
      * @param userApiEntity 用户信息
      * @return true-成功 false-失败
      */
-    @PostMapping("updateUser")
+    @PostMapping("api/updateUser")
     Result<Boolean> updateUser(@RequestBody UserApiEntity userApiEntity) {
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(userApiEntity, userVO);
@@ -88,9 +89,14 @@ public class SystemController {
      *
      * @param username 用户名
      */
-    @GetMapping("getUserByName")
+    @GetMapping("api/getUserByName")
     Result<UserApiEntity> getUserByName(@RequestParam("username") String username) {
         UserApiEntity userByName = userService.getUserByName(username);
         return userByName == null ? Result.failure("用户不存在") : Result.success(userByName);
+    }
+
+    @PostMapping("upload")
+    Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        return Result.success();
     }
 }

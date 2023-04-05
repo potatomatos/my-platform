@@ -30,6 +30,12 @@ public class UserController {
     }
 
     @ResponseResult
+    @PostMapping("add")
+    public Integer add(@RequestBody UserVO userVO) {
+        return userService.addUser(userVO);
+    }
+
+    @ResponseResult
     @PostMapping("update")
     public Integer update(@RequestBody UserVO userVO) {
         return userService.updateUser(userVO);
@@ -39,5 +45,11 @@ public class UserController {
     @PostMapping("del/{id}")
     public Integer del(@PathVariable("id") Integer id) {
         return userService.logicDelUser(id);
+    }
+
+    @ResponseResult
+    @PostMapping("resetPassword/{id}")
+    public Boolean resetPassword(@PathVariable("id") Integer id) {
+        return userService.resetPassword(id);
     }
 }
