@@ -29,5 +29,7 @@ public interface IUserService {
 
     Boolean resetPassword(Integer userId);
 
+    Boolean updatePassword(Integer userId, String password);
+
     String uploadAvatar(MultipartFile file);
 }

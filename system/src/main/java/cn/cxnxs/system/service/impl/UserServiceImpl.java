@@ -147,13 +147,26 @@ public class UserServiceImpl implements IUserService {
      * @param userVO
      * @return
      */
+    @Transactional
     @Override
     public Integer addUser(UserVO userVO) {
         SysUsers sysUsers = new SysUsers();
         ObjectUtil.transValues(userVO, sysUsers);
         sysUsers.setEncryptedPassword(passwordEncoder.encode(userVO.getPassword()));
         sysUsers.setCreatedAt(LocalDateTime.now());
-        return sysUsersMapper.insert(sysUsers);
+        sysUsersMapper.insert(sysUsers);
+        List<Integer> roleIds = userVO.getRoleIds();
+        if (roleIds != null && !roleIds.isEmpty()) {
+            SysUserRole sysUserRole = new SysUserRole();
+            for (Integer roleId : roleIds) {
+                sysUserRole.setUserId(sysUsers.getId());
+                sysUserRole.setRoleId(roleId);
+                sysUserRole.setCreatedAt(System.currentTimeMillis());
+                sysUserRoleMapper.insert(sysUserRole);
+            }
+        }
+
+        return sysUsers.getId();
     }
 
     /**
@@ -236,9 +249,19 @@ public class UserServiceImpl implements IUserService {
      */
     @Override
     public Boolean resetPassword(Integer userId) {
+        return this.updatePassword(userId,"123456");
+    }
+
+    /**
+     * 修改密码
+     * @param userId
+     * @return
+     */
+    @Override
+    public Boolean updatePassword(Integer userId, String password) {
         SysUsers sysUsers = new SysUsers();
         sysUsers.setId(userId);
-        sysUsers.setEncryptedPassword(passwordEncoder.encode("123456"));
+        sysUsers.setEncryptedPassword(passwordEncoder.encode(password));
         sysUsersMapper.updateById(sysUsers);
         return true;
     }

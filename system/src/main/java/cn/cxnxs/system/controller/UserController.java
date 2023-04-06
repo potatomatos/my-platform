@@ -56,6 +56,12 @@ public class UserController {
         return userService.resetPassword(id);
     }
 
+    @ResponseResult
+    @PostMapping("updatePassword")
+    public Boolean updatePassword(@RequestBody UserVO userVO) {
+        return userService.updatePassword(userVO.getId(),userVO.getPassword());
+    }
+
     @PostMapping("avatar/upload")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file){
         String avatar = userService.uploadAvatar(file);
