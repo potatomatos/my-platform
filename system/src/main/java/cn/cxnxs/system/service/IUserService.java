@@ -5,6 +5,7 @@ import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.system.vo.PageVO;
 import cn.cxnxs.system.vo.RoleVO;
 import cn.cxnxs.system.vo.UserVO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,4 +28,6 @@ public interface IUserService {
     UserApiEntity getUserByName(String username);
 
     Boolean resetPassword(Integer userId);
+
+    String uploadAvatar(MultipartFile file);
 }

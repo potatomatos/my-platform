@@ -1,12 +1,15 @@
 package cn.cxnxs.system.controller;
 
 import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.system.service.IUserService;
 import cn.cxnxs.system.vo.PageVO;
 import cn.cxnxs.system.vo.UserVO;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 用户相关接口
@@ -51,5 +54,13 @@ public class UserController {
     @PostMapping("resetPassword/{id}")
     public Boolean resetPassword(@PathVariable("id") Integer id) {
         return userService.resetPassword(id);
+    }
+
+    @PostMapping("avatar/upload")
+    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file){
+        String avatar = userService.uploadAvatar(file);
+        Result<String> success = Result.success();
+        success.setData(avatar);
+        return success;
     }
 }

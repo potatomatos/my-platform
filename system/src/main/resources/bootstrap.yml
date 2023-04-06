@@ -28,3 +28,8 @@ spring:
         shared-configs:
           - application-common.${spring.cloud.nacos.config.file-extension}
         timeout: 20000
+minio:
+  url: http://139.180.192.129:9091
+  access-key: 2OHNDIDK45IFYGTV0088
+  secret-key: PP5Jgf+1PE8LX4qwI93uKcntWZgiRLohPcRe0gWy
+  bucket-name: public

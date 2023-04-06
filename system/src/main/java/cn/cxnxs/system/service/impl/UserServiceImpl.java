@@ -1,5 +1,6 @@
 package cn.cxnxs.system.service.impl;
 
+import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
@@ -7,6 +8,8 @@ import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
+import cn.cxnxs.system.config.MinioProperties;
+import cn.cxnxs.system.config.MinioTemplate;
 import cn.cxnxs.system.entity.SysMenu;
 import cn.cxnxs.system.entity.SysUserRole;
 import cn.cxnxs.system.entity.SysUsers;
@@ -18,6 +21,7 @@ import cn.cxnxs.system.vo.MenuVO;
 import cn.cxnxs.system.vo.PageVO;
 import cn.cxnxs.system.vo.RoleVO;
 import cn.cxnxs.system.vo.UserVO;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -26,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -58,6 +63,15 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private MinioTemplate minioTemplate;
+
+    @Autowired
+    private Oauth2Service oauth2Service;
+
+    @Autowired
+    private MinioProperties minioProperties;
 
     /**
      * 分页查询用户信息
@@ -227,6 +241,18 @@ public class UserServiceImpl implements IUserService {
         sysUsers.setEncryptedPassword(passwordEncoder.encode("123456"));
         sysUsersMapper.updateById(sysUsers);
         return true;
+    }
+
+    /**
+     * 头像上传
+     * @param file
+     * @return
+     */
+    @Override
+    public String uploadAvatar(MultipartFile file){
+        Result<JSONObject> result = oauth2Service.currentUser();
+        String filename = minioTemplate.upload(file, minioProperties.getBucketName(), "avatar/" + result.getData().getString("id"));
+        return minioProperties.getUrl()+ "/" +filename;
     }
 
     private List<MenuVO> buildPath(List<TreeVo> menuTree, List<MenuVO> list, MenuVO parent) {

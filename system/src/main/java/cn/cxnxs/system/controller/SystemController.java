@@ -94,9 +94,4 @@ public class SystemController {
         UserApiEntity userByName = userService.getUserByName(username);
         return userByName == null ? Result.failure("用户不存在") : Result.success(userByName);
     }
-
-    @PostMapping("upload")
-    Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        return Result.success();
-    }
 }
