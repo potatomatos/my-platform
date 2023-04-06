@@ -95,19 +95,24 @@
             <artifactId>system-api</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <!-- Activiti 启动器 -->
         <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.4.3</version>
+        </dependency>
+        <!-- Activiti 启动器 -->
+       <!-- <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-spring-boot-starter-basic</artifactId>
             <version>${activiti.version}</version>
         </dependency>
-        <!-- Activiti 流程图 -->
+        &lt;!&ndash; Activiti 流程图 &ndash;&gt;
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-diagram-rest</artifactId>
             <version>${activiti.version}</version>
         </dependency>
-        <!-- Activiti 在线设计 -->
+        &lt;!&ndash; Activiti 在线设计 &ndash;&gt;
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-modeler</artifactId>
@@ -130,7 +135,7 @@
                     <groupId>org.springframework.security</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
     </dependencies>
     <build>
         <plugins>

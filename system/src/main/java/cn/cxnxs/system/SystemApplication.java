@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
  */
 
 @SpringBootApplication(scanBasePackages = {"cn.cxnxs"}, exclude = {
-        org.activiti.spring.boot.SecurityAutoConfiguration.class,
         SecurityAutoConfiguration.class,
         ManagementWebSecurityAutoConfiguration.class
 })
