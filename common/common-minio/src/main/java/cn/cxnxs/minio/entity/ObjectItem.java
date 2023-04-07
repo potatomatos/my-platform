@@ -1,4 +1,4 @@
-package cn.cxnxs.system.vo;
+package cn.cxnxs.minio.entity;
 
 import lombok.Data;
 

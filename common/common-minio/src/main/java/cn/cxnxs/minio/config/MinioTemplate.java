@@ -1,19 +1,22 @@
-package cn.cxnxs.system.config;
+package cn.cxnxs.minio.config;
 
-import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.system.vo.ObjectItem;
+import cn.cxnxs.minio.entity.ObjectItem;
+import com.alibaba.fastjson.JSONObject;
 import io.minio.*;
 import io.minio.http.Method;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -26,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+@Slf4j
 @Component
 public class MinioTemplate {
     @Autowired
@@ -33,6 +38,9 @@ public class MinioTemplate {
 
     @Autowired
     private MinioClient minioClient;
+
+    @Value("${spring.application.name}")
+    private String appName;
 
     /**
      * description: 判断bucket是否存在，不存在则创建
@@ -107,22 +115,24 @@ public class MinioTemplate {
         } else {
             fileName = fileName + System.currentTimeMillis();
         }
-        if (StringUtil.isNotEmpty(path)) {
+        if (!StringUtils.isEmpty(path)) {
             fileName = path + "/" +fileName;
         }
+        fileName = appName + "/" +fileName;
         InputStream in = null;
         try {
-            if (StringUtil.isEmpty(bucketNameStr)) {
+            if (StringUtils.isEmpty(bucketNameStr)) {
                 bucketNameStr = minioProperties.getBucketName();
             }
             in = file.getInputStream();
-            minioClient.putObject(PutObjectArgs.builder()
+            ObjectWriteResponse objectWriteResponse = minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketNameStr)
                     .object(fileName)
                     .stream(in, in.available(), -1)
                     .contentType(file.getContentType())
                     .build()
             );
+            log.info("对象存储请求结果：{}", JSONObject.toJSONString(objectWriteResponse));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -149,7 +159,7 @@ public class MinioTemplate {
         ByteArrayOutputStream out = null;
         try {
             String bucketName;
-            if (StringUtil.isEmpty(bucketNameStr)) {
+            if (StringUtils.isEmpty(bucketNameStr)) {
                 bucketNameStr = minioProperties.getBucketName();
             }
             bucketName = bucketNameStr;
@@ -232,7 +242,7 @@ public class MinioTemplate {
      */
     public String getFileUrl(String bucketName, String objectFile) {
         try {
-            if(StringUtil.isEmpty(bucketName)){
+            if(StringUtils.isEmpty(bucketName)){
                 bucketName = minioProperties.getBucketName();
             }
             return minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()

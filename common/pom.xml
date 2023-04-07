@@ -14,6 +14,7 @@
         <module>common-web</module>
         <module>common-cache</module>
         <module>common-api</module>
+        <module>common-minio</module>
     </modules>
 
     <artifactId>common</artifactId>
