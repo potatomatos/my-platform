@@ -6,8 +6,13 @@ import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.socket.client.TomcatWebSocketClient;
+import org.springframework.web.reactive.socket.client.WebSocketClient;
+import org.springframework.web.reactive.socket.server.RequestUpgradeStrategy;
+import org.springframework.web.reactive.socket.server.upgrade.TomcatRequestUpgradeStrategy;
 
 import java.util.stream.Collectors;
 
@@ -31,4 +36,17 @@ public class GatewayConfig {
     public WebClient.Builder webBuilder(){
         return WebClient.builder();
     }
+
+    /**************解决网关转接websocket服务的问题*******************************/
+    @Bean
+    @Primary
+    WebSocketClient tomcatWebSocketClient() {
+        return new TomcatWebSocketClient();
+    }
+    @Bean
+    @Primary
+    public RequestUpgradeStrategy requestUpgradeStrategy() {
+        return new TomcatRequestUpgradeStrategy();
+    }
+    /**************解决网关转接websocket服务的问题*******************************/
 }
