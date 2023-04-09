@@ -38,13 +38,17 @@ public class SystemController {
             return Result.failure("code不能为空！");
         }
         log.info("------开始获取token------");
-        Map<String, String> accessToken = oauth2Service.getAccessToken(
-                "authorization_code",
-                clientId,
-                clientSecret,
-                code,
-                redirectUri);
-        log.info("token信息：{}", JSON.toJSONString(accessToken));
-        return Result.success(accessToken);
+        try {
+            Map<String, String> accessToken = oauth2Service.getAccessToken(
+                    "authorization_code",
+                    clientId,
+                    clientSecret,
+                    code,
+                    redirectUri);
+            log.info("token信息：{}", JSON.toJSONString(accessToken));
+            return Result.success(accessToken);
+        }catch (Exception e) {
+            return Result.failure("认证失败:"+e.getMessage());
+        }
     }
 }

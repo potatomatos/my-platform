@@ -132,7 +132,7 @@ public class MinioTemplate {
                     .contentType(file.getContentType())
                     .build()
             );
-            log.info("对象存储请求结果：{}", JSONObject.toJSONString(objectWriteResponse));
+            log.info("对象存储请求结果：{}", objectWriteResponse);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
