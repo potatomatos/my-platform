@@ -48,5 +48,5 @@ public class GatewayConfig {
     public RequestUpgradeStrategy requestUpgradeStrategy() {
         return new TomcatRequestUpgradeStrategy();
     }
-    /**************解决网关转接websocket服务的问题*******************************/
+
 }
