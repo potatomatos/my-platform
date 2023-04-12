@@ -13,17 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * @author potatomato
+ */
 @Slf4j
 @RestController
 @RequestMapping("system")
 public class SystemController {
 
-    @Value("${oauth.clientId}")
-    private String clientId;
     @Value("${oauth.clientSecret}")
     private String clientSecret;
-    @Value("${oauth.redirectUri}")
-    private String redirectUri;
 
     @Autowired
     private Oauth2Service oauth2Service;
@@ -32,7 +31,7 @@ public class SystemController {
      * 获取token
      */
     @GetMapping("/getAccessToken")
-    public Result<Map<String, String>> getAccessToken(String code) {
+    public Result<Map<String, String>> getAccessToken(String code,String clientId,String redirectUri) {
         log.info("code:{}", code);
         if (StringUtil.isEmpty(code)){
             return Result.failure("code不能为空！");
