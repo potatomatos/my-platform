@@ -130,17 +130,22 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         if (bmBookmark.getUserId() == null) {
             bmBookmark.setUserId(userInfoService.currentUser().getId());
         }
-        Integer count = bmBookmarkMapper.selectCount(new LambdaQueryWrapper<BmBookmark>()
-                .eq(BmBookmark::getUrl,bookmarkVo.getUrl()).eq(BmBookmark::getUserId,bookmarkVo.getUserId()));
-        if (count>0) {
-            return -1;
+        CheckVo checkVo = new CheckVo();
+        checkVo.setUrl(bookmarkVo.getUrl());
+        CheckRespVo checkRespVo = this.urlExist(checkVo);
+        if (checkRespVo.getExist()) {
+            bmBookmark.setId(checkRespVo.getId());
+            // 更新
+            bmBookmark.updateById();
+        } else {
+            //插入
+            bmBookmark.setFavoriteFlg(0);
+            bmBookmark.setAccessCount(0);
+            if(bmBookmark.getSortNo() == null) {
+                bmBookmark.setSortNo(bmBookmarkMapper.getNewSortNo(bmBookmark.getUserId(),bookmarkVo.getFolderId()));
+            }
+            bmBookmark.insert();
         }
-        bmBookmark.setFavoriteFlg(0);
-        bmBookmark.setAccessCount(0);
-        if(bmBookmark.getSortNo() == null) {
-            bmBookmark.setSortNo(bmBookmarkMapper.getNewSortNo(bmBookmark.getUserId(),bookmarkVo.getFolderId()));
-        }
-        bmBookmark.insert();
         if (StringUtil.isEmpty(bmBookmark.getIconUrl())) {
             bmBookmark.setIconUrl(this.getWebsiteIcon(bmBookmark.getUrl()));
             bmBookmark.updateById();
@@ -734,15 +739,15 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     /**
      * 判断url是否存在
      *
-     * @param url 网址
+     * @param checkVo 网址
      * @return true-已存在 false-不存在
      */
     @Override
-    public CheckRespVo urlExist(String url) {
-        if (StringUtil.isEmpty(url)) {
+    public CheckRespVo urlExist(CheckVo checkVo) {
+        if (StringUtil.isEmpty(checkVo.getUrl())) {
             throw new CommonException("url不能为空");
         }
-        url = URLDecoder.decode(url);
+        String url = URLDecoder.decode(checkVo.getUrl());
         BmBookmark bmBookmark = new BmBookmark();
         List<BmBookmark> list = bmBookmark.selectList(new LambdaQueryWrapper<BmBookmark>()
                 .eq(BmBookmark::getUserId, userInfoService.currentUser().getId())
@@ -753,6 +758,8 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             //获取url所在收藏夹路径
             List<TreeVo> allFolder = getAllFolder();
             Integer folderId = list.get(0).getFolderId();
+            checkRespVo.setFolderId(folderId);
+            checkRespVo.setId(list.get(0).getId());
             List<Object> parentIds = TreeUtil.queryParentIds(list.get(0).getFolderId(), allFolder);
             parentIds.add(0,folderId);
             Collections.reverse(parentIds);

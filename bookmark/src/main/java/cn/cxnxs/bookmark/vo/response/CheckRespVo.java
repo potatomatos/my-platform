@@ -3,6 +3,7 @@ package cn.cxnxs.bookmark.vo.response;
 import cn.cxnxs.common.core.entity.request.BaseVo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.relational.core.sql.In;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,5 +27,12 @@ public class CheckRespVo extends BaseVo {
      * 存在的路径
      */
     private List<String> path=new ArrayList<>();
+
+    /**
+     * 所在文件夹
+     */
+    private Integer folderId;
+
+    private Integer id;
 
 }

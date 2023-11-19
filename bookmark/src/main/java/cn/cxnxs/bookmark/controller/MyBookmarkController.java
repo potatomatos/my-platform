@@ -114,8 +114,8 @@ public class MyBookmarkController {
 
     @ResponseResult
     @PostMapping("/bookmark/url/check")
-    public CheckRespVo urlExist(String url) {
-        return myBookmarkService.urlExist(url);
+    public CheckRespVo urlExist(@RequestBody CheckVo checkVo) {
+        return myBookmarkService.urlExist(checkVo);
     }
 
     @ResponseResult

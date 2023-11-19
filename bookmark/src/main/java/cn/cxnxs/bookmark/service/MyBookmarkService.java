@@ -92,7 +92,7 @@ public interface MyBookmarkService {
      * @param url 网址
      * @return true-已存在 false-不存在
      */
-    CheckRespVo urlExist(String url);
+    CheckRespVo urlExist(CheckVo checkVo);
 
     List<BookmarkVo> recentVisited(PageWrapper pageWrapper);
 
