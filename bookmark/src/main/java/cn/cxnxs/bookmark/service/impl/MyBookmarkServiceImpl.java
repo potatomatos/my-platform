@@ -232,7 +232,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         });
         LambdaQueryWrapper<BmBookmark> bookmarkLambdaQueryWrapper = new LambdaQueryWrapper<>();
         bookmarkLambdaQueryWrapper.eq(BmBookmark::getUserId, userId);
-        bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getFolderId,BmBookmark::getSortNo);
+        bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getFolderId,BmBookmark::getCreateTime);
         List<BmBookmark> bmBookmarks = new BmBookmark().selectList(bookmarkLambdaQueryWrapper);
         bmBookmarks.forEach(bmBookmark -> {
             TreeVo treeVo = new TreeVo();
