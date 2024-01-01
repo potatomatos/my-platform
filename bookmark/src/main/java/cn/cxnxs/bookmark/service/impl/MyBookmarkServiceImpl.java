@@ -271,10 +271,10 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             } else if(SearchVo.SORT_LATEST.equals(searchVo.getSort())){
                 bookmarkLambdaQueryWrapper.orderByDesc(BmBookmark::getAccessCount);
             }else {
-                bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getTitle, BmBookmark::getSortNo);
+                bookmarkLambdaQueryWrapper.orderByDesc(BmBookmark::getCreateTime);
             }
         } else {
-            bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getSortNo);
+            bookmarkLambdaQueryWrapper.orderByAsc(BmBookmark::getCreateTime);
         }
         if (StringUtil.isNotEmpty(searchVo.getKeyword())) {
             bookmarkLambdaQueryWrapper.like(BmBookmark::getTitle, searchVo.getKeyword())
@@ -286,7 +286,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
             LambdaQueryWrapper<BmFolder> folderLambdaQueryWrapper = new LambdaQueryWrapper<>();
             folderLambdaQueryWrapper.eq(BmFolder::getParentId, pid);
             folderLambdaQueryWrapper.eq(BmFolder::getUserId, userId);
-            folderLambdaQueryWrapper.orderByAsc(BmFolder::getSortNo);
+            folderLambdaQueryWrapper.orderByAsc(BmFolder::getCreateTime);
             List<BmFolder> bmFolders = new BmFolder().selectList(folderLambdaQueryWrapper);
             bmFolders.forEach(bmFolder -> {
                 TreeVo treeVo = new TreeVo();
@@ -519,7 +519,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     private String getWebsiteIcon(String navUrl) {
         String iconUrl = "";
         try {
-            HttpResult respResult = this.httpGet(navUrl, 2);
+            HttpResult respResult = this.httpGet(navUrl, 0);
             Document doc = Jsoup.parse(respResult.getResult());
             //提取图标
             Elements elements = doc.select("head>link[type=\"image/x-icon\"]");
@@ -590,7 +590,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
                 .headers(headers)
                 .client(client)
                 .encoding("utf-8")
-                .timeout(5000)
+                .timeout(3000)
                 .context(cookies.getContext())
                 .method(HttpMethods.GET);
         logger.info("url:{}", navUrl);
@@ -647,7 +647,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
         }
         // 子线程共享request
         RequestContextHolder.setRequestAttributes(RequestContextHolder.getRequestAttributes(),true);
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(50, 100, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(total));
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(total, total, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(total));
         AtomicInteger atomicCount = new AtomicInteger();
         for (int i = 0; i < total; i++) {
             BookmarkVo bookmarkVo = bookmarkVos.get(i);
