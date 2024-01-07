@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="Keywords" content="云书签"/>
+    <meta name="Description" content="云书签"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
+    <link rel="icon" href="static/icon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="static/icon.png" type="image/x-icon">
+    <title>登录</title>
+    <style>
+        html,body{
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .container {
+            height: 100%;
+            background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+        }
+
+        .login-wrapper {
+            background-color: #fff;
+            width: 358px;
+            height: 588px;
+            border-radius: 15px;
+            padding: 0 50px;
+            position: relative;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .header {
+            font-size: 38px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 200px;
+        }
+
+        .input-item {
+            display: block;
+            width: 100%;
+            margin-bottom: 20px;
+            border: 0;
+            padding: 10px;
+            border-bottom: 1px solid rgb(128, 125, 125);
+            font-size: 15px;
+            outline: none;
+        }
+
+        .input-item::placeholder {
+            text-transform: uppercase;
+        }
+
+        .btn {
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            margin-top: 40px;
+            background-image: linear-gradient(to right, #a6c1ee, #fbc2eb);
+            color: #fff;
+        }
+        .pointer {
+            cursor: pointer;
+        }
+
+        .msg {
+            text-align: center;
+            line-height: 88px;
+        }
+
+        a {
+            text-decoration-line: none;
+            color: #abc1ee;
+        }
+    </style>
+</head>
+<body>
+<div class="container" @keyup.enter="login">
+    <div class="login-wrapper">
+        <div class="header">登录</div>
+        <div class="form-wrapper">
+            <input type="text" name="username" placeholder="用户名" class="input-item" v-model="formLogin.username">
+            <input type="password" name="password" placeholder="密码" class="input-item" v-model="formLogin.password">
+            <div><img v-bind:src="captchaUrl" v-on:click="refreshCaptcha" alt="验证码"></div>
+            <input type="text" name="captcha" placeholder="验证码" class="input-item" v-model="formLogin.captcha">
+            <div :class="['btn',{'pointer':!doing}]" @click="login">登录</div>
+        </div>
+        <div class="msg">
+            <p>Don't have account?
+                <a href="#">Sign up</a>
+            </p>
+            <p v-if="errorMsg">{{errorMsg}}</p>
+        </div>
+    </div>
+</div>
+
+<script>
+
+</script>
+</body>
+</html>
