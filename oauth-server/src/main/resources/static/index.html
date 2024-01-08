@@ -6,8 +6,9 @@
     <meta name="Description" content="云书签"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
-    <link rel="icon" href="static/icon.png" type="image/x-icon">
-    <link rel="shortcut icon" href="static/icon.png" type="image/x-icon">
+    <link rel="icon" href="img/icon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="img/icon.png" type="image/x-icon">
+    <script src="js/jquery-3.4.1/jquery-3.4.1.min.js"></script>
     <title>登录</title>
     <style>
         html,body{
@@ -68,38 +69,113 @@
         }
 
         .msg {
+            line-height: 50px;
             text-align: center;
-            line-height: 88px;
         }
 
         a {
             text-decoration-line: none;
             color: #abc1ee;
         }
+
+        #errorMsg {
+            text-align: center;
+            color: red;
+        }
     </style>
 </head>
 <body>
-<div class="container" @keyup.enter="login">
+<div class="container">
     <div class="login-wrapper">
         <div class="header">登录</div>
         <div class="form-wrapper">
-            <input type="text" name="username" placeholder="用户名" class="input-item" v-model="formLogin.username">
-            <input type="password" name="password" placeholder="密码" class="input-item" v-model="formLogin.password">
-            <div><img v-bind:src="captchaUrl" v-on:click="refreshCaptcha" alt="验证码"></div>
-            <input type="text" name="captcha" placeholder="验证码" class="input-item" v-model="formLogin.captcha">
-            <div :class="['btn',{'pointer':!doing}]" @click="login">登录</div>
+            <input type="text" name="username" placeholder="用户名" class="input-item">
+            <input type="password" name="password" placeholder="密码" class="input-item">
+            <div><img alt="验证码" id="captchaImg" src="/captcha" onclick="refreshImg"></div>
+            <input type="text" name="captcha" placeholder="验证码" class="input-item">
+            <div class="btn pointer" onclick="login">登录</div>
         </div>
         <div class="msg">
             <p>Don't have account?
                 <a href="#">Sign up</a>
             </p>
-            <p v-if="errorMsg">{{errorMsg}}</p>
         </div>
+        <div id="errorMsg"></div>
     </div>
 </div>
 
 <script>
+let clientId
+let redirectUri
+$(function () {
+    clientId = getQueryString('clientId')
+    redirectUri = getQueryString('redirect')
+    if(!clientId||!redirectUri) {
+        $('#errorMsg').html('授权参数有误')
+        $('[name="username"]').attr('disabled',true)
+        $('[name="password"]').attr('disabled',true)
+        $('[name="captcha"]').attr('disabled',true)
+        doing = true
+    }
 
+})
+var doing= false
+function refreshImg() {
+    let num = Math.ceil(Math.random() * 1000)
+    let captchaUrlTmp = $('#captchaImg').attr('src').split('?')[0]
+    let captchaUrl = [captchaUrlTmp, 'code=' + num].join('?')
+    $('#captchaImg').attr('src',captchaUrl)
+    $('[name="captcha"]').val('')
+}
+
+function login(){
+    if (doing) {
+        return
+      }
+    $('#errorMsg').html('')
+    let username=$('[name="username"]').val()
+    let password=$('[name="password"]').val()
+    let captcha=$('[name="captcha"]').val()
+    doing = true
+    $.ajax({
+        url: '/login',
+        type: 'post',
+        contentType: 'application/x-www-form-urlencoded',
+        data: {
+            username: username,
+            password: password,
+            captcha: captcha,
+            type: 'PASSWORD',
+            clientId: clientId,
+            redirectUri: redirectUri
+        },
+        success: function(res) {
+            console.log('登录成功,跳转认证地址')
+            doing = false
+            if (res.code === 200) {
+                window.location = res.data.authorizeUrl
+            } else {
+                $('#errorMsg').html(res.msg)
+            }
+        },
+        error: function() {
+            doing = false
+            $('#errorMsg').html('请求异常')
+        }
+    })
+
+}
+/**
+ * 获取url参数 
+ **/
+function getQueryString (name) {
+  const reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)')
+  const r = window.location.search.substr(1).match(reg)
+  if (r != null) {
+    return unescape(r[2])
+  }
+  return ''
+}
 </script>
 </body>
 </html>
