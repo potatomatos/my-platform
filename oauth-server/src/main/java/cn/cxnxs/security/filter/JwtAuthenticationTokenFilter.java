@@ -50,6 +50,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         list.add(new AntPathRequestMatcher("/captcha"));
         list.add(new AntPathRequestMatcher("/rsa/publicKey"));
         list.add(new AntPathRequestMatcher("/login"));
+        list.add(new AntPathRequestMatcher("/login.html"));
+        list.add(new AntPathRequestMatcher("/platform/**"));
+        list.add(new AntPathRequestMatcher("/static/**"));
         boolean match = false;
         for (AntPathRequestMatcher ant : list) {
             if (ant.matches(request)) {
