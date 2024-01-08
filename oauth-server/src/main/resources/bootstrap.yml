@@ -7,6 +7,13 @@ spring:
   application:
     # 应用名称
     name: oauth-server
+  mvc:
+    view:
+      prefix: /static/
+      suffix: .html
+    static-path-pattern: static/**
+  resources:
+    static-locations: classpath:static/
   profiles:
     # 环境配置
     active: dev
