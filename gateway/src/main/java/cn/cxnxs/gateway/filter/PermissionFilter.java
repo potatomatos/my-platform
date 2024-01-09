@@ -64,10 +64,13 @@ public class PermissionFilter implements GlobalFilter, Ordered {
         log.info("访问地址：{}, token: {}", url, accessToken);
 
         List<String> list = Lists.newArrayList();
+        list.add("/platform/**");
+        list.add("/static/**");
         list.add("/oauth-server/oauth/**");
         list.add("/oauth-server/captcha");
         list.add("/oauth-server/rsa/publicKey");
         list.add("/oauth-server/login");
+        list.add("/oauth-server/login.html");
         list.add("/oauth-server/verifyPage");
         list.add("/system/system/api/getAccessToken");
         list.add("/cloud-disk/system/getAccessToken");

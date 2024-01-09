@@ -6,9 +6,9 @@
     <meta name="Description" content="云书签"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
-    <link rel="icon" href="img/icon.png" type="image/x-icon">
-    <link rel="shortcut icon" href="img/icon.png" type="image/x-icon">
-    <script src="js/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+    <link rel="icon" href="/static/img/icon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/static/img/icon.png" type="image/x-icon">
+    <script src="/static/js/jquery-3.4.1/jquery-3.4.1.min.js"></script>
     <title>登录</title>
     <style>
         html,body{
@@ -91,9 +91,9 @@
         <div class="form-wrapper">
             <input type="text" name="username" placeholder="用户名" class="input-item">
             <input type="password" name="password" placeholder="密码" class="input-item">
-            <div><img alt="验证码" id="captchaImg" src="/captcha" onclick="refreshImg"></div>
+            <div><img alt="验证码" id="captchaImg" src="/captcha" onclick="refreshImg()"></div>
             <input type="text" name="captcha" placeholder="验证码" class="input-item">
-            <div class="btn pointer" onclick="login">登录</div>
+            <div class="btn pointer" onclick="login()">登录</div>
         </div>
         <div class="msg">
             <p>Don't have account?
@@ -132,10 +132,23 @@ function login(){
     if (doing) {
         return
       }
-    $('#errorMsg').html('')
+    let errorMsg = $('#errorMsg')
+    errorMsg.html('')
     let username=$('[name="username"]').val()
     let password=$('[name="password"]').val()
     let captcha=$('[name="captcha"]').val()
+    if (!username) {
+        errorMsg.html('请输入用户名')
+        return;
+    }
+    if (!password) {
+        errorMsg.html('请输入密码')
+        return;
+    }
+    if (!captcha) {
+        errorMsg.html('请输入验证码')
+        return;
+    }
     doing = true
     $.ajax({
         url: '/login',
@@ -156,17 +169,19 @@ function login(){
                 window.location = res.data.authorizeUrl
             } else {
                 $('#errorMsg').html(res.msg)
+                refreshImg()
             }
         },
         error: function() {
             doing = false
             $('#errorMsg').html('请求异常')
+            refreshImg()
         }
     })
 
 }
 /**
- * 获取url参数 
+ * 获取url参数
  **/
 function getQueryString (name) {
   const reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)')
