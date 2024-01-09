@@ -74,22 +74,25 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 if (redisUtils.hasKey(key)) {
                     passwordAuthenticationToken= redisUtils.get(key);
                 }else {
+                    OAuth2AccessToken oAuth2AccessToken = jdbcTokenStore.readAccessToken(accessToken);
+                    if (Objects.isNull(oAuth2AccessToken)) {
+                        render(request, response, Result.failure(Result.ResultEnum.TOKEN_REQUIRED, null));
+                        return;
+                    }
+                    if (oAuth2AccessToken.isExpired()) {
+                        //token过期
+                        render(request, response, Result.failure(Result.ResultEnum.TOKEN_EXPIRED, null));
+                        return;
+                    }
                     OAuth2Authentication oAuth2Authentication = jdbcTokenStore.readAuthentication(accessToken);
                     if (Objects.isNull(oAuth2Authentication)) {
                         render(request, response, Result.failure(Result.ResultEnum.TOKEN_REQUIRED, null));
                         return;
                     }
                     passwordAuthenticationToken = (UserPasswordAuthenticationToken) oAuth2Authentication.getUserAuthentication();
-                    redisUtils.set(REDIS_KEY + accessToken,passwordAuthenticationToken,3600);
+                    redisUtils.set(key,passwordAuthenticationToken,3600);
                 }
                 SecurityContextHolder.getContext().setAuthentication(passwordAuthenticationToken);
-
-                OAuth2AccessToken oAuth2AccessToken = jdbcTokenStore.readAccessToken(accessToken);
-                if (oAuth2AccessToken.isExpired()) {
-                    //token过期
-                    render(request, response, Result.failure(Result.ResultEnum.TOKEN_EXPIRED, null));
-                    return;
-                }
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 //token超时或者非法
