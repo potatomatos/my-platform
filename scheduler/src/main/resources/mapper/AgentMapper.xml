@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cxnxs.scheduler.mapper.AgentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cxnxs.webspider.web.entity.Agent">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="options" property="options"/>
+        <result column="type" property="type"/>
+        <result column="name" property="name"/>
+        <result column="schedule" property="schedule"/>
+        <result column="data_count" property="dataCount"/>
+        <result column="last_check_at" property="lastCheckAt"/>
+        <result column="last_receive_at" property="lastReceiveAt"/>
+        <result column="last_checked_data_id" property="lastCheckedDataId"/>
+        <result column="last_web_request_at" property="lastWebRequestAt"/>
+        <result column="keep_data_time" property="keepDataTime"/>
+        <result column="last_data_ime" property="lastDataIme"/>
+        <result column="last_error_log_time" property="lastErrorLogTime"/>
+        <result column="propagate_immediately" property="propagateImmediately"/>
+        <result column="state" property="state"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="selectByTypeProperties" resultType="cn.cxnxs.webspider.web.entity.Agent">
+        select
+        a.*
+        from agent a join agent_type b on a.type=b.id
+        <where>
+            <if test="canCreateEvents!=null">
+                and b.can_create_events=#{canCreateEvents}
+            </if>
+            <if test="canReceiveEvents!=null">
+                and b.can_receive_events=#{canReceiveEvents}
+            </if>
+        </where>
+    </select>
+
+    <select id="pageSelectList" resultType="cn.cxnxs.webspider.web.entity.Agent">
+        SELECT * FROM agent
+        <where>
+            <if test="agentVo.name!=null and agentVo.name!=''">
+                and name like #{agentVo.name}
+            </if>
+            <if test="agentVo.scenarioId!=null">
+                and id in(
+                SELECT agent_id FROM scenario_agent_rel WHERE scenario_id=#{agentVo.scenarioId}
+                )
+            </if>
+        </where>
+        order by created_at desc
+    </select>
+</mapper>
