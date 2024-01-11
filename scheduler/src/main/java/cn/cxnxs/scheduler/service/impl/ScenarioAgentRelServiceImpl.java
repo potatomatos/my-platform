@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.service.impl;
 
 import cn.cxnxs.scheduler.entity.ScheduleScenarioAgentRel;
-import cn.cxnxs.scheduler.mapper.ScenarioAgentRelMapper;
+import cn.cxnxs.scheduler.mapper.ScheduleScenarioAgentRelMapper;
 import cn.cxnxs.scheduler.service.IScenarioAgentRelService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2020-11-10
  */
 @Service
-public class ScenarioAgentRelServiceImpl extends ServiceImpl<ScenarioAgentRelMapper, ScheduleScenarioAgentRel> implements IScenarioAgentRelService {
+public class ScenarioAgentRelServiceImpl extends ServiceImpl<ScheduleScenarioAgentRelMapper, ScheduleScenarioAgentRel> implements IScenarioAgentRelService {
 
 }

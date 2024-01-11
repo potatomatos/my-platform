@@ -5,7 +5,7 @@ import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleScenarioAgentRel;
 import cn.cxnxs.scheduler.entity.ScheduleScenarios;
 import cn.cxnxs.scheduler.exception.BusinessException;
-import cn.cxnxs.scheduler.mapper.ScenariosMapper;
+import cn.cxnxs.scheduler.mapper.ScheduleScenariosMapper;
 import cn.cxnxs.scheduler.service.IAgentService;
 import cn.cxnxs.scheduler.service.IScenarioAgentRelService;
 import cn.cxnxs.scheduler.service.IScenariosService;
@@ -35,10 +35,10 @@ import java.util.Map;
  * @since 2020-11-10
  */
 @Service
-public class ScenariosServiceImpl extends ServiceImpl<ScenariosMapper, ScheduleScenarios> implements IScenariosService {
+public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, ScheduleScenarios> implements IScenariosService {
 
     @Autowired
-    private ScenariosMapper scenariosMapper;
+    private ScheduleScenariosMapper scheduleScenariosMapper;
 
     @Autowired
     private IScenarioAgentRelService scenarioAgentRelService;
@@ -51,7 +51,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScenariosMapper, ScheduleS
 
     @Override
     public IPage<ScenariosVo> getList(Page<ScenariosVo> page, ScenariosVo scenariosVo) {
-        return scenariosMapper.selectScenariosList(page, scenariosVo);
+        return scheduleScenariosMapper.selectScenariosList(page, scenariosVo);
     }
 
     /**

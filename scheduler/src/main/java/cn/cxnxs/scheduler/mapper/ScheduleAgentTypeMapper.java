@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2020-11-17
  */
-public interface AgentTypeMapper extends BaseMapper<ScheduleAgentType> {
+public interface ScheduleAgentTypeMapper extends BaseMapper<ScheduleAgentType> {
 
 }

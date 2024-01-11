@@ -14,7 +14,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface ScenariosMapper extends BaseMapper<ScheduleScenarios> {
+public interface ScheduleScenariosMapper extends BaseMapper<ScheduleScenarios> {
 
     IPage<ScenariosVo> selectScenariosList(Page<ScenariosVo> page, ScenariosVo scenariosVo);
 }

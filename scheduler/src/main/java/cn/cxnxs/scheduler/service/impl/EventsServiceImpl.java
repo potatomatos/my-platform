@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.service.impl;
 
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
-import cn.cxnxs.scheduler.mapper.EventsMapper;
+import cn.cxnxs.scheduler.mapper.ScheduleEventsMapper;
 import cn.cxnxs.scheduler.service.IEventsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2020-11-10
  */
 @Service
-public class EventsServiceImpl extends ServiceImpl<EventsMapper, ScheduleEvents> implements IEventsService {
+public class EventsServiceImpl extends ServiceImpl<ScheduleEventsMapper, ScheduleEvents> implements IEventsService {
 
 }

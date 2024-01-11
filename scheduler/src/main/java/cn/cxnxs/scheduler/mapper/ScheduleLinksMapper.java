@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface LinksMapper extends BaseMapper<ScheduleLinks> {
+public interface ScheduleLinksMapper extends BaseMapper<ScheduleLinks> {
 
 }

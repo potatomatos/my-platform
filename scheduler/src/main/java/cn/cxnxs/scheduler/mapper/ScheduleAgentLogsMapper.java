@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2021-02-16
  */
-public interface AgentLogsMapper extends BaseMapper<ScheduleAgentLogs> {
+public interface ScheduleAgentLogsMapper extends BaseMapper<ScheduleAgentLogs> {
 
 }

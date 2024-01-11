@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface EventsMapper extends BaseMapper<ScheduleEvents> {
+public interface ScheduleEventsMapper extends BaseMapper<ScheduleEvents> {
 
 }

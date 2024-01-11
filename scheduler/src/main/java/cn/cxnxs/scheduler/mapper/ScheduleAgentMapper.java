@@ -18,7 +18,7 @@ import java.util.List;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface AgentMapper extends BaseMapper<ScheduleAgent> {
+public interface ScheduleAgentMapper extends BaseMapper<ScheduleAgent> {
 
     List<ScheduleAgent> selectByTypeProperties(AgentTypeVo agentTypeVo);
 

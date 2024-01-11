@@ -8,7 +8,7 @@ import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
 import cn.cxnxs.scheduler.entity.*;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
-import cn.cxnxs.scheduler.mapper.AgentMapper;
+import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
 import cn.cxnxs.scheduler.service.IAgentService;
 import cn.cxnxs.scheduler.service.ILinksService;
 import cn.cxnxs.scheduler.service.IScenarioAgentRelService;
@@ -41,7 +41,7 @@ import java.util.Map;
  * @since 2020-11-10
  */
 @Service
-public class AgentServiceImpl extends ServiceImpl<AgentMapper, ScheduleAgent> implements IAgentService {
+public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleAgent> implements IAgentService {
 
 
     @Autowired
@@ -62,8 +62,8 @@ public class AgentServiceImpl extends ServiceImpl<AgentMapper, ScheduleAgent> im
 
     @Override
     public List<AgentVo> findByTypeProperties(AgentTypeVo agentTypeVo) {
-        AgentMapper agentMapper = getBaseMapper();
-        List<ScheduleAgent> scheduleAgents = agentMapper.selectByTypeProperties(agentTypeVo);
+        ScheduleAgentMapper scheduleAgentMapper = getBaseMapper();
+        List<ScheduleAgent> scheduleAgents = scheduleAgentMapper.selectByTypeProperties(agentTypeVo);
         return ObjectUtil.copyListProperties(scheduleAgents, AgentVo.class);
     }
 

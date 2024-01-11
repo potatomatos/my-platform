@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface ScenarioAgentRelMapper extends BaseMapper<ScheduleScenarioAgentRel> {
+public interface ScheduleScenarioAgentRelMapper extends BaseMapper<ScheduleScenarioAgentRel> {
 
 }

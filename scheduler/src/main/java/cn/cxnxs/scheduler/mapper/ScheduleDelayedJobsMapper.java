@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2021-02-02
  */
-public interface DelayedJobsMapper extends BaseMapper<ScheduleDelayedJobs> {
+public interface ScheduleDelayedJobsMapper extends BaseMapper<ScheduleDelayedJobs> {
 
 }
