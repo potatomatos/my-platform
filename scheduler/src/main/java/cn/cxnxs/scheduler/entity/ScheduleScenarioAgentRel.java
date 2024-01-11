@@ -11,34 +11,40 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- *
+ * 场景-代理关系
  * </p>
  *
  * @author mengjinyuan
- * @since 2021-02-16
+ * @since 2020-11-10
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class AgentLogs extends Model<AgentLogs> {
+public class ScheduleScenarioAgentRel extends Model<ScheduleScenarioAgentRel> {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    /**
+     * 代理id
+     */
     private Integer agentId;
 
-    private String message;
+    /**
+     * 场景id
+     */
+    private Integer scenarioId;
 
-    private Integer level;
-
-    private Integer inboundEventId;
-
-    private Integer outboundEventId;
-
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 
+    /**
+     * 更新时间
+     */
     private LocalDateTime updatedAt;
 
 }

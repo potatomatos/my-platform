@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.mapper;
 
 
-import cn.cxnxs.scheduler.entity.Events;
+import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface EventsMapper extends BaseMapper<Events> {
+public interface EventsMapper extends BaseMapper<ScheduleEvents> {
 
 }

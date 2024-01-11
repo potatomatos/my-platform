@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.service;
 
 
-import cn.cxnxs.scheduler.entity.Links;
+import cn.cxnxs.scheduler.entity.ScheduleLinks;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface ILinksService extends IService<Links> {
+public interface ILinksService extends IService<ScheduleLinks> {
 
 }

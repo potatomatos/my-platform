@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.quartz;
 
 import cn.cxnxs.scheduler.core.IAgent;
-import cn.cxnxs.scheduler.entity.AgentType;
+import cn.cxnxs.scheduler.entity.ScheduleAgentType;
 import cn.cxnxs.scheduler.utils.SpringContextUtil;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSONObject;
@@ -22,9 +22,9 @@ public class JobGenerator {
 
     public IAgent buildAgent(AgentVo agent) throws ClassNotFoundException {
         Integer typeId = agent.getType();
-        AgentType agentType = new AgentType().selectById(typeId);
-        logger.info("创建代理实例:{}", agentType.getHandler());
-        Class<IAgent> agentClass = (Class<IAgent>) Class.forName(agentType.getHandler());
+        ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(typeId);
+        logger.info("创建代理实例:{}", scheduleAgentType.getHandler());
+        Class<IAgent> agentClass = (Class<IAgent>) Class.forName(scheduleAgentType.getHandler());
         IAgent agentInstance = SpringContextUtil.getBean(agentClass);
         agentInstance.option(JSONObject.parseObject(agent.getOptions()));
         return agentInstance.option(JSONObject.parseObject(agent.getOptions()));

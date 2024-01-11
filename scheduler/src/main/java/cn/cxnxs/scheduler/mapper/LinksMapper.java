@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.mapper;
 
 
-import cn.cxnxs.scheduler.entity.Links;
+import cn.cxnxs.scheduler.entity.ScheduleLinks;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface LinksMapper extends BaseMapper<Links> {
+public interface LinksMapper extends BaseMapper<ScheduleLinks> {
 
 }

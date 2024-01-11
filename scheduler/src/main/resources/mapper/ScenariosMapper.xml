@@ -18,7 +18,7 @@
 
     <select id="selectScenariosList" resultType="cn.cxnxs.webspider.web.vo.ScenariosVo">
         select a.*,(select count(*) from scenario_agent_rel where scenario_id=a.id) as agentCount
-        from scenarios a
+        from scheduleScenarios a
         <where>
             <if test="scenariosVo.name!=null and scenariosVo.name!=''">
                 and a.name like '%${scenariosVo.name}%'

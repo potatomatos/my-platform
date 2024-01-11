@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.mapper;
 
 
-import cn.cxnxs.scheduler.entity.AgentLogs;
+import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2021-02-16
  */
-public interface AgentLogsMapper extends BaseMapper<AgentLogs> {
+public interface AgentLogsMapper extends BaseMapper<ScheduleAgentLogs> {
 
 }

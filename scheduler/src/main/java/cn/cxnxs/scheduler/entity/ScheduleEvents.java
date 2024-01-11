@@ -11,16 +11,16 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- *
+ * 代理事件
  * </p>
  *
  * @author mengjinyuan
- * @since 2021-02-02
+ * @since 2020-11-10
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class DelayedJobs extends Model<DelayedJobs> {
+public class ScheduleEvents extends Model<ScheduleEvents> {
 
     private static final long serialVersionUID = 1L;
 
@@ -28,44 +28,19 @@ public class DelayedJobs extends Model<DelayedJobs> {
     private Integer id;
 
     /**
-     * 任务权重
+     * 所属用户
      */
-    private Integer priority;
+    private Integer userId;
 
     /**
-     * 失败尝试次数
+     * 所属代理
      */
-    private Integer attempts;
+    private Integer agentId;
 
     /**
-     * 处理器
+     * 内容
      */
-    private String handler;
-
-    /**
-     * 错误信息
-     */
-    private String lastError;
-
-    /**
-     * 运行时间
-     */
-    private LocalDateTime runAt;
-
-    /**
-     * 线程id
-     */
-    private Integer threadId;
-
-    /**
-     * 发生错误时间
-     */
-    private LocalDateTime failedAt;
-
-    /**
-     * 所在队列
-     */
-    private String queue;
+    private String payload;
 
     /**
      * 创建时间
@@ -76,5 +51,15 @@ public class DelayedJobs extends Model<DelayedJobs> {
      * 更新时间
      */
     private LocalDateTime updatedAt;
+
+    /**
+     * 过期时间
+     */
+    private LocalDateTime expiresAt;
+
+    /**
+     * 占用线程id
+     */
+    private String lockedBy;
 
 }

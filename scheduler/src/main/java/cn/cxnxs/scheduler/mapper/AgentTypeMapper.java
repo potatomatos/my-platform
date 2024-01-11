@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.mapper;
 
 
-import cn.cxnxs.scheduler.entity.AgentType;
+import cn.cxnxs.scheduler.entity.ScheduleAgentType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2020-11-17
  */
-public interface AgentTypeMapper extends BaseMapper<AgentType> {
+public interface AgentTypeMapper extends BaseMapper<ScheduleAgentType> {
 
 }

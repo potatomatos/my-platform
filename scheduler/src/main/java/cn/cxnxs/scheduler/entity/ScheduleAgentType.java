@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class AgentType extends Model<AgentType> {
+public class ScheduleAgentType extends Model<ScheduleAgentType> {
 
     private static final long serialVersionUID = 1L;
 

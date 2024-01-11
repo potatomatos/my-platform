@@ -1,9 +1,9 @@
 package cn.cxnxs.scheduler.service.impl;
 
 import cn.cxnxs.common.core.utils.ObjectUtil;
-import cn.cxnxs.scheduler.entity.Agent;
-import cn.cxnxs.scheduler.entity.ScenarioAgentRel;
-import cn.cxnxs.scheduler.entity.Scenarios;
+import cn.cxnxs.scheduler.entity.ScheduleAgent;
+import cn.cxnxs.scheduler.entity.ScheduleScenarioAgentRel;
+import cn.cxnxs.scheduler.entity.ScheduleScenarios;
 import cn.cxnxs.scheduler.exception.BusinessException;
 import cn.cxnxs.scheduler.mapper.ScenariosMapper;
 import cn.cxnxs.scheduler.service.IAgentService;
@@ -35,7 +35,7 @@ import java.util.Map;
  * @since 2020-11-10
  */
 @Service
-public class ScenariosServiceImpl extends ServiceImpl<ScenariosMapper, Scenarios> implements IScenariosService {
+public class ScenariosServiceImpl extends ServiceImpl<ScenariosMapper, ScheduleScenarios> implements IScenariosService {
 
     @Autowired
     private ScenariosMapper scenariosMapper;
@@ -62,18 +62,18 @@ public class ScenariosServiceImpl extends ServiceImpl<ScenariosMapper, Scenarios
      */
     @Override
     public ScenariosVo getDetail(Integer id) {
-        Scenarios scenarios = super.getById(id);
+        ScheduleScenarios scheduleScenarios = super.getById(id);
         ScenariosVo scenariosVo = new ScenariosVo();
-        if (scenarios != null) {
-            BeanUtils.copyProperties(scenarios, scenariosVo);
-            List<ScenarioAgentRel> scenarioAgentRels = scenarioAgentRelService
-                    .list(new QueryWrapper<ScenarioAgentRel>().eq("scenario_id", id));
-            if (scenarioAgentRels.size() != 0) {
-                List<Agent> allAgents = agentService.list();
-                List<AgentVo> agentVos = ObjectUtil.copyListProperties(allAgents, AgentVo.class);
+        if (scheduleScenarios != null) {
+            BeanUtils.copyProperties(scheduleScenarios, scenariosVo);
+            List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = scenarioAgentRelService
+                    .list(new QueryWrapper<ScheduleScenarioAgentRel>().eq("scenario_id", id));
+            if (scheduleScenarioAgentRels.size() != 0) {
+                List<ScheduleAgent> allScheduleAgents = agentService.list();
+                List<AgentVo> agentVos = ObjectUtil.copyListProperties(allScheduleAgents, AgentVo.class);
                 for (AgentVo agentVo : agentVos) {
-                    for (ScenarioAgentRel scenarioAgentRel : scenarioAgentRels) {
-                        if (scenarioAgentRel.getAgentId().equals(agentVo.getId())) {
+                    for (ScheduleScenarioAgentRel scheduleScenarioAgentRel : scheduleScenarioAgentRels) {
+                        if (scheduleScenarioAgentRel.getAgentId().equals(agentVo.getId())) {
                             agentVo.setSelected(true);
                             break;
                         }
@@ -94,23 +94,23 @@ public class ScenariosServiceImpl extends ServiceImpl<ScenariosMapper, Scenarios
     @Transactional
     @Override
     public Map<String, String> saveScenarios(ScenariosVo scenariosVo) {
-        Scenarios scenarios = new Scenarios();
-        BeanUtils.copyProperties(scenariosVo, scenarios);
-        super.saveOrUpdate(scenarios);
+        ScheduleScenarios scheduleScenarios = new ScheduleScenarios();
+        BeanUtils.copyProperties(scenariosVo, scheduleScenarios);
+        super.saveOrUpdate(scheduleScenarios);
         //保存关系
         if (scenariosVo.getAgentIds() != null) {
             if (scenariosVo.getId() != null) {
-                scenarioAgentRelService.remove(new QueryWrapper<ScenarioAgentRel>().eq("scenario_id", scenariosVo.getId()));
+                scenarioAgentRelService.remove(new QueryWrapper<ScheduleScenarioAgentRel>().eq("scenario_id", scenariosVo.getId()));
             }
-            List<ScenarioAgentRel> scenarioAgentRels = new ArrayList<>();
+            List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ArrayList<>();
             for (Integer agentId : scenariosVo.getAgentIds()) {
-                ScenarioAgentRel scenarioAgentRel = new ScenarioAgentRel();
-                scenarioAgentRel.setAgentId(agentId);
-                scenarioAgentRel.setScenarioId(scenarios.getId());
-                scenarioAgentRel.setCreatedAt(LocalDateTime.now());
-                scenarioAgentRels.add(scenarioAgentRel);
+                ScheduleScenarioAgentRel scheduleScenarioAgentRel = new ScheduleScenarioAgentRel();
+                scheduleScenarioAgentRel.setAgentId(agentId);
+                scheduleScenarioAgentRel.setScenarioId(scheduleScenarios.getId());
+                scheduleScenarioAgentRel.setCreatedAt(LocalDateTime.now());
+                scheduleScenarioAgentRels.add(scheduleScenarioAgentRel);
             }
-            scenarioAgentRelService.saveBatch(scenarioAgentRels);
+            scenarioAgentRelService.saveBatch(scheduleScenarioAgentRels);
         }
         return new HashMap<>(0);
     }
@@ -135,16 +135,16 @@ public class ScenariosServiceImpl extends ServiceImpl<ScenariosMapper, Scenarios
         } else if (TYPE_SCEN_AGENT.equals(type)) {
             //删除方案
             super.removeById(id);
-            List<ScenarioAgentRel> scenarioAgentRels = scenarioAgentRelService.list(new QueryWrapper<ScenarioAgentRel>().eq("scenario_id", id));
-            if (scenarioAgentRels.size() != 0) {
+            List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = scenarioAgentRelService.list(new QueryWrapper<ScheduleScenarioAgentRel>().eq("scenario_id", id));
+            if (scheduleScenarioAgentRels.size() != 0) {
                 List<Integer> ids = new ArrayList<>();
-                scenarioAgentRels.forEach(s -> {
+                scheduleScenarioAgentRels.forEach(s -> {
                     ids.add(s.getAgentId());
                 });
                 //删除代理
                 agentService.removeByIds(ids);
                 //删除方案和代理关系
-                scenarioAgentRelService.remove(new QueryWrapper<ScenarioAgentRel>().in("agent_id", ids));
+                scenarioAgentRelService.remove(new QueryWrapper<ScheduleScenarioAgentRel>().in("agent_id", ids));
             }
         } else {
             throw new BusinessException("删除类型不正确");

@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.mapper;
 
 
-import cn.cxnxs.scheduler.entity.DelayedJobs;
+import cn.cxnxs.scheduler.entity.ScheduleDelayedJobs;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author mengjinyuan
  * @since 2021-02-02
  */
-public interface DelayedJobsMapper extends BaseMapper<DelayedJobs> {
+public interface DelayedJobsMapper extends BaseMapper<ScheduleDelayedJobs> {
 
 }

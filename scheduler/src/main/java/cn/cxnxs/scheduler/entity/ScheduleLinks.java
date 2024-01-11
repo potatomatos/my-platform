@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 任务场景
+ * agent关联
  * </p>
  *
  * @author mengjinyuan
@@ -20,59 +20,21 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class Scenarios extends Model<Scenarios> {
+public class ScheduleLinks extends Model<ScheduleLinks> {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    /**
-     * 名称
-     */
-    private String name;
+    private Integer sourceId;
 
-    /**
-     * 所属用户
-     */
-    private Integer userId;
+    private Integer receiverId;
 
-    /**
-     * 描述说明
-     */
-    private String description;
-
-    /**
-     * 是否公开
-     */
-    private Boolean isPublic;
-
-    /**
-     * 标签背景颜色
-     */
-    private String tagBgColor;
-
-    /**
-     * 标签前景颜色
-     */
-    private String tagFgColor;
-
-    /**
-     * 图标
-     */
-    private String icon;
-
-    /**
-     * 创建时间
-     */
     private LocalDateTime createdAt;
 
-    /**
-     * 更新时间
-     */
     private LocalDateTime updatedAt;
+
+    private Integer eventIdAtCreation;
 
 }

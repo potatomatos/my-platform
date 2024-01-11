@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.config;
 
-import cn.cxnxs.scheduler.entity.Agent;
-import cn.cxnxs.scheduler.entity.AgentType;
+import cn.cxnxs.scheduler.entity.ScheduleAgent;
+import cn.cxnxs.scheduler.entity.ScheduleAgentType;
 import cn.cxnxs.scheduler.quartz.DelayedJob;
 import cn.cxnxs.scheduler.quartz.TaskDetail;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
@@ -72,22 +72,22 @@ public class TaskExecutorConfig {
     @PostConstruct
     public void initScheduler() {
         //从数据库获取代理信息
-        List<Agent> agents = agentService.list();
-        for (Agent agentItem : agents) {
+        List<ScheduleAgent> scheduleAgents = agentService.list();
+        for (ScheduleAgent scheduleAgentItem : scheduleAgents) {
             //获取类型
-            AgentType agentType = new AgentType().selectById(agentItem.getType());
-            if (agentType.getCanBeScheduled()) {
+            ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(scheduleAgentItem.getType());
+            if (scheduleAgentType.getCanBeScheduled()) {
                 //如果代理为定时执行，则创建定时任务
-                String cron = AgentTypeVo.ScheduleEnum.getCron(Integer.parseInt(agentItem.getSchedule()));
+                String cron = AgentTypeVo.ScheduleEnum.getCron(Integer.parseInt(scheduleAgentItem.getSchedule()));
                 TaskDetail taskDetail = new TaskDetail();
-                taskDetail.setJobName(agentItem.getName());
-                taskDetail.setJobGroupName(agentType.getAgentTypeName());
-                taskDetail.setTriggerName(agentItem.getName());
-                taskDetail.setTriggerGroupName(agentType.getAgentTypeName());
+                taskDetail.setJobName(scheduleAgentItem.getName());
+                taskDetail.setJobGroupName(scheduleAgentType.getAgentTypeName());
+                taskDetail.setTriggerName(scheduleAgentItem.getName());
+                taskDetail.setTriggerGroupName(scheduleAgentType.getAgentTypeName());
                 taskDetail.setJobClass(DelayedJob.class);
                 taskDetail.setCron(cron);
                 JobDataMap jobDataMap = new JobDataMap();
-                jobDataMap.put("id", agentItem.getId());
+                jobDataMap.put("id", scheduleAgentItem.getId());
                 taskDetail.setJobDataMap(jobDataMap);
                 taskScheduler.addJob(taskDetail);
             }

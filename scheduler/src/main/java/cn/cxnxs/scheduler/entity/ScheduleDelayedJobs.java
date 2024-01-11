@@ -11,16 +11,16 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 场景-代理关系
+ *
  * </p>
  *
  * @author mengjinyuan
- * @since 2020-11-10
+ * @since 2021-02-02
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class ScenarioAgentRel extends Model<ScenarioAgentRel> {
+public class ScheduleDelayedJobs extends Model<ScheduleDelayedJobs> {
 
     private static final long serialVersionUID = 1L;
 
@@ -28,14 +28,44 @@ public class ScenarioAgentRel extends Model<ScenarioAgentRel> {
     private Integer id;
 
     /**
-     * 代理id
+     * 任务权重
      */
-    private Integer agentId;
+    private Integer priority;
 
     /**
-     * 场景id
+     * 失败尝试次数
      */
-    private Integer scenarioId;
+    private Integer attempts;
+
+    /**
+     * 处理器
+     */
+    private String handler;
+
+    /**
+     * 错误信息
+     */
+    private String lastError;
+
+    /**
+     * 运行时间
+     */
+    private LocalDateTime runAt;
+
+    /**
+     * 线程id
+     */
+    private Integer threadId;
+
+    /**
+     * 发生错误时间
+     */
+    private LocalDateTime failedAt;
+
+    /**
+     * 所在队列
+     */
+    private String queue;
 
     /**
      * 创建时间

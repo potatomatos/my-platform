@@ -27,7 +27,7 @@
     <select id="selectByTypeProperties" resultType="cn.cxnxs.webspider.web.entity.Agent">
         select
         a.*
-        from agent a join agent_type b on a.type=b.id
+        from scheduleAgent a join agent_type b on a.type=b.id
         <where>
             <if test="canCreateEvents!=null">
                 and b.can_create_events=#{canCreateEvents}
@@ -39,7 +39,7 @@
     </select>
 
     <select id="pageSelectList" resultType="cn.cxnxs.webspider.web.entity.Agent">
-        SELECT * FROM agent
+        SELECT * FROM scheduleAgent
         <where>
             <if test="agentVo.name!=null and agentVo.name!=''">
                 and name like #{agentVo.name}

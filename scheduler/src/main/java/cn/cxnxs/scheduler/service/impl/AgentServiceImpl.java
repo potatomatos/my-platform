@@ -41,7 +41,7 @@ import java.util.Map;
  * @since 2020-11-10
  */
 @Service
-public class AgentServiceImpl extends ServiceImpl<AgentMapper, Agent> implements IAgentService {
+public class AgentServiceImpl extends ServiceImpl<AgentMapper, ScheduleAgent> implements IAgentService {
 
 
     @Autowired
@@ -63,50 +63,50 @@ public class AgentServiceImpl extends ServiceImpl<AgentMapper, Agent> implements
     @Override
     public List<AgentVo> findByTypeProperties(AgentTypeVo agentTypeVo) {
         AgentMapper agentMapper = getBaseMapper();
-        List<Agent> agents = agentMapper.selectByTypeProperties(agentTypeVo);
-        return ObjectUtil.copyListProperties(agents, AgentVo.class);
+        List<ScheduleAgent> scheduleAgents = agentMapper.selectByTypeProperties(agentTypeVo);
+        return ObjectUtil.copyListProperties(scheduleAgents, AgentVo.class);
     }
 
     @Transactional
     @Override
     public Map<String, String> saveAgent(AgentVo agentVo) {
         //保存代理
-        Agent agent = new Agent();
-        ObjectUtil.transValues(agentVo, agent);
-        agent.insertOrUpdate();
+        ScheduleAgent scheduleAgent = new ScheduleAgent();
+        ObjectUtil.transValues(agentVo, scheduleAgent);
+        scheduleAgent.insertOrUpdate();
         //保存代理和方案关系
-        scenarioAgentRelService.remove(new QueryWrapper<ScenarioAgentRel>().eq("agent_id", agent.getId()));
+        scenarioAgentRelService.remove(new QueryWrapper<ScheduleScenarioAgentRel>().eq("agent_id", scheduleAgent.getId()));
         if (StringUtil.isNotEmpty(agentVo.getScenarioIds())) {
             String[] scenarios = agentVo.getScenarioIds().split(",");
             for (String scenarioId : scenarios) {
-                ScenarioAgentRel senarioAgentRel = new ScenarioAgentRel();
-                senarioAgentRel.setAgentId(agent.getId());
+                ScheduleScenarioAgentRel senarioAgentRel = new ScheduleScenarioAgentRel();
+                senarioAgentRel.setAgentId(scheduleAgent.getId());
                 senarioAgentRel.setScenarioId(Integer.parseInt(scenarioId));
                 senarioAgentRel.setCreatedAt(LocalDateTime.now());
                 senarioAgentRel.insertOrUpdate();
             }
         }
         //保存代理-代理关系
-        linksService.remove(new QueryWrapper<Links>().eq("source_id", agent.getId()));
+        linksService.remove(new QueryWrapper<ScheduleLinks>().eq("source_id", scheduleAgent.getId()));
         if (StringUtil.isNotEmpty(agentVo.getReceivers())) {
             String[] receivers = agentVo.getReceivers().split(",");
             for (String receiverId : receivers) {
-                Links links = new Links();
-                links.setSourceId(agent.getId());
-                links.setReceiverId(Integer.parseInt(receiverId));
-                links.setCreatedAt(LocalDateTime.now());
-                links.insertOrUpdate();
+                ScheduleLinks scheduleLinks = new ScheduleLinks();
+                scheduleLinks.setSourceId(scheduleAgent.getId());
+                scheduleLinks.setReceiverId(Integer.parseInt(receiverId));
+                scheduleLinks.setCreatedAt(LocalDateTime.now());
+                scheduleLinks.insertOrUpdate();
             }
         }
-        linksService.remove(new QueryWrapper<Links>().eq("receiver_id", agent.getId()));
+        linksService.remove(new QueryWrapper<ScheduleLinks>().eq("receiver_id", scheduleAgent.getId()));
         if (StringUtil.isNotEmpty(agentVo.getSources())) {
             String[] sources = agentVo.getSources().split(",");
             for (String sourceId : sources) {
-                Links links = new Links();
-                links.setSourceId(Integer.parseInt(sourceId));
-                links.setReceiverId(agent.getId());
-                links.setCreatedAt(LocalDateTime.now());
-                links.insertOrUpdate();
+                ScheduleLinks scheduleLinks = new ScheduleLinks();
+                scheduleLinks.setSourceId(Integer.parseInt(sourceId));
+                scheduleLinks.setReceiverId(scheduleAgent.getId());
+                scheduleLinks.setCreatedAt(LocalDateTime.now());
+                scheduleLinks.insertOrUpdate();
             }
         }
 
@@ -119,46 +119,46 @@ public class AgentServiceImpl extends ServiceImpl<AgentMapper, Agent> implements
             throw new AgentNotFoundException();
         }
         //获取代理信息
-        Agent agent = getById(id);
-        if (agent == null) {
+        ScheduleAgent scheduleAgent = getById(id);
+        if (scheduleAgent == null) {
             throw new AgentNotFoundException();
         }
         AgentVo agentVo = new AgentVo();
-        ObjectUtil.transValues(agent, agentVo);
+        ObjectUtil.transValues(scheduleAgent, agentVo);
         //获取数据源
-        List<Links> sourcesLinks = new Links().selectList(new QueryWrapper<Links>().eq("receiver_id", id));
+        List<ScheduleLinks> sourcesLinks = new ScheduleLinks().selectList(new QueryWrapper<ScheduleLinks>().eq("receiver_id", id));
         if (sourcesLinks.size() != 0) {
             List<Integer> sourcesIds = new ArrayList<>();
-            for (Links links : sourcesLinks) {
-                sourcesIds.add(links.getSourceId());
+            for (ScheduleLinks scheduleLinks : sourcesLinks) {
+                sourcesIds.add(scheduleLinks.getSourceId());
             }
-            List<Agent> sources = new Agent().selectList(new QueryWrapper<Agent>().in("id", sourcesIds));
+            List<ScheduleAgent> sources = new ScheduleAgent().selectList(new QueryWrapper<ScheduleAgent>().in("id", sourcesIds));
             agentVo.setSourceAgents(ObjectUtil.copyListProperties(sources, AgentVo.class));
         }
         //获取接收者
-        List<Links> receiversLinks = new Links().selectList(new QueryWrapper<Links>().eq("source_id", id));
+        List<ScheduleLinks> receiversLinks = new ScheduleLinks().selectList(new QueryWrapper<ScheduleLinks>().eq("source_id", id));
         if (receiversLinks.size() != 0) {
             List<Integer> receiversIds = new ArrayList<>();
-            for (Links links : receiversLinks) {
-                receiversIds.add(links.getReceiverId());
+            for (ScheduleLinks scheduleLinks : receiversLinks) {
+                receiversIds.add(scheduleLinks.getReceiverId());
             }
-            List<Agent> receivers = new Agent().selectList(new QueryWrapper<Agent>().in("id", receiversIds));
+            List<ScheduleAgent> receivers = new ScheduleAgent().selectList(new QueryWrapper<ScheduleAgent>().in("id", receiversIds));
             agentVo.setReceiverAgents(ObjectUtil.copyListProperties(receivers, AgentVo.class));
         }
         //获取方案
-        List<ScenarioAgentRel> scenarioAgentRels = new ScenarioAgentRel().selectList(new QueryWrapper<ScenarioAgentRel>().eq("agent_id", id));
-        if (scenarioAgentRels.size() != 0) {
+        List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ScheduleScenarioAgentRel().selectList(new QueryWrapper<ScheduleScenarioAgentRel>().eq("agent_id", id));
+        if (scheduleScenarioAgentRels.size() != 0) {
             List<Integer> scenarioIds = new ArrayList<>();
-            for (ScenarioAgentRel scenarioAgentRel : scenarioAgentRels) {
-                scenarioIds.add(scenarioAgentRel.getScenarioId());
+            for (ScheduleScenarioAgentRel scheduleScenarioAgentRel : scheduleScenarioAgentRels) {
+                scenarioIds.add(scheduleScenarioAgentRel.getScenarioId());
             }
-            List<Scenarios> scenarios = new Scenarios().selectList(new QueryWrapper<Scenarios>().in("id", scenarioIds));
+            List<ScheduleScenarios> scenarios = new ScheduleScenarios().selectList(new QueryWrapper<ScheduleScenarios>().in("id", scenarioIds));
             agentVo.setScenarios(ObjectUtil.copyListProperties(scenarios, ScenariosVo.class));
         }
         if (agentVo.getType() != null) {
-            AgentType agentType = new AgentType().selectById(agentVo.getType());
+            ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(agentVo.getType());
             AgentTypeVo agentTypeVo = new AgentTypeVo();
-            ObjectUtil.transValues(agentType, agentTypeVo);
+            ObjectUtil.transValues(scheduleAgentType, agentTypeVo);
             agentVo.setAgentType(agentTypeVo);
         }
         return agentVo;
@@ -169,29 +169,29 @@ public class AgentServiceImpl extends ServiceImpl<AgentMapper, Agent> implements
         if (StringUtil.isNotEmpty(agentVo.getName())) {
             agentVo.setName(StringUtil.sqlLike(agentVo.getName()));
         }
-        IPage<Agent> page = getBaseMapper().pageSelectList(new Page<>(agentVo.getPage(), agentVo.getLimit()), agentVo);
+        IPage<ScheduleAgent> page = getBaseMapper().pageSelectList(new Page<>(agentVo.getPage(), agentVo.getLimit()), agentVo);
         List<AgentVo> agentVos = ObjectUtil.copyListProperties(page.getRecords(), AgentVo.class);
         agentVos.forEach(agent -> {
             //获取方案
-            List<ScenarioAgentRel> scenarioAgentRels = new ScenarioAgentRel().selectList(new QueryWrapper<ScenarioAgentRel>().eq("agent_id", agent.getId()));
-            if (scenarioAgentRels.size() != 0) {
+            List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ScheduleScenarioAgentRel().selectList(new QueryWrapper<ScheduleScenarioAgentRel>().eq("agent_id", agent.getId()));
+            if (scheduleScenarioAgentRels.size() != 0) {
                 List<Integer> scenarioIds = new ArrayList<>();
-                for (ScenarioAgentRel scenarioAgentRel : scenarioAgentRels) {
-                    scenarioIds.add(scenarioAgentRel.getScenarioId());
+                for (ScheduleScenarioAgentRel scheduleScenarioAgentRel : scheduleScenarioAgentRels) {
+                    scenarioIds.add(scheduleScenarioAgentRel.getScenarioId());
                 }
-                List<Scenarios> scenarios = new Scenarios().selectList(new QueryWrapper<Scenarios>().in("id", scenarioIds));
+                List<ScheduleScenarios> scenarios = new ScheduleScenarios().selectList(new QueryWrapper<ScheduleScenarios>().in("id", scenarioIds));
                 agent.setScenarios(ObjectUtil.copyListProperties(scenarios, ScenariosVo.class));
             }
             //获取类型
             if (agent.getType() != null) {
-                AgentType agentType = new AgentType().selectById(agent.getType());
+                ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(agent.getType());
                 AgentTypeVo agentTypeVo = new AgentTypeVo();
-                ObjectUtil.transValues(agentType, agentTypeVo);
+                ObjectUtil.transValues(scheduleAgentType, agentTypeVo);
                 agent.setAgentType(agentTypeVo);
             }
             //是否有数据源
-            Integer hasSources = new Links().selectCount(new QueryWrapper<Links>().eq("receiver_id", agent.getId()));
-            Integer hasReceiver = new Links().selectCount(new QueryWrapper<Links>().eq("source_id", agent.getId()));
+            Integer hasSources = new ScheduleLinks().selectCount(new QueryWrapper<ScheduleLinks>().eq("receiver_id", agent.getId()));
+            Integer hasReceiver = new ScheduleLinks().selectCount(new QueryWrapper<ScheduleLinks>().eq("source_id", agent.getId()));
             agent.setHasSources(hasSources != 0);
             agent.setHasReceivers(hasReceiver != 0);
         });
@@ -202,11 +202,11 @@ public class AgentServiceImpl extends ServiceImpl<AgentMapper, Agent> implements
 
     @Override
     public List<Map<String, String>> dryRun(Integer type, JSONObject options, JSONObject payload) throws AgentNotFoundException, ClassNotFoundException, HttpProcessException {
-        AgentType agentType = new AgentType().selectById(type);
-        if (agentType == null) {
+        ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(type);
+        if (scheduleAgentType == null) {
             throw new AgentNotFoundException("代理类型不存在");
         }
-        Class<IAgent> clazz = (Class<IAgent>) Class.forName(agentType.getHandler());
+        Class<IAgent> clazz = (Class<IAgent>) Class.forName(scheduleAgentType.getHandler());
         IAgent agent = SpringContextUtil.getBean(clazz);
         Event event = new Event();
         event.setPayload(payload);

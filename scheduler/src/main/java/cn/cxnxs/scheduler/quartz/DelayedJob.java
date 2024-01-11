@@ -5,7 +5,7 @@ import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
-import cn.cxnxs.scheduler.entity.Events;
+import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.service.IAgentService;
 import cn.cxnxs.scheduler.service.IEventsService;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
@@ -74,12 +74,12 @@ public class DelayedJob extends QuartzJobBean {
                 this.runTask(agentVo, null);
             } else {
                 List<Integer> sourceAgentsIdList = sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList());
-                IPage<Events> eventsPage = eventsService.page(new Page<>(pageNo, pageSize),
-                        new QueryWrapper<Events>().in("agent_id", sourceAgentsIdList).isNull("locked_by"));
-                List<Events> events = eventsPage.getRecords();
+                IPage<ScheduleEvents> eventsPage = eventsService.page(new Page<>(pageNo, pageSize),
+                        new QueryWrapper<ScheduleEvents>().in("agent_id", sourceAgentsIdList).isNull("locked_by"));
+                List<ScheduleEvents> events = eventsPage.getRecords();
                 while (events.size() > 0) {
                     //将事件添加到代理
-                    for (Events event : events) {
+                    for (ScheduleEvents event : events) {
                         event = event.selectById();
                         //判断该数据是否被其他线程处理
                         if (StringUtil.isEmpty(event.getLockedBy())) {
@@ -90,7 +90,7 @@ public class DelayedJob extends QuartzJobBean {
                     }
                     pageNo++;
                     eventsPage = eventsService.page(new Page<>(pageNo, pageSize),
-                            new QueryWrapper<Events>().eq("agent_id", id));
+                            new QueryWrapper<ScheduleEvents>().eq("agent_id", id));
                     events = eventsPage.getRecords();
                 }
             }
@@ -110,7 +110,7 @@ public class DelayedJob extends QuartzJobBean {
     /**
      * 执行任务
      */
-    public void runTask(AgentVo agentVo, final Events ev) throws ClassNotFoundException {
+    public void runTask(AgentVo agentVo, final ScheduleEvents ev) throws ClassNotFoundException {
         Thread t = Thread.currentThread();
         Event event = null;
         if (ev != null) {
@@ -131,9 +131,9 @@ public class DelayedJob extends QuartzJobBean {
             @Override
             public void onSuccess(List<Map<String, String>> maps) {
                 logger.info("执行结果：{}", maps);
-                List<Events> eventsList = new ArrayList<>();
+                List<ScheduleEvents> scheduleEventsList = new ArrayList<>();
                 maps.forEach(map -> {
-                    Events eventAdd = new Events();
+                    ScheduleEvents eventAdd = new ScheduleEvents();
                     eventAdd.setAgentId(id);
                     eventAdd.setPayload(JSON.toJSONString(map));
                     eventAdd.setCreatedAt(LocalDateTime.now());
@@ -141,11 +141,11 @@ public class DelayedJob extends QuartzJobBean {
                     if (agentType.getCanCreateEvents()) {
                         eventAdd.insert();
                     }
-                    eventsList.add(eventAdd);
+                    scheduleEventsList.add(eventAdd);
                 });
 
                 if (maps.size() > 0) {
-                    runNextDelayedJobs(agentVo, eventsList);
+                    runNextDelayedJobs(agentVo, scheduleEventsList);
                 }
             }
 
@@ -161,7 +161,7 @@ public class DelayedJob extends QuartzJobBean {
      *
      * @param agentVo
      */
-    public void runNextDelayedJobs(AgentVo agentVo, List<Events> events) throws SchedulerException, ClassNotFoundException {
+    public void runNextDelayedJobs(AgentVo agentVo, List<ScheduleEvents> events) throws SchedulerException, ClassNotFoundException {
         logger.info("------执行下个代理------");
         //查出所有下一级代理信息
         List<AgentVo> receivers = agentVo.getReceiverAgents();
@@ -177,7 +177,7 @@ public class DelayedJob extends QuartzJobBean {
                 taskDetail.setJobGroupName(agentType.getAgentTypeName());
                 taskScheduler.triggerJob(taskDetail);
             } else {
-                for (Events event : events) {
+                for (ScheduleEvents event : events) {
                     this.runTask(receiver, event);
                 }
             }

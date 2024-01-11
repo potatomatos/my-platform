@@ -1,6 +1,6 @@
 package cn.cxnxs.scheduler.service;
 
-import cn.cxnxs.scheduler.entity.Scenarios;
+import cn.cxnxs.scheduler.entity.ScheduleScenarios;
 import cn.cxnxs.scheduler.vo.ScenariosVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,7 +16,7 @@ import java.util.Map;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface IScenariosService extends IService<Scenarios> {
+public interface IScenariosService extends IService<ScheduleScenarios> {
 
     /**
      * 分页获取场景

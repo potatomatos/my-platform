@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.mapper;
 
 
-import cn.cxnxs.scheduler.entity.Agent;
+import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -18,9 +18,9 @@ import java.util.List;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface AgentMapper extends BaseMapper<Agent> {
+public interface AgentMapper extends BaseMapper<ScheduleAgent> {
 
-    List<Agent> selectByTypeProperties(AgentTypeVo agentTypeVo);
+    List<ScheduleAgent> selectByTypeProperties(AgentTypeVo agentTypeVo);
 
-    IPage<Agent> pageSelectList(Page<Agent> page, AgentVo agentVo);
+    IPage<ScheduleAgent> pageSelectList(Page<ScheduleAgent> page, AgentVo agentVo);
 }

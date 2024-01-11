@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.service;
 
 
-import cn.cxnxs.scheduler.entity.ScenarioAgentRel;
+import cn.cxnxs.scheduler.entity.ScheduleScenarioAgentRel;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -12,6 +12,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface IScenarioAgentRelService extends IService<ScenarioAgentRel> {
+public interface IScenarioAgentRelService extends IService<ScheduleScenarioAgentRel> {
 
 }

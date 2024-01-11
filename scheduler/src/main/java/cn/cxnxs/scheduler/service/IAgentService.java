@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.service;
 
 import cn.cxnxs.common.core.entity.response.Result;
-import cn.cxnxs.scheduler.entity.Agent;
+import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
@@ -20,7 +20,7 @@ import java.util.Map;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public interface IAgentService extends IService<Agent> {
+public interface IAgentService extends IService<ScheduleAgent> {
 
     /**
      * 获取agent配置信息

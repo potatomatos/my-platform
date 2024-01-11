@@ -11,55 +11,34 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 代理事件
+ *
  * </p>
  *
  * @author mengjinyuan
- * @since 2020-11-10
+ * @since 2021-02-16
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class Events extends Model<Events> {
+public class ScheduleAgentLogs extends Model<ScheduleAgentLogs> {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    /**
-     * 所属用户
-     */
-    private Integer userId;
-
-    /**
-     * 所属代理
-     */
     private Integer agentId;
 
-    /**
-     * 内容
-     */
-    private String payload;
+    private String message;
 
-    /**
-     * 创建时间
-     */
+    private Integer level;
+
+    private Integer inboundEventId;
+
+    private Integer outboundEventId;
+
     private LocalDateTime createdAt;
 
-    /**
-     * 更新时间
-     */
     private LocalDateTime updatedAt;
-
-    /**
-     * 过期时间
-     */
-    private LocalDateTime expiresAt;
-
-    /**
-     * 占用线程id
-     */
-    private String lockedBy;
 
 }
