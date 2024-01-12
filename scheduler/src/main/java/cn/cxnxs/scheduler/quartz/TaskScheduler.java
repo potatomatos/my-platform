@@ -1,9 +1,8 @@
 package cn.cxnxs.scheduler.quartz;
 
 import cn.cxnxs.scheduler.exception.ScheduleException;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.stereotype.Component;
@@ -12,10 +11,9 @@ import org.springframework.stereotype.Component;
 /**
  * @author potatomato
  */
+@Slf4j
 @Component
 public class TaskScheduler {
-
-    private static Logger logger = LoggerFactory.getLogger(TaskScheduler.class);
 
     @Autowired
     SchedulerFactoryBean schedulerFactory;
@@ -29,7 +27,7 @@ public class TaskScheduler {
      * @param taskDetail 任务信息
      */
     public void addJob(TaskDetail taskDetail) {
-        logger.info("------添加定时任务：{}", taskDetail);
+        log.info("------添加定时任务：{}", taskDetail);
         try {
             scheduler = schedulerFactory.getScheduler();
             JobDetail jobDetail = JobBuilder
@@ -47,7 +45,7 @@ public class TaskScheduler {
                 scheduler.start();
             }
         } catch (Exception e) {
-            logger.error("添加任务出现异常！", e);
+            log.error("添加任务出现异常！", e);
             throw new ScheduleException("添加任务出现异常!");
         }
     }
@@ -58,9 +56,9 @@ public class TaskScheduler {
      * @param taskDetail 任务信息
      */
     public void modifyJobTime(TaskDetail taskDetail) {
-        logger.info("修改一个任务的触发时间：{}", taskDetail);
+        log.info("修改一个任务的触发时间：{}", taskDetail);
         try {
-            logger.info("------修改定时任务，{}", taskDetail);
+            log.info("------修改定时任务，{}", taskDetail);
             scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
             CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
@@ -79,7 +77,7 @@ public class TaskScheduler {
                 scheduler.rescheduleJob(triggerKey, trigger);
             }
         } catch (Exception e) {
-            logger.error("修改任务出现异常！", e);
+            log.error("修改任务出现异常！", e);
         }
     }
 
@@ -89,7 +87,7 @@ public class TaskScheduler {
      * @param taskDetail 任务信息
      */
     public void removeJob(TaskDetail taskDetail) {
-        logger.info("移除一个任务：{}", taskDetail);
+        log.info("移除一个任务：{}", taskDetail);
         try {
             scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
@@ -97,7 +95,7 @@ public class TaskScheduler {
             scheduler.unscheduleJob(triggerKey);
             scheduler.deleteJob(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
         } catch (Exception e) {
-            logger.error("移除任务出现异常！", e);
+            log.error("移除任务出现异常！", e);
         }
     }
 
@@ -108,14 +106,14 @@ public class TaskScheduler {
      * @param taskDetail 任务信息
      */
     public void pauseJob(TaskDetail taskDetail) {
-        logger.info("暂停一个任务：{}", taskDetail);
+        log.info("暂停一个任务：{}", taskDetail);
         try {
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
             scheduler = schedulerFactory.getScheduler();
             scheduler.pauseTrigger(triggerKey);
             scheduler.pauseJob(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
         } catch (SchedulerException e) {
-            logger.error("暂停任务出现异常！", e);
+            log.error("暂停任务出现异常！", e);
         }
     }
 
@@ -126,7 +124,7 @@ public class TaskScheduler {
      * @throws SchedulerException
      */
     public void resumeJob(TaskDetail taskDetail) throws SchedulerException {
-        logger.info("恢复一个job：{}", taskDetail);
+        log.info("恢复一个job：{}", taskDetail);
         TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
         scheduler = schedulerFactory.getScheduler();
         scheduler.resumeTrigger(triggerKey);
@@ -141,7 +139,7 @@ public class TaskScheduler {
      * @throws SchedulerException
      */
     public void triggerJob(TaskDetail taskDetail) throws SchedulerException {
-        logger.info("手动触发一个job：{}", taskDetail);
+        log.info("手动触发一个job：{}", taskDetail);
         scheduler = schedulerFactory.getScheduler();
         scheduler.triggerJob(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
     }
@@ -150,12 +148,12 @@ public class TaskScheduler {
      * 启动所有定时任务
      */
     public void startJobs() {
-        logger.info("启动所有定时任务");
+        log.info("启动所有定时任务");
         try {
             scheduler = schedulerFactory.getScheduler();
             scheduler.start();
         } catch (Exception e) {
-            logger.error("启动所有任务出现异常！", e);
+            log.error("启动所有任务出现异常！", e);
         }
     }
 
@@ -163,14 +161,14 @@ public class TaskScheduler {
      * 关闭所有定时任务
      */
     public void shutdownJobs() {
-        logger.info("关闭所有定时任务");
+        log.info("关闭所有定时任务");
         try {
             scheduler = schedulerFactory.getScheduler();
             if (!scheduler.isShutdown()) {
                 scheduler.shutdown();
             }
         } catch (Exception e) {
-            logger.error("关闭所有定时任务出现异常！", e);
+            log.error("关闭所有定时任务出现异常！", e);
         }
     }
 }

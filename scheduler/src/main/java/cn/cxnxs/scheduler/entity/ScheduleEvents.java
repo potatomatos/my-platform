@@ -3,8 +3,9 @@ package cn.cxnxs.scheduler.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,8 @@ import java.time.LocalDateTime;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-@Data
+@Getter
+@Setter
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 public class ScheduleEvents extends Model<ScheduleEvents> {

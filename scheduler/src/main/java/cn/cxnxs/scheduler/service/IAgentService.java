@@ -1,6 +1,7 @@
 package cn.cxnxs.scheduler.service;
 
-import cn.cxnxs.common.core.entity.response.Result;
+import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
@@ -61,7 +62,7 @@ public interface IAgentService extends IService<ScheduleAgent> {
      * @param agentVo 入参
      * @return none
      */
-    Result<List<AgentVo>> pageList(AgentVo agentVo);
+    PageResult<List<AgentVo>> pageList(PageWrapper<AgentVo> agentVo);
 
     /**
      * 测试运行

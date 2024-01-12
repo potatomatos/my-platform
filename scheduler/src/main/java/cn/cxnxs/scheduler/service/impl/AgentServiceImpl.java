@@ -1,6 +1,7 @@
 package cn.cxnxs.scheduler.service.impl;
 
 
+import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
@@ -165,11 +166,12 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     }
 
     @Override
-    public PageResult<List<AgentVo>> pageList(AgentVo agentVo) {
+    public PageResult<List<AgentVo>> pageList(PageWrapper<AgentVo> param) {
+        AgentVo agentVo = param.getParam();
         if (StringUtil.isNotEmpty(agentVo.getName())) {
             agentVo.setName(StringUtil.sqlLike(agentVo.getName()));
         }
-        IPage<ScheduleAgent> page = getBaseMapper().pageSelectList(new Page<>(agentVo.getPage(), agentVo.getLimit()), agentVo);
+        IPage<ScheduleAgent> page = getBaseMapper().pageSelectList(new Page<>(param.getPage(), param.getLimit()), agentVo);
         List<AgentVo> agentVos = ObjectUtil.copyListProperties(page.getRecords(), AgentVo.class);
         agentVos.forEach(agent -> {
             //获取方案
@@ -196,6 +198,9 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
             agent.setHasReceivers(hasReceiver != 0);
         });
         PageResult<List<AgentVo>> result = new PageResult<>(page.getTotal());
+        result.setCurrent(page.getCurrent());
+        result.setPageSize(page.getSize());
+        result.setPages(page.getPages());
         result.setData(agentVos);
         return result;
     }

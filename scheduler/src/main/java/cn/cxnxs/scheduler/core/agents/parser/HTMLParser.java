@@ -3,12 +3,11 @@ package cn.cxnxs.scheduler.core.agents.parser;
 import cn.cxnxs.scheduler.core.http.ContentType;
 import cn.cxnxs.scheduler.exception.IllegalOptionException;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -18,6 +17,7 @@ import java.util.*;
  * @author mengjinyuan
  * @date 2021-01-24 00:12
  **/
+@Slf4j
 public class HTMLParser extends WebSiteContentParser {
 
     /**
@@ -28,8 +28,6 @@ public class HTMLParser extends WebSiteContentParser {
      * 提取方式：xpath
      */
     private static final String TYPE_XPATH = "xpath";
-
-    private static final Logger logger = LoggerFactory.getLogger(HTMLParser.class);
 
     public HTMLParser(ContentType contentType, String name) {
         super(contentType, name);

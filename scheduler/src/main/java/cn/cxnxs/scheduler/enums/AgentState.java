@@ -1,9 +1,11 @@
 package cn.cxnxs.scheduler.enums;
 
+import lombok.Getter;
+
 /**
  * @author potatomato
  */
-
+@Getter
 public enum AgentState {
     /**
      *
@@ -35,14 +37,6 @@ public enum AgentState {
         return code;
     }
 
-    public void setCode(Integer code) {
-        this.code = code;
-    }
-
-    public String getStr() {
-        return this.str;
-    }
-
     public static String getStr(Integer code) {
         for (AgentState e : AgentState.values()) {
             if (e.getCode().equals(code)) {
@@ -52,7 +46,4 @@ public enum AgentState {
         return null;
     }
 
-    public void setStr(String str) {
-        this.str = str;
-    }
 }

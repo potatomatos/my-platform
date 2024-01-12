@@ -2,6 +2,8 @@ package cn.cxnxs.scheduler.quartz;
 
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,8 @@ import java.util.concurrent.Callable;
  * @author mengjinyuan
  * @date 2021-02-03 11:06
  **/
+@Setter
+@Getter
 public class TaskRunnable implements Callable<List<Map<String, String>>> {
 
     private IAgent agent;
@@ -27,21 +31,5 @@ public class TaskRunnable implements Callable<List<Map<String, String>>> {
     public List<Map<String, String>> call() throws Exception {
         logger.info("------开始运行代理------");
         return agent.collect(getEvent());
-    }
-
-    public IAgent getAgent() {
-        return agent;
-    }
-
-    public void setAgent(IAgent agent) {
-        this.agent = agent;
-    }
-
-    public Event getEvent() {
-        return event;
-    }
-
-    public void setEvent(Event event) {
-        this.event = event;
     }
 }

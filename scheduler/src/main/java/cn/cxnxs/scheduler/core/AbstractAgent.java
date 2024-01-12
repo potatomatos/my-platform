@@ -1,6 +1,8 @@
 package cn.cxnxs.scheduler.core;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * <p>代理抽象类</p>
@@ -8,6 +10,8 @@ import com.alibaba.fastjson.JSONObject;
  * @author mengjinyuan
  * @date 2021-01-21 11:08
  **/
+@Getter
+@Setter
 public abstract class AbstractAgent implements IAgent {
 
     /**
@@ -19,22 +23,5 @@ public abstract class AbstractAgent implements IAgent {
      * 服务名称
      */
     private String name;
-
-
-    public JSONObject getOptions() {
-        return options;
-    }
-
-    public void setOptions(JSONObject options) {
-        this.options = options;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
 }

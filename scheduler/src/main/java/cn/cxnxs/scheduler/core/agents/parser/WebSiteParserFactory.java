@@ -2,8 +2,7 @@ package cn.cxnxs.scheduler.core.agents.parser;
 
 
 import cn.cxnxs.scheduler.core.http.ContentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,15 +12,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author mengjinyuan
  * @date 2021-01-24 00:04
  **/
+@Slf4j
 public class WebSiteParserFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebSiteParserFactory.class);
     private static final ConcurrentHashMap<ContentType, WebSiteContentParser> webSiteContentParserConcurrentHashMap = new ConcurrentHashMap<>();
 
     public static void register(ContentType contentType, WebSiteContentParser webSiteContentParser) {
-        logger.info("register parser,type:{},parser:{}", contentType, webSiteContentParser);
+        log.info("register parser,type:{},parser:{}", contentType, webSiteContentParser);
         if (webSiteContentParserConcurrentHashMap.containsKey(contentType)) {
-            logger.warn("contentType [{}] is exist", contentType);
+            log.warn("contentType [{}] is exist", contentType);
         } else {
             webSiteContentParserConcurrentHashMap.put(contentType, webSiteContentParser);
         }

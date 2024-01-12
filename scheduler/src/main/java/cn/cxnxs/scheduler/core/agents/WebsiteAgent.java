@@ -13,10 +13,9 @@ import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.builder.HCB;
 import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -32,9 +31,8 @@ import java.util.Map;
  **/
 @Component
 @Scope("prototype")
+@Slf4j
 public class WebsiteAgent extends AbstractAgent {
-
-    private static final Logger logger = LoggerFactory.getLogger(WebsiteAgent.class);
 
     @Override
     public List<Map<String, String>> collect(Event event) throws HttpProcessException {
@@ -81,15 +79,15 @@ public class WebsiteAgent extends AbstractAgent {
                 config.method(HttpMethods.GET);
             }
         }
-        logger.info("-----------请求参数-----------");
-        logger.info("-----------------------------");
+        log.info("-----------请求参数-----------");
+        log.info("-----------------------------");
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
-        logger.info("-----------------------------");
+        log.info("-----------------------------");
 
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
         List<Map<String, String>> maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult());
-        logger.debug("数据大小：{}，解析结果：{}", maps.size(), JSON.toJSONString(maps, SerializerFeature.PrettyFormat));
+        log.debug("数据大小：{}，解析结果：{}", maps.size(), JSON.toJSONString(maps, SerializerFeature.PrettyFormat));
         return maps;
     }
 

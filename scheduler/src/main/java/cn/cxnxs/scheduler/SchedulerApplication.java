@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @SpringBootApplication(scanBasePackages = {"cn.cxnxs"})
 @ServletComponentScan
 @EnableTransactionManagement
-@EnableFeignClients(basePackages = {"cn.cxnxs.common.api"})
+@EnableFeignClients
 @EnableDiscoveryClient
 @RefreshScope
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -22,7 +22,7 @@ public class SchedulerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SchedulerApplication.class, args);
-        System.out.println("(♥◠‿◠)ﾉﾞ  定时服务启动成功   ლ(´ڡ`ლ)ﾞ  \n");
+        System.out.println("(♥◠‿◠)ﾉﾞ  调度采集服务启动成功   ლ(´ڡ`ლ)ﾞ  \n");
     }
 
 }

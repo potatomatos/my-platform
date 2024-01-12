@@ -1,6 +1,8 @@
 package cn.cxnxs.scheduler.vo;
 
 import cn.cxnxs.scheduler.enums.AgentState;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,7 +16,9 @@ import java.util.List;
  * @author mengjinyuan
  * @since 2020-11-10
  */
-public class AgentVo extends BaseVo {
+@Getter
+@Setter
+public class AgentVo {
 
     /**
      * 主键
@@ -146,19 +150,11 @@ public class AgentVo extends BaseVo {
         return hasSources;
     }
 
-    public void setHasSources(Boolean hasSources) {
-        this.hasSources = hasSources;
-    }
-
     public Boolean getHasReceivers() {
         if (this.receiverAgents != null && this.receiverAgents.size() != 0) {
             return true;
         }
         return this.hasReceivers;
-    }
-
-    public void setHasReceivers(Boolean hasReceivers) {
-        this.hasReceivers = hasReceivers;
     }
 
     public String getStateStr() {
@@ -168,285 +164,12 @@ public class AgentVo extends BaseVo {
         return stateStr;
     }
 
-    public Integer getScenarioId() {
-        return scenarioId;
-    }
-
-    public void setScenarioId(Integer scenarioId) {
-        this.scenarioId = scenarioId;
-    }
-
-    public void setStateStr(String stateStr) {
-        this.stateStr = stateStr;
-    }
-
-    public AgentTypeVo getAgentType() {
-        return agentType;
-    }
-
-    public void setAgentType(AgentTypeVo agentType) {
-        this.agentType = agentType;
-    }
-
-    public String getReceivers() {
-        return receivers;
-    }
-
-    public void setReceivers(String receivers) {
-        this.receivers = receivers;
-    }
-
-    public List<AgentVo> getSourceAgents() {
-        return sourceAgents;
-    }
-
-    public void setSourceAgents(List<AgentVo> sourceAgents) {
-        this.sourceAgents = sourceAgents;
-    }
-
-    public List<AgentVo> getReceiverAgents() {
-        return receiverAgents;
-    }
-
-    public void setReceiverAgents(List<AgentVo> receiverAgents) {
-        this.receiverAgents = receiverAgents;
-    }
-
-    public List<ScenariosVo> getScenarios() {
-        return scenarios;
-    }
-
-    public void setScenarios(List<ScenariosVo> scenarios) {
-        this.scenarios = scenarios;
-    }
-
-    public String getScenarioIds() {
-        return scenarioIds;
-    }
-
-    public void setScenarioIds(String scenarioIds) {
-        this.scenarioIds = scenarioIds;
-    }
-
-    public String getSources() {
-        return sources;
-    }
-
-    public void setSources(String sources) {
-        this.sources = sources;
-    }
-
-    public void setValue(Integer value) {
-        this.value = value;
-    }
-
-    public Boolean getSelected() {
-        return selected;
-    }
-
-    public void setSelected(Boolean selected) {
-        this.selected = selected;
-    }
-
-    public Boolean getDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
-
-    public Integer getState() {
-        return state;
-    }
-
-    public void setState(Integer state) {
-        this.state = state;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public String getOptions() {
-        return options;
-    }
-
-    public void setOptions(String options) {
-        this.options = options;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSchedule() {
-        return schedule;
-    }
-
-    public void setSchedule(String schedule) {
-        this.schedule = schedule;
-    }
-
-    public Integer getDataCount() {
-        return dataCount;
-    }
-
-    public void setDataCount(Integer dataCount) {
-        this.dataCount = dataCount;
-    }
-
-    public LocalDateTime getLastCheckAt() {
-        return lastCheckAt;
-    }
-
-    public void setLastCheckAt(LocalDateTime lastCheckAt) {
-        this.lastCheckAt = lastCheckAt;
-    }
-
-    public LocalDateTime getLastReceiveAt() {
-        return lastReceiveAt;
-    }
-
-    public void setLastReceiveAt(LocalDateTime lastReceiveAt) {
-        this.lastReceiveAt = lastReceiveAt;
-    }
-
-    public Integer getLastCheckedDataId() {
-        return lastCheckedDataId;
-    }
-
-    public void setLastCheckedDataId(Integer lastCheckedDataId) {
-        this.lastCheckedDataId = lastCheckedDataId;
-    }
-
-    public LocalDateTime getLastWebRequestAt() {
-        return lastWebRequestAt;
-    }
-
-    public void setLastWebRequestAt(LocalDateTime lastWebRequestAt) {
-        this.lastWebRequestAt = lastWebRequestAt;
-    }
-
-    public Integer getKeepDataTime() {
-        return keepDataTime;
-    }
-
-    public void setKeepDataTime(Integer keepDataTime) {
-        this.keepDataTime = keepDataTime;
-    }
-
-    public LocalDateTime getLastDataIme() {
-        return lastDataIme;
-    }
-
-    public void setLastDataIme(LocalDateTime lastDataIme) {
-        this.lastDataIme = lastDataIme;
-    }
-
-    public LocalDateTime getLastErrorLogTime() {
-        return lastErrorLogTime;
-    }
-
-    public void setLastErrorLogTime(LocalDateTime lastErrorLogTime) {
-        this.lastErrorLogTime = lastErrorLogTime;
-    }
-
-    public Boolean getPropagateImmediately() {
-        return propagateImmediately;
-    }
-
-    public void setPropagateImmediately(Boolean propagateImmediately) {
-        this.propagateImmediately = propagateImmediately;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public String getKeepDataTimeStr() {
         this.keepDataTimeStr = AgentTypeVo.KeepEventsTime.getDesc(this.keepDataTime);
         return this.keepDataTimeStr;
     }
 
-    public void setKeepDataTimeStr(String keepDataTimeStr) {
-        this.keepDataTimeStr = keepDataTimeStr;
-    }
-
     public Integer getValue() {
         return this.id;
-    }
-
-    @Override
-    public String toString() {
-        return "AgentVo{" +
-                "id=" + id +
-                ", userId=" + userId +
-                ", options='" + options + '\'' +
-                ", type=" + type +
-                ", name='" + name + '\'' +
-                ", value=" + value +
-                ", schedule='" + schedule + '\'' +
-                ", dataCount=" + dataCount +
-                ", lastCheckAt=" + lastCheckAt +
-                ", lastReceiveAt=" + lastReceiveAt +
-                ", lastCheckedDataId=" + lastCheckedDataId +
-                ", lastWebRequestAt=" + lastWebRequestAt +
-                ", keepDataTime=" + keepDataTime +
-                ", lastDataIme=" + lastDataIme +
-                ", lastErrorLogTime=" + lastErrorLogTime +
-                ", propagateImmediately=" + propagateImmediately +
-                ", state=" + state +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", keepDataTimeStr='" + keepDataTimeStr + '\'' +
-                ", disabled=" + disabled +
-                ", selected=" + selected +
-                ", receivers='" + receivers + '\'' +
-                ", scenarioIds='" + scenarioIds + '\'' +
-                ", sources='" + sources + '\'' +
-                ", sourceAgents=" + sourceAgents +
-                ", receiverAgents=" + receiverAgents +
-                ", scenarios=" + scenarios +
-                ", agentType=" + agentType +
-                ", stateStr='" + stateStr + '\'' +
-                ", scenarioId=" + scenarioId +
-                "} " + super.toString();
     }
 }
