@@ -11,8 +11,8 @@ import java.util.List;
 @Data
 @ConfigurationProperties(prefix = "redisson")
 public class RedissonProperties {
-  private String mode = "single";
-  private List<String> nodes;
-  private String password;
-  private boolean enabled;
+    private String mode = "single";
+    private List<String> nodes;
+    private String password;
+    private boolean enabled;
 }

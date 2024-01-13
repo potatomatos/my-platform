@@ -20,6 +20,7 @@ public interface SysUsersMapper extends BaseMapper<SysUsers> {
 
     /**
      * 获取用户所有的客户端信息
+     *
      * @param userId 用户id
      * @return clientId列表
      */
@@ -28,6 +29,7 @@ public interface SysUsersMapper extends BaseMapper<SysUsers> {
 
     /**
      * 获取用户所有角色信息
+     *
      * @param userId 用户id
      * @return 角色代码列表
      */
@@ -36,14 +38,16 @@ public interface SysUsersMapper extends BaseMapper<SysUsers> {
 
     /**
      * 获取用户权限
+     *
      * @param userId 用户id
      * @return 角色编号，客户端id，权限接口地址
      */
     @Select("SELECT c.role_code roleCode,b.client_id clientId,b.api,b.`code` FROM sys_role_permission a,sys_permission b,sys_role c ,sys_user_role d WHERE a.permission_id=b.id AND a.role_id=c.id AND c.id=d.role_id AND d.user_id=#{userId};")
-    List<Map<String,String>> getUserPermissions(Integer userId);
+    List<Map<String, String>> getUserPermissions(Integer userId);
 
     /**
      * 获取用户绑定的角色信息
+     *
      * @param roleVO
      * @return
      */

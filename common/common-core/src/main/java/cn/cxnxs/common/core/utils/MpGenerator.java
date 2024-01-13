@@ -31,8 +31,8 @@ public class MpGenerator {
         gc.setBaseResultMap(false);// XML ResultMap
         gc.setBaseColumnList(false);// XML columList
         /* 自定义文件命名，注意 %s 会自动填充表实体属性！ */
-         gc.setMapperName("%sMapper");
-         gc.setXmlName("%sMapper");
+        gc.setMapperName("%sMapper");
+        gc.setXmlName("%sMapper");
         mpg.setGlobalConfig(gc);
 
         // 数据源配置
@@ -47,7 +47,7 @@ public class MpGenerator {
         StrategyConfig strategy = new StrategyConfig();
         strategy.setNaming(NamingStrategy.underline_to_camel);
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);
-        strategy.setInclude(new String[] {
+        strategy.setInclude(new String[]{
                 "bm_bookmark",
                 "bm_folder",
                 "bm_recent_visited",

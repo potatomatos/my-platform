@@ -1,10 +1,9 @@
 package cn.cxnxs.scheduler.controller;
 
-
-import cn.cxnxs.webspider.utils.ObjectUtil;
-import cn.cxnxs.webspider.web.entity.Links;
-import cn.cxnxs.webspider.web.vo.LinksVO;
-import cn.cxnxs.webspider.web.vo.ResponseResult;
+import cn.cxnxs.common.core.utils.ObjectUtil;
+import cn.cxnxs.common.web.annotation.ResponseResult;
+import cn.cxnxs.scheduler.entity.ScheduleLinks;
+import cn.cxnxs.scheduler.vo.LinksVO;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -24,8 +23,8 @@ public class LinksController {
 
     @ResponseResult
     @RequestMapping
-    public List<Links> getLinks(LinksVO linksVO) {
-        Links links = new Links();
+    public List<ScheduleLinks> getLinks(LinksVO linksVO) {
+        ScheduleLinks links = new ScheduleLinks();
         ObjectUtil.transValues(linksVO, links);
         return links.selectAll();
     }

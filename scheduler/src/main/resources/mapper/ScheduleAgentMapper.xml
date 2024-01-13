@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cxnxs.scheduler.mapper.ScheduleAgentMapper">
 
-    <select id="selectByTypeProperties" resultType="cn.cxnxs.webspider.web.entity.Agent">
+    <select id="selectByTypeProperties" resultType="cn.cxnxs.scheduler.entity.ScheduleAgent">
         select
         a.*
         from scheduleAgent a join agent_type b on a.type=b.id
@@ -16,15 +16,15 @@
         </where>
     </select>
 
-    <select id="pageSelectList" resultType="cn.cxnxs.webspider.web.entity.Agent">
+    <select id="pageSelectList" resultType="cn.cxnxs.scheduler.entity.ScheduleAgent">
         SELECT * FROM scheduleAgent
         <where>
-            <if test="agentVo.name!=null and agentVo.name!=''">
-                and name like #{agentVo.name}
+            <if test="name!=null and name!=''">
+                and name like #{name}
             </if>
-            <if test="agentVo.scenarioId!=null">
+            <if test="scenarioId!=null">
                 and id in(
-                SELECT agent_id FROM scenario_agent_rel WHERE scenario_id=#{agentVo.scenarioId}
+                SELECT agent_id FROM scenario_agent_rel WHERE scenario_id=#{scenarioId}
                 )
             </if>
         </where>

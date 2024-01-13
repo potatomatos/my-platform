@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 /**
  * redisson配置
+ *
  * @author potatomato
  */
 @Configuration
@@ -35,7 +36,7 @@ public class RedissonAutoConfiguration {
         Config config = new Config();
         List<String> nodes = redisProperties.getNodes();
         if (Objects.equals(MODE_SINGLE, redisProperties.getMode())) {
-            config.useSingleServer().setAddress("redis://"+nodes.get(0))
+            config.useSingleServer().setAddress("redis://" + nodes.get(0))
                     .setPassword(redisProperties.getPassword());
         } else {
             config.useClusterServers().addNodeAddress(nodes.stream().map(s -> "redis://" + s).collect(

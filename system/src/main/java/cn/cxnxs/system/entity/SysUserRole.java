@@ -22,7 +22,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class SysUserRole extends Model<SysUserRole> {
 
-    private static final long serialVersionUID=1L;
+    private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;

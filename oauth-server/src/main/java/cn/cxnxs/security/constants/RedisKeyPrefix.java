@@ -11,12 +11,11 @@ public class RedisKeyPrefix {
     /**
      * 登录用户信息
      */
-    public static final String KEY_USER_INFO="oauth:userinfo:";
+    public static final String KEY_USER_INFO = "oauth:userinfo:";
     /**
      * 验证码
      */
-    public static final String KEY_CAPTCHA="captcha:";
-
+    public static final String KEY_CAPTCHA = "captcha:";
 
 
 }

@@ -8,7 +8,7 @@ import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
-import cn.cxnxs.scheduler.service.IAgentService;
+import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSON;
@@ -36,10 +36,10 @@ import java.util.Map;
 public class AgentController {
 
     @Autowired
-    private IAgentService agentService;
+    private AgentServiceImpl agentService;
 
     @RequestMapping
-    public Result<List<AgentVo>> list(@RequestBody PageWrapper<AgentVo> pageWrapper) {
+    public Result<AgentVo> list(@RequestBody PageWrapper<AgentVo> pageWrapper) {
         return agentService.pageList(pageWrapper);
     }
 
@@ -79,9 +79,9 @@ public class AgentController {
         Page<ScheduleEvents> page = PageHelper.startPage(pageNo, limit);
         List<ScheduleEvents> events = new ScheduleEvents().selectList(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id).orderByDesc(ScheduleEvents::getId));
         PageResult<ScheduleEvents> result = new PageResult<>(page.getTotal());
-        result.setCurrent((long) page.getPageNum());
-        result.setPageSize((long) page.getPageSize());
-        result.setPages((long) page.getPages());
+        result.setCurrent(page.getPageNum());
+        result.setPageSize(page.getPageSize());
+        result.setPages(page.getPages());
         result.setRows(events);
         return result;
     }

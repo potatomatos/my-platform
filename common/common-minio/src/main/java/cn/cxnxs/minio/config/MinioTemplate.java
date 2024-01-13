@@ -1,7 +1,6 @@
 package cn.cxnxs.minio.config;
 
 import cn.cxnxs.minio.entity.ObjectItem;
-import com.alibaba.fastjson.JSONObject;
 import io.minio.*;
 import io.minio.http.Method;
 import io.minio.messages.DeleteError;
@@ -99,8 +98,9 @@ public class MinioTemplate {
     }
 
     public String upload(MultipartFile file) {
-        return this.upload(file,null,null);
+        return this.upload(file, null, null);
     }
+
     /**
      * description: 上传文件
      *
@@ -116,9 +116,9 @@ public class MinioTemplate {
             fileName = fileName + System.currentTimeMillis();
         }
         if (!StringUtils.isEmpty(path)) {
-            fileName = path + "/" +fileName;
+            fileName = path + "/" + fileName;
         }
-        fileName = appName + "/" +fileName;
+        fileName = appName + "/" + fileName;
         InputStream in = null;
         try {
             if (StringUtils.isEmpty(bucketNameStr)) {
@@ -199,6 +199,7 @@ public class MinioTemplate {
         }
         return responseEntity;
     }
+
     /**
      * 查看文件对象
      *
@@ -242,7 +243,7 @@ public class MinioTemplate {
      */
     public String getFileUrl(String bucketName, String objectFile) {
         try {
-            if(StringUtils.isEmpty(bucketName)){
+            if (StringUtils.isEmpty(bucketName)) {
                 bucketName = minioProperties.getBucketName();
             }
             return minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()

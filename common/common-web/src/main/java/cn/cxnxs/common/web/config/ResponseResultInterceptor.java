@@ -20,18 +20,18 @@ import java.lang.reflect.Method;
 @Component
 public class ResponseResultInterceptor implements HandlerInterceptor {
 
-    public static final String RESPONSE_RESULT_ANN="RESPONSE-RESULT-ANN";
+    public static final String RESPONSE_RESULT_ANN = "RESPONSE-RESULT-ANN";
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (handler instanceof HandlerMethod){
-            HandlerMethod handlerMethod= (HandlerMethod) handler;
+        if (handler instanceof HandlerMethod) {
+            HandlerMethod handlerMethod = (HandlerMethod) handler;
             Class<?> clazz = handlerMethod.getBeanType();
             Method method = handlerMethod.getMethod();
-            if (clazz.isAnnotationPresent(ResponseResult.class)){
-                request.setAttribute(RESPONSE_RESULT_ANN,clazz.getAnnotation(ResponseResult.class));
-            }else if(method.isAnnotationPresent(ResponseResult.class)){
-                request.setAttribute(RESPONSE_RESULT_ANN,method.getAnnotation(ResponseResult.class));
+            if (clazz.isAnnotationPresent(ResponseResult.class)) {
+                request.setAttribute(RESPONSE_RESULT_ANN, clazz.getAnnotation(ResponseResult.class));
+            } else if (method.isAnnotationPresent(ResponseResult.class)) {
+                request.setAttribute(RESPONSE_RESULT_ANN, method.getAnnotation(ResponseResult.class));
             }
         }
         return true;

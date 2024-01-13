@@ -26,15 +26,15 @@ public class UserInfoService {
     public UserInfo currentUser() {
         String accessToken = request.getHeader("access_token");
         UserInfo userInfo = null;
-        if (accessToken!=null) {
-            if (redisUtils.hasKey(accessToken)){
+        if (accessToken != null) {
+            if (redisUtils.hasKey(accessToken)) {
                 userInfo = redisUtils.get(accessToken);
             } else {
                 Result<JSONObject> result = oauth2Service.currentUser();
                 if (result.ok()) {
                     JSONObject data = result.getData();
                     userInfo = JSONObject.parseObject(data.toJSONString(), UserInfo.class);
-                    redisUtils.set(accessToken,userInfo,7200*60);
+                    redisUtils.set(accessToken, userInfo, 7200 * 60);
                 }
             }
         }

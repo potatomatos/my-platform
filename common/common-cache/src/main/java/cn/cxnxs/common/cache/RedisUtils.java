@@ -40,6 +40,7 @@ public class RedisUtils {
     public boolean expire(String key, long time) {
         return redissonClient.getBucket(getCachePrefix(key)).expire(time, TimeUnit.SECONDS);
     }
+
     /**
      * 给一个指定的 key 值附加过期时间
      *
@@ -104,7 +105,7 @@ public class RedisUtils {
      * @return 值
      */
     public <T> T get(String key) {
-        return key == null ? null : (T)redissonClient.getBucket(getCachePrefix(key)).get();
+        return key == null ? null : (T) redissonClient.getBucket(getCachePrefix(key)).get();
     }
 
     /**
@@ -120,6 +121,7 @@ public class RedisUtils {
 
     /**
      * 设置value 并设置有效期
+     *
      * @param key
      * @param val
      * @param seconds
@@ -163,7 +165,7 @@ public class RedisUtils {
      *
      * @param keys
      */
-    public <T,V> List<T> batchGet(List<String> keys) {
+    public <T, V> List<T> batchGet(List<String> keys) {
         if (CollectionUtils.isEmpty(keys)) {
             return null;
         }
@@ -323,27 +325,28 @@ public class RedisUtils {
 
     /**
      * 给定集合
+     *
      * @param key
      * @param destKey
      * @param <T>
      * @param <V>
      * @return
      */
-    public <T,V> Set<T> difference(String key, String ... destKey) {
+    public <T, V> Set<T> difference(String key, String... destKey) {
         return (Set<T>) redissonClient.getSet(getCachePrefix(key)).readDiff(destKey);
     }
 
     /**
      * redis set 交集
      */
-    public <T> Set<T> intersect(String s1,String s2) {
+    public <T> Set<T> intersect(String s1, String s2) {
         return (Set<T>) redissonClient.getSet(getCachePrefix(s1)).readIntersection(getCachePrefix(s2));
     }
 
     /**
      * redis set 和集
      */
-    public <T> Set<T> union(String s1,String s2) {
+    public <T> Set<T> union(String s1, String s2) {
         return (Set<T>) redissonClient.getSet(getCachePrefix(s1)).readUnion(getCachePrefix(s2));
     }
 
@@ -378,7 +381,7 @@ public class RedisUtils {
      *
      * @param keys
      */
-    public <T,V> List<T> batchHget(String key, List<String> hashKeys) {
+    public <T, V> List<T> batchHget(String key, List<String> hashKeys) {
         if (CollectionUtils.isEmpty(hashKeys)) {
             return null;
         }
@@ -395,8 +398,8 @@ public class RedisUtils {
      * @param key 键
      * @return
      */
-    public <K,V>  Map<K,V> getHashEntries(String key) {
-        return (Map<K,V>) redissonClient.getMap(getCachePrefix(key)).readAllMap();
+    public <K, V> Map<K, V> getHashEntries(String key) {
+        return (Map<K, V>) redissonClient.getMap(getCachePrefix(key)).readAllMap();
     }
 
     /**
@@ -418,7 +421,7 @@ public class RedisUtils {
      * @return
      */
     public <T> T hget(String key, String hashKey) {
-        return (T)redissonClient.getMap(getCachePrefix(key)).get(hashKey);
+        return (T) redissonClient.getMap(getCachePrefix(key)).get(hashKey);
     }
 
     /**

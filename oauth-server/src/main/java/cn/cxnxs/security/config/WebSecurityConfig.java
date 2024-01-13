@@ -65,10 +65,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     /**
-     *token校验过滤器
+     * token校验过滤器
      */
     @Bean
-    public JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter(){
+    public JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter() {
         return new JwtAuthenticationTokenFilter();
     }
 
@@ -111,11 +111,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().disable();
         http.csrf().disable()
                 //不通过Session获取SecurityContext
-            /*    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()*/
+                /*    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .and()*/
                 .authorizeRequests()
 //                .antMatchers(securityService.permitPermissions(clientId).toArray(new String[0])).permitAll()
-                .antMatchers(new String[]{"/oauth/**","/platform/**","/static/**","/captcha","/rsa/publicKey","/login","/login.html"}).permitAll()
+                .antMatchers(new String[]{"/oauth/**", "/platform/**", "/static/**", "/captcha", "/rsa/publicKey", "/login", "/login.html"}).permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()

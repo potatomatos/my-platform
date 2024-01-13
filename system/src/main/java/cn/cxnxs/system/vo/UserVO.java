@@ -19,7 +19,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class UserVO{
+public class UserVO {
 
     private Integer id;
 
@@ -90,14 +90,13 @@ public class UserVO{
     /**
      * 用户状态
      */
-    public enum USER_STATE{
-        ENABLED(0,"启用"),
-        DISABLED(1,"禁用"),
-        ACCOUNT_EXPIRED(2,"账号过期"),
-        CREDENTIALS_EXPIRED(3,"密码过期"),
-        ACCOUNT_LOCKED(4,"账号锁定"),
-        DELETED(5,"账号已删除")
-        ;
+    public enum USER_STATE {
+        ENABLED(0, "启用"),
+        DISABLED(1, "禁用"),
+        ACCOUNT_EXPIRED(2, "账号过期"),
+        CREDENTIALS_EXPIRED(3, "密码过期"),
+        ACCOUNT_LOCKED(4, "账号锁定"),
+        DELETED(5, "账号已删除");
         /**
          * 码值
          */
@@ -121,16 +120,17 @@ public class UserVO{
             return desc;
         }
 
-        public static String getDescByCode(Integer code){
-            for (USER_STATE userState:USER_STATE.values()) {
-                if (userState.getCode().equals(code)){
+        public static String getDescByCode(Integer code) {
+            for (USER_STATE userState : USER_STATE.values()) {
+                if (userState.getCode().equals(code)) {
                     return userState.getDesc();
                 }
             }
             return "";
         }
     }
-    public String getStateStr(){
+
+    public String getStateStr() {
         return USER_STATE.getDescByCode(this.state);
     }
 

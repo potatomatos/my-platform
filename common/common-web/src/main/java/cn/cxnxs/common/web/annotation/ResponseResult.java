@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
  * @author mengjinyuan
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE,ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 public @interface ResponseResult {
 }

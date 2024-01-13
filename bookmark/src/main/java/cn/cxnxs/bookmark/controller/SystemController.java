@@ -31,9 +31,9 @@ public class SystemController {
      * 获取token
      */
     @GetMapping("/getAccessToken")
-    public Result<Map<String, String>> getAccessToken(String code,String clientId,String redirectUri) {
+    public Result<Map<String, String>> getAccessToken(String code, String clientId, String redirectUri) {
         log.info("code:{}", code);
-        if (StringUtil.isEmpty(code)){
+        if (StringUtil.isEmpty(code)) {
             return Result.failure("code不能为空！");
         }
         log.info("------开始获取token------");
@@ -46,8 +46,8 @@ public class SystemController {
                     redirectUri);
             log.info("token信息：{}", JSON.toJSONString(accessToken));
             return Result.success(accessToken);
-        }catch (Exception e) {
-            return Result.failure("认证失败:"+e.getMessage());
+        } catch (Exception e) {
+            return Result.failure("认证失败:" + e.getMessage());
         }
     }
 }

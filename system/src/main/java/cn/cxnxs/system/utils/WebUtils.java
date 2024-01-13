@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
  **/
 public class WebUtils {
 
-    public static <T> void renderJSON(HttpServletResponse response,Object data) throws IOException {
+    public static <T> void renderJSON(HttpServletResponse response, Object data) throws IOException {
         response.setHeader("Content-Type", "application/json");
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.getWriter().write(JSONObject.toJSONString(data));

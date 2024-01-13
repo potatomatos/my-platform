@@ -22,14 +22,14 @@ public class ParamFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, IOException, ServletException {
-        HttpServletRequest httpServletRequest=(HttpServletRequest)servletRequest;
-        String token=httpServletRequest.getParameter("token");
-        if (!StringUtils.isEmpty(token)){
+        HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+        String token = httpServletRequest.getParameter("token");
+        if (!StringUtils.isEmpty(token)) {
             log.info("======token拦截过滤======");
             HeaderRequestWrapper httpServletRequestWrapper = new HeaderRequestWrapper(httpServletRequest);
             httpServletRequestWrapper.addHeader("token", token);
             filterChain.doFilter(httpServletRequestWrapper, servletResponse);
-        }else {
+        } else {
             filterChain.doFilter(servletRequest, servletResponse);
         }
     }

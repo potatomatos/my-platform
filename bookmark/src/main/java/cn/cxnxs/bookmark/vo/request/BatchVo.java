@@ -22,8 +22,8 @@ public class BatchVo extends BaseVo {
      */
     private Integer type;
 
-    public static final Integer TYPE_FOLDER=1;
+    public static final Integer TYPE_FOLDER = 1;
 
-    public static final Integer TYPE_BOOKMARK=2;
+    public static final Integer TYPE_BOOKMARK = 2;
 
 }

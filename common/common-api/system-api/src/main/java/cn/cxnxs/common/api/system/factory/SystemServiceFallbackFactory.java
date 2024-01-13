@@ -22,19 +22,19 @@ public class SystemServiceFallbackFactory implements FallbackFactory<SystemServi
         return new SystemService() {
             @Override
             public Result<Boolean> permit(String uri, String clientId) {
-                log.error("获取白名单失败！",throwable);
+                log.error("获取白名单失败！", throwable);
                 return Result.failure("获取白名单失败！");
             }
 
             @Override
             public Result<Boolean> updateUser(UserApiEntity userApiEntity) {
-                log.error("用户信息更新失败！",throwable);
+                log.error("用户信息更新失败！", throwable);
                 return Result.failure("用户信息更新失败！");
             }
 
             @Override
             public Result<UserApiEntity> getUserByName(String username) {
-                log.error("用户信息获取失败！",throwable);
+                log.error("用户信息获取失败！", throwable);
                 return Result.failure("用户信息获取失败！");
             }
         };

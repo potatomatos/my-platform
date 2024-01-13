@@ -14,12 +14,14 @@ import java.util.List;
 
 /**
  * 我的书签
+ *
  * @author potatomato
  */
 public interface MyBookmarkService {
 
     /**
      * 保存文件夹
+     *
      * @param folderVo 入参
      * @return
      */
@@ -27,12 +29,14 @@ public interface MyBookmarkService {
 
     /**
      * 保存书签
+     *
      * @param bookmarkVo
      */
     Integer saveBookmark(BookmarkVo bookmarkVo);
 
     /**
      * 获得书签树
+     *
      * @return
      */
     List<TreeVo> getFolderTree(Integer root);
@@ -57,6 +61,7 @@ public interface MyBookmarkService {
 
     /**
      * 删除书签
+     *
      * @param id
      * @return
      */
@@ -71,6 +76,7 @@ public interface MyBookmarkService {
      * @return
      */
     Boolean updateFolder(FolderVo folderVo);
+
     /**
      * 更新书签
      *
@@ -78,6 +84,7 @@ public interface MyBookmarkService {
      * @return
      */
     Boolean updateBookmark(BookmarkVo bookmarkVo);
+
     /**
      * 获取特别收藏列表
      *
@@ -89,6 +96,7 @@ public interface MyBookmarkService {
 
     /**
      * 判断url是否存在
+     *
      * @param url 网址
      * @return true-已存在 false-不存在
      */
@@ -103,6 +111,7 @@ public interface MyBookmarkService {
     Boolean moveBookmark(List<BatchVo> moves, Integer pid);
 
     void saveHistory(Integer id);
+
     /**
      * 导入书签
      *

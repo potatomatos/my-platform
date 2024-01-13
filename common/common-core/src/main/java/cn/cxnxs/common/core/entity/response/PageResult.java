@@ -14,15 +14,29 @@ public class PageResult<T> extends Result<T> {
      */
     private Long count;
 
-    private Long pageSize;
+    private Integer pageSize;
 
-    private Long pages;
+    private Integer pages;
 
-    private Long current;
+    private Integer current;
 
     private List<T> rows;
 
+    public PageResult() {
+    }
+
     public PageResult(Long count) {
+        this.count = count;
+    }
+
+    public PageResult(Integer pageNo, Integer pageSize) {
+        this.current = pageNo;
+        this.pageSize = pageSize;
+    }
+
+    public PageResult(Integer pageNo, Integer pageSize, Long count) {
+        this.current = pageNo;
+        this.pageSize = pageSize;
         this.count = count;
     }
 
@@ -42,27 +56,27 @@ public class PageResult<T> extends Result<T> {
         this.rows = rows;
     }
 
-    public Long getPageSize() {
+    public Integer getPageSize() {
         return pageSize;
     }
 
-    public void setPageSize(Long pageSize) {
+    public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
 
-    public Long getPages() {
+    public Integer getPages() {
         return pages;
     }
 
-    public void setPages(Long pages) {
+    public void setPages(Integer pages) {
         this.pages = pages;
     }
 
-    public Long getCurrent() {
+    public Integer getCurrent() {
         return current;
     }
 
-    public void setCurrent(Long current) {
+    public void setCurrent(Integer current) {
         this.current = current;
     }
 

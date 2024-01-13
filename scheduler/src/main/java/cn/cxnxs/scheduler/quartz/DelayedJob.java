@@ -6,8 +6,8 @@ import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
-import cn.cxnxs.scheduler.service.IAgentService;
-import cn.cxnxs.scheduler.service.IEventsService;
+import cn.cxnxs.scheduler.service.AgentServiceImpl;
+import cn.cxnxs.scheduler.service.EventsServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSON;
@@ -39,10 +39,10 @@ import java.util.stream.Collectors;
 public class DelayedJob extends QuartzJobBean {
 
     @Autowired
-    private IAgentService agentService;
+    private AgentServiceImpl agentService;
 
     @Autowired
-    private IEventsService eventsService;
+    private EventsServiceImpl eventsService;
 
     @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;

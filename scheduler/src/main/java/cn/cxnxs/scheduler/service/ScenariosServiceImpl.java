@@ -1,4 +1,4 @@
-package cn.cxnxs.scheduler.service.impl;
+package cn.cxnxs.scheduler.service;
 
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
@@ -6,14 +6,9 @@ import cn.cxnxs.scheduler.entity.ScheduleScenarioAgentRel;
 import cn.cxnxs.scheduler.entity.ScheduleScenarios;
 import cn.cxnxs.scheduler.exception.BusinessException;
 import cn.cxnxs.scheduler.mapper.ScheduleScenariosMapper;
-import cn.cxnxs.scheduler.service.IAgentService;
-import cn.cxnxs.scheduler.service.IScenarioAgentRelService;
-import cn.cxnxs.scheduler.service.IScenariosService;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import cn.cxnxs.scheduler.vo.ScenariosVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,24 +30,19 @@ import java.util.Map;
  * @since 2020-11-10
  */
 @Service
-public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, ScheduleScenarios> implements IScenariosService {
+public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, ScheduleScenarios> {
 
     @Autowired
     private ScheduleScenariosMapper scheduleScenariosMapper;
 
     @Autowired
-    private IScenarioAgentRelService scenarioAgentRelService;
+    private ScenarioAgentRelServiceImpl scenarioAgentRelService;
 
     @Autowired
-    private IAgentService agentService;
+    private AgentServiceImpl agentService;
 
     private static final String TYPE_ONLY_SCEN = "1";
     private static final String TYPE_SCEN_AGENT = "2";
-
-    @Override
-    public IPage<ScenariosVo> getList(Page<ScenariosVo> page, ScenariosVo scenariosVo) {
-        return scheduleScenariosMapper.selectScenariosList(page, scenariosVo);
-    }
 
     /**
      * 获取详情
@@ -60,7 +50,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
      * @param id none
      * @return
      */
-    @Override
+
     public ScenariosVo getDetail(Integer id) {
         ScheduleScenarios scheduleScenarios = super.getById(id);
         ScenariosVo scenariosVo = new ScenariosVo();
@@ -92,7 +82,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
      * @return none
      */
     @Transactional
-    @Override
+
     public Map<String, String> saveScenarios(ScenariosVo scenariosVo) {
         ScheduleScenarios scheduleScenarios = new ScheduleScenarios();
         BeanUtils.copyProperties(scenariosVo, scheduleScenarios);
@@ -123,7 +113,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
      * @return none
      */
     @Transactional
-    @Override
+
     public Map<String, String> deleteScenarios(String type, String id) {
         if (TYPE_ONLY_SCEN.equals(type)) {
             //删除方案

@@ -16,5 +16,5 @@ import org.apache.ibatis.annotations.Select;
 public interface BmFolderMapper extends BaseMapper<BmFolder> {
 
     @Select("select IFNULL( max(sort_no)+1,1) as maxSort from bm_folder  where parent_id = #{pid} and user_id = #{userId} for update")
-    Integer getNewSortNo(@Param("userId") Integer userId, @Param("pid")Integer pid);
+    Integer getNewSortNo(@Param("userId") Integer userId, @Param("pid") Integer pid);
 }

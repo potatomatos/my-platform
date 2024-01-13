@@ -26,23 +26,23 @@ import javax.servlet.http.HttpServletRequest;
 @ControllerAdvice
 public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
 
-    public static final String RESPONSE_RESULT_ANN="RESPONSE-RESULT-ANN";
+    public static final String RESPONSE_RESULT_ANN = "RESPONSE-RESULT-ANN";
 
     @Override
     public boolean supports(MethodParameter methodParameter, Class<? extends HttpMessageConverter<?>> aClass) {
-        ServletRequestAttributes sra= (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes sra = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         assert sra != null;
-        HttpServletRequest request=sra.getRequest();
-        ResponseResult responseResult= (ResponseResult) request.getAttribute(RESPONSE_RESULT_ANN);
-        return responseResult!=null;
+        HttpServletRequest request = sra.getRequest();
+        ResponseResult responseResult = (ResponseResult) request.getAttribute(RESPONSE_RESULT_ANN);
+        return responseResult != null;
     }
 
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter methodParameter, MediaType mediaType, Class<? extends HttpMessageConverter<?>> aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        if (body instanceof ErrorResult){
-            ErrorResult errorResult= (ErrorResult) body;
-            return Result.failure(Result.ResultEnum.SYSTEM_EXCEPTION,errorResult.getMsg(),errorResult.getErrors());
-        }else if (body instanceof Result){
+        if (body instanceof ErrorResult) {
+            ErrorResult errorResult = (ErrorResult) body;
+            return Result.failure(Result.ResultEnum.SYSTEM_EXCEPTION, errorResult.getMsg(), errorResult.getErrors());
+        } else if (body instanceof Result) {
             return body;
         }
         return Result.success(body);

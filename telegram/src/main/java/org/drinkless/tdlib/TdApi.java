@@ -25954,6 +25954,7 @@ public class TdApi {
     public abstract static class Object {
         public Object() {
         }
+
         public native String toString();
 
         public abstract int getConstructor();

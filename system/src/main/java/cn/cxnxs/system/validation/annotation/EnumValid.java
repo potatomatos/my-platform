@@ -13,16 +13,27 @@ import java.lang.annotation.Target;
 /**
  * 自定义校验注解-枚举
  */
-@Constraint (validatedBy = EnumValidator.class)
-@Retention (RetentionPolicy.RUNTIME)
-@Target ({ElementType.ANNOTATION_TYPE,ElementType.FIELD,ElementType.METHOD})
+@Constraint(validatedBy = EnumValidator.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD})
 public @interface EnumValid {
-    /** 提示信息，必须使用message命名，否则hibernate获取不到提示信息 */
+    /**
+     * 提示信息，必须使用message命名，否则hibernate获取不到提示信息
+     */
     String message() default "值不匹配";
-    /** 分组 */
+
+    /**
+     * 分组
+     */
     Class<?>[] groups() default {};
-    /** 负载 */
+
+    /**
+     * 负载
+     */
     Class<? extends Payload>[] payload() default {};
-    /** 枚举类,通过接口替代反射方式 */
+
+    /**
+     * 枚举类,通过接口替代反射方式
+     */
     Class<? extends Enum<? extends AbsValid>> enumClass();
 }

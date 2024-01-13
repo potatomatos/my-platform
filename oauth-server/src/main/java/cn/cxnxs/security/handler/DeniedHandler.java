@@ -21,6 +21,6 @@ import java.io.IOException;
 public class DeniedHandler extends JSONAuthentication implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        this.writeJSON(request,response, Result.failure(accessDeniedException.getMessage()));
+        this.writeJSON(request, response, Result.failure(accessDeniedException.getMessage()));
     }
 }

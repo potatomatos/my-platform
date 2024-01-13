@@ -17,11 +17,11 @@ import java.nio.charset.StandardCharsets;
  **/
 public class JSONAuthentication {
 
-    public void writeJSON(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,Object result) throws IOException {
-        httpServletResponse.setHeader("Content-Type","application/json");
+    public void writeJSON(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object result) throws IOException {
+        httpServletResponse.setHeader("Content-Type", "application/json");
         httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
         SimplePropertyPreFilter filter = new SimplePropertyPreFilter(JwtUser.class);
         filter.getExcludes().add("password");
-        httpServletResponse.getWriter().write(JSONObject.toJSONString(result,filter));
+        httpServletResponse.getWriter().write(JSONObject.toJSONString(result, filter));
     }
 }

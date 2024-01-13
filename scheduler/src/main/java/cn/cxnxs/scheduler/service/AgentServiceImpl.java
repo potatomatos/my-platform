@@ -1,5 +1,4 @@
-package cn.cxnxs.scheduler.service.impl;
-
+package cn.cxnxs.scheduler.service;
 
 import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.PageResult;
@@ -10,9 +9,6 @@ import cn.cxnxs.scheduler.core.IAgent;
 import cn.cxnxs.scheduler.entity.*;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
-import cn.cxnxs.scheduler.service.IAgentService;
-import cn.cxnxs.scheduler.service.ILinksService;
-import cn.cxnxs.scheduler.service.IScenarioAgentRelService;
 import cn.cxnxs.scheduler.utils.SpringContextUtil;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
@@ -20,9 +16,9 @@ import cn.cxnxs.scheduler.vo.ScenariosVo;
 import com.alibaba.fastjson.JSONObject;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,13 +38,14 @@ import java.util.Map;
  * @since 2020-11-10
  */
 @Service
-public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleAgent> implements IAgentService {
+public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleAgent> {
 
 
     @Autowired
-    private IScenarioAgentRelService scenarioAgentRelService;
+    private ScenarioAgentRelServiceImpl scenarioAgentRelService;
+
     @Autowired
-    private ILinksService linksService;
+    private LinksServiceImpl linksService;
 
     /**
      * 获取agent配置信息
@@ -56,12 +53,12 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
      * @param agentType agent类型
      * @return agent配置json数据
      */
-    @Override
+
     public Map<String, Object> getAgentConfig(String agentType) {
         return null;
     }
 
-    @Override
+
     public List<AgentVo> findByTypeProperties(AgentTypeVo agentTypeVo) {
         ScheduleAgentMapper scheduleAgentMapper = getBaseMapper();
         List<ScheduleAgent> scheduleAgents = scheduleAgentMapper.selectByTypeProperties(agentTypeVo);
@@ -69,7 +66,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     }
 
     @Transactional
-    @Override
+
     public Map<String, String> saveAgent(AgentVo agentVo) {
         //保存代理
         ScheduleAgent scheduleAgent = new ScheduleAgent();
@@ -114,7 +111,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         return new HashMap<>();
     }
 
-    @Override
+
     public AgentVo getAgentById(Integer id) throws AgentNotFoundException {
         if (id == null) {
             throw new AgentNotFoundException();
@@ -165,14 +162,16 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         return agentVo;
     }
 
-    @Override
-    public PageResult<List<AgentVo>> pageList(PageWrapper<AgentVo> param) {
+
+    public PageResult<AgentVo> pageList(PageWrapper<AgentVo> param) {
         AgentVo agentVo = param.getParam();
         if (StringUtil.isNotEmpty(agentVo.getName())) {
             agentVo.setName(StringUtil.sqlLike(agentVo.getName()));
         }
-        IPage<ScheduleAgent> page = getBaseMapper().pageSelectList(new Page<>(param.getPage(), param.getLimit()), agentVo);
-        List<AgentVo> agentVos = ObjectUtil.copyListProperties(page.getRecords(), AgentVo.class);
+        PageResult<AgentVo> result = new PageResult<>(param.getPage(), param.getLimit());
+        Page<ScheduleAgent> page = PageHelper.startPage(param.getPage(), param.getLimit());
+        List<ScheduleAgent> list = getBaseMapper().pageSelectList(agentVo);
+        List<AgentVo> agentVos = ObjectUtil.copyListProperties(list, AgentVo.class);
         agentVos.forEach(agent -> {
             //获取方案
             List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ScheduleScenarioAgentRel().selectList(new QueryWrapper<ScheduleScenarioAgentRel>().eq("agent_id", agent.getId()));
@@ -197,15 +196,12 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
             agent.setHasSources(hasSources != 0);
             agent.setHasReceivers(hasReceiver != 0);
         });
-        PageResult<List<AgentVo>> result = new PageResult<>(page.getTotal());
-        result.setCurrent(page.getCurrent());
-        result.setPageSize(page.getSize());
-        result.setPages(page.getPages());
-        result.setData(agentVos);
+        result.setRows(agentVos);
+        result.setCount(page.getTotal());
         return result;
     }
 
-    @Override
+
     public List<Map<String, String>> dryRun(Integer type, JSONObject options, JSONObject payload) throws AgentNotFoundException, ClassNotFoundException, HttpProcessException {
         ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(type);
         if (scheduleAgentType == null) {

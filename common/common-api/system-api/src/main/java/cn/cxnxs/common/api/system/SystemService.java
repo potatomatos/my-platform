@@ -20,7 +20,8 @@ public interface SystemService {
 
     /**
      * 获取放行的路径
-     * @param uri 地址
+     *
+     * @param uri      地址
      * @param clientId 客户端id
      * @return true or false
      */
@@ -29,6 +30,7 @@ public interface SystemService {
 
     /**
      * 更新用户信息
+     *
      * @param userApiEntity 用户信息
      * @return true-成功 false-失败
      */

@@ -5,7 +5,7 @@ import cn.cxnxs.scheduler.entity.ScheduleAgentType;
 import cn.cxnxs.scheduler.quartz.DelayedJob;
 import cn.cxnxs.scheduler.quartz.TaskDetail;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
-import cn.cxnxs.scheduler.service.IAgentService;
+import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class TaskExecutorConfig {
     private TaskScheduler taskScheduler;
 
     @Autowired
-    private IAgentService agentService;
+    private AgentServiceImpl agentService;
 
     /**
      * 定义线程池

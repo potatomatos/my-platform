@@ -16,23 +16,52 @@ import javax.validation.constraints.NotNull;
  */
 @Validated
 public class ValidBean {
-    @NotNull (message = "id不能为null")
+    @NotNull(message = "id不能为null")
     private Long id;
-    @NotBlank (message = "name不能为空")
+    @NotBlank(message = "name不能为空")
     private String name;
     @NotBlank(message = "gender不能为空")
     @EnumValid(enumClass = GenderEnum.class, message = "gender非法")
     private String gender;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public ValidBean id(Long id) { this.id = id; return this; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public ValidBean name(String name) { this.name = name;return this; }
-    public String getGender() { return gender; }
-    public void setGender(String gender) { this.gender = gender; }
-    public ValidBean gender(String gender) { this.gender = gender;return this; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public ValidBean id(Long id) {
+        this.id = id;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ValidBean name(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public ValidBean gender(String gender) {
+        this.gender = gender;
+        return this;
+    }
 
     @Override
     public String toString() {

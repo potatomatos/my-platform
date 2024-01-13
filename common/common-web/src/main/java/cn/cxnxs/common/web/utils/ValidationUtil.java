@@ -1,18 +1,17 @@
 package cn.cxnxs.common.web.utils;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-
 import cn.cxnxs.common.web.exception.ValidationException;
 import org.hibernate.validator.HibernateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ValidationUtil {
     private static final Logger logger = LoggerFactory.getLogger(ValidationUtil.class);

@@ -1,7 +1,6 @@
 package cn.cxnxs.system.mapper;
 
 import cn.cxnxs.system.entity.SysApp;
-import cn.cxnxs.system.entity.Test;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

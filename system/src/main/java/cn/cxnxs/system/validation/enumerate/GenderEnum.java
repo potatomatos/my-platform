@@ -10,24 +10,37 @@ import cn.cxnxs.common.web.validation.AbsValid;
  * @date 2022/7/19
  */
 public enum GenderEnum implements AbsValid {
-    /** 1 男 */M("1","男"),
-    /** 2 女 */W("2","女"),
-    /** 9 未知 */X("9","未知"),
+    /**
+     * 1 男
+     */
+    M("1", "男"),
+    /**
+     * 2 女
+     */
+    W("2", "女"),
+    /**
+     * 9 未知
+     */
+    X("9", "未知"),
     ;
     private final String key;
     private final String name;
-    GenderEnum(String key,String name){
+
+    GenderEnum(String key, String name) {
         this.key = key;
         this.name = name;
     }
+
     @Override
     public boolean eq(String val) {
         return key.equals(val);
     }
+
     @Override
     public String key() {
         return key;
     }
+
     public String getName() {
         return name;
     }

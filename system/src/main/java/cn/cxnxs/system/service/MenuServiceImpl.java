@@ -1,4 +1,4 @@
-package cn.cxnxs.system.service.impl;
+package cn.cxnxs.system.service;
 
 import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.core.entity.TreeVo;
@@ -10,13 +10,12 @@ import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.common.core.utils.TreeUtil;
 import cn.cxnxs.system.entity.SysMenu;
 import cn.cxnxs.system.mapper.SysMenuMapper;
-import cn.cxnxs.system.service.IMenuService;
 import cn.cxnxs.system.vo.MenuQueryVO;
 import cn.cxnxs.system.vo.MenuVO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class MenuServiceImpl implements IMenuService {
+public class MenuServiceImpl {
 
     @Autowired
     private Oauth2Service oauth2Service;
@@ -33,23 +32,24 @@ public class MenuServiceImpl implements IMenuService {
     @Resource
     private SysMenuMapper sysMenuMapper;
 
-    @Override
+
     public List<TreeVo> getUserMenusTree() {
         Result<JSONObject> result = oauth2Service.currentUser();
-        if (result.ok()){
+        if (result.ok()) {
             JSONObject userInfo = result.getData();
             final List<SysMenu> userMenus = sysMenuMapper.getUserMenus(userInfo.getInteger("id"));
             return this.toTree(userMenus);
-        }else {
+        } else {
             throw new CommonException(result.getMsg());
         }
     }
 
     /**
      * 获得菜单树
+     *
      * @return
      */
-    @Override
+
     public List<TreeVo> getMenusTree() {
         List<SysMenu> sysMenus = sysMenuMapper.selectList(new LambdaQueryWrapper<SysMenu>().orderByAsc(SysMenu::getSortNo));
         return this.toTree(sysMenus);
@@ -58,10 +58,11 @@ public class MenuServiceImpl implements IMenuService {
 
     /**
      * 对象转换
+     *
      * @param menus
      * @return
      */
-    public List<TreeVo> toTree(List<SysMenu> menus){
+    public List<TreeVo> toTree(List<SysMenu> menus) {
         List<TreeVo> treeVos = new ArrayList<>();
         menus.forEach(sysMenu -> {
             MenuVO menuVO = new MenuVO();
@@ -89,45 +90,49 @@ public class MenuServiceImpl implements IMenuService {
         });
         return TreeUtil.toTreeVo(treeVos, 0);
     }
+
     /**
      * 添加菜单
+     *
      * @param sysMenu
      * @return
      */
-    @Override
-    public Integer addMenu(SysMenu sysMenu){
-        if (sysMenu!=null){
+
+    public Integer addMenu(SysMenu sysMenu) {
+        if (sysMenu != null) {
             sysMenu.setCreatedAt(System.currentTimeMillis());
             return sysMenuMapper.insert(sysMenu);
-        }else {
+        } else {
             return 0;
         }
     }
 
     /**
      * 更新菜单
+     *
      * @param sysMenu
      * @return
      */
-    @Override
-    public Integer updateMenu(SysMenu sysMenu){
-        if (sysMenu!=null){
+
+    public Integer updateMenu(SysMenu sysMenu) {
+        if (sysMenu != null) {
             return sysMenuMapper.updateById(sysMenu);
-        }else {
+        } else {
             return 0;
         }
     }
 
     /**
      * 删除菜单
+     *
      * @param id
      * @return
      */
-    @Override
-    public Integer deleteMenu(Integer id){
+
+    public Integer deleteMenu(Integer id) {
         //判断是否有子菜单
         Integer count = sysMenuMapper.selectCount(new LambdaQueryWrapper<SysMenu>().eq(SysMenu::getParentId, id));
-        if (count>0){
+        if (count > 0) {
             throw new CommonException("该菜单存在下级，请完全删除子菜单后再删除本菜单！");
         }
         return sysMenuMapper.deleteById(id);
@@ -135,35 +140,33 @@ public class MenuServiceImpl implements IMenuService {
 
     /**
      * 分页查询菜单
+     *
      * @param pageWrapper
      * @return
      */
-    @Override
-    public PageResult<SysMenu> list(PageWrapper<MenuQueryVO> pageWrapper){
+
+    public PageResult<SysMenu> list(PageWrapper<MenuQueryVO> pageWrapper) {
         MenuQueryVO param = pageWrapper.getParam();
         LambdaQueryWrapper<SysMenu> queryWrapper = new LambdaQueryWrapper<>();
-        if (param.getId()!=null){
-            queryWrapper.eq(SysMenu::getId,param.getId());
+        if (param.getId() != null) {
+            queryWrapper.eq(SysMenu::getId, param.getId());
         }
-        if (param.getPid()!=null){
-            queryWrapper.eq(SysMenu::getParentId,param.getPid());
+        if (param.getPid() != null) {
+            queryWrapper.eq(SysMenu::getParentId, param.getPid());
         }
-        if (StringUtil.isNotEmpty(param.getMenuName())){
-            queryWrapper.like(SysMenu::getMenuName,param.getMenuName());
+        if (StringUtil.isNotEmpty(param.getMenuName())) {
+            queryWrapper.like(SysMenu::getMenuName, param.getMenuName());
         }
-        if (StringUtil.isNotEmpty(param.getUrl())){
-            queryWrapper.like(SysMenu::getUrl,param.getUrl());
+        if (StringUtil.isNotEmpty(param.getUrl())) {
+            queryWrapper.like(SysMenu::getUrl, param.getUrl());
         }
         queryWrapper.orderByAsc(SysMenu::getSortNo);
-        Page<SysMenu> page = new Page<>();
-        page.setCurrent(pageWrapper.getPage());
-        page.setSize(pageWrapper.getLimit());
-        Page<SysMenu> sysMenuPage = sysMenuMapper.selectPage(page, queryWrapper);
-        PageResult<SysMenu> pageResult = new PageResult<>(page.getTotal());
-        pageResult.setRows(sysMenuPage.getRecords());
-        pageResult.setPageSize(sysMenuPage.getSize());
-        pageResult.setPages(sysMenuPage.getPages());
-        pageResult.setCurrent(sysMenuPage.getCurrent());
+        com.github.pagehelper.Page<Object> page = PageHelper.startPage(pageWrapper.getPage(), pageWrapper.getLimit());
+        List<SysMenu> sysMenuPage = sysMenuMapper.selectList(queryWrapper);
+        PageResult<SysMenu> pageResult = new PageResult<>(pageWrapper.getPage(), pageWrapper.getLimit());
+        pageResult.setRows(sysMenuPage);
+        pageResult.setPages(page.getPages());
+        pageResult.setCount(page.getTotal());
         return pageResult;
     }
 }

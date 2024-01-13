@@ -1,11 +1,11 @@
 package cn.cxnxs.system.controller;
 
 import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.system.entity.SysDict;
-import cn.cxnxs.system.service.IDictService;
+import cn.cxnxs.system.service.DictServiceImpl;
 import cn.cxnxs.system.vo.DictVO;
-import cn.cxnxs.system.vo.PageVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +22,10 @@ import java.util.List;
 public class DictController {
 
     @Autowired
-    private IDictService dictService;
+    private DictServiceImpl dictService;
 
     @PostMapping("list")
-    public PageVO<DictVO> list(@RequestBody PageWrapper<DictVO> pageWrapper) {
+    public PageResult<DictVO> list(@RequestBody PageWrapper<DictVO> pageWrapper) {
         return dictService.list(pageWrapper);
     }
 

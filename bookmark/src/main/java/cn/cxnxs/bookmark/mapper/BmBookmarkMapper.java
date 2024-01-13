@@ -19,6 +19,7 @@ public interface BmBookmarkMapper extends BaseMapper<BmBookmark> {
 
     /**
      * 查询最近访问
+     *
      * @param userId 用户编号
      * @return
      */
@@ -26,5 +27,5 @@ public interface BmBookmarkMapper extends BaseMapper<BmBookmark> {
     List<BmBookmark> getRecentVisited(Integer userId);
 
     @Select("select IFNULL( max(sort_no)+1,1) as maxSort from bm_bookmark  where user_id=#{userId} AND folder_id = #{pid} for update")
-    Integer getNewSortNo(@Param("userId") Integer userId,@Param("pid")Integer pid);
+    Integer getNewSortNo(@Param("userId") Integer userId, @Param("pid") Integer pid);
 }

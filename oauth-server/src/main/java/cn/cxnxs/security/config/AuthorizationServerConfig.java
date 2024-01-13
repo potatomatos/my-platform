@@ -96,11 +96,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
              */
             @Override
             public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-                JwtUser jwtUser= (JwtUser) authentication.getPrincipal();
-                HashMap<String,Object> additionalInformation = new HashMap<>();
+                JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
+                HashMap<String, Object> additionalInformation = new HashMap<>();
                 authentication.setAuthenticated(true);
                 //把用户ID设置到JWT中
-                additionalInformation.put("userId",jwtUser.getId());
+                additionalInformation.put("userId", jwtUser.getId());
                 ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInformation);
                 return super.enhance(accessToken, authentication);
             }

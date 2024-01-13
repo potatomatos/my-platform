@@ -14,6 +14,18 @@ import java.util.Map;
  */
 public class ObjectUtil {
 
+
+    public static <T> T transValues(Object source, Class<T> target) throws RuntimeException {
+        try {
+            T t = target.newInstance();
+            transValues(source, t);
+            return t;
+        } catch (InstantiationException | IllegalAccessException ignored) {
+
+        }
+        return null;
+    }
+
     /**
      * 将一个对象中的值传到目标对象响应的属性中
      *

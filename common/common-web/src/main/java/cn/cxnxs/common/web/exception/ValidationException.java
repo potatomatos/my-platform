@@ -1,6 +1,6 @@
 package cn.cxnxs.common.web.exception;
 
-public class ValidationException extends RuntimeException{
+public class ValidationException extends RuntimeException {
     public ValidationException() {
         super();
     }

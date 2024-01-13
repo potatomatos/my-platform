@@ -4,8 +4,8 @@ import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.system.service.IPermissionService;
-import cn.cxnxs.system.service.IUserService;
+import cn.cxnxs.system.service.PermissionServiceImpl;
+import cn.cxnxs.system.service.UserServiceImpl;
 import cn.cxnxs.system.vo.UserVO;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +22,10 @@ import java.util.Map;
 public class SystemController {
 
     @Autowired
-    private IPermissionService permissionService;
+    private PermissionServiceImpl permissionService;
 
     @Autowired
-    private IUserService userService;
+    private UserServiceImpl userService;
 
     @Autowired
     private Oauth2Service oauth2Service;
@@ -43,7 +43,7 @@ public class SystemController {
     @GetMapping("api/getAccessToken")
     public Result<Map<String, String>> getAccessToken(String code) {
         log.info("code:{}", code);
-        if (StringUtil.isEmpty(code)){
+        if (StringUtil.isEmpty(code)) {
             return Result.failure("code不能为空！");
         }
         log.info("------开始获取token------");
@@ -54,7 +54,7 @@ public class SystemController {
                 code,
                 redirectUri);
         log.info("token信息：{}", JSON.toJSONString(accessToken));
-       return Result.success(accessToken);
+        return Result.success(accessToken);
     }
 
     /**
@@ -62,7 +62,6 @@ public class SystemController {
      *
      * @param uri      地址
      * @param clientId 客户端id
-     * @return
      */
     @GetMapping(value = "api/permit")
     public Result<Boolean> permit(@RequestParam("uri") String uri, @RequestParam("clientId") String clientId) {

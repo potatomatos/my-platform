@@ -21,7 +21,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class OauthClientDetails extends Model<OauthClientDetails> {
 
-    private static final long serialVersionUID=1L;
+    private static final long serialVersionUID = 1L;
 
     @TableId
     private String clientId;

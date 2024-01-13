@@ -51,23 +51,21 @@ public class AgentTypeController {
     @ResponseResult
     @RequestMapping("detail/{id}")
     public AgentTypeVo detail(@PathVariable("id") Integer id) {
-        AgentType agentType = agentTypeService.getById(id);
-        AgentTypeVo agentTypeVo = new AgentTypeVo();
-        ObjectUtil.transValues(agentType, agentTypeVo);
-        return agentTypeVo;
+        ScheduleAgentType agentType = scheduleAgentTypeMapper.selectById(id);
+        return ObjectUtil.transValues(agentType, AgentTypeVo.class);
     }
 
 
     @RequestMapping("delete/{id}")
     public Result<String> delete(@PathVariable("id") Integer id) {
-        agentTypeService.removeById(id);
+        scheduleAgentTypeMapper.deleteById(id);
         return Result.success("删除成功");
     }
 
     @RequestMapping("modify")
-    public Result<String> modify(AgentType agentType) {
+    public Result<String> modify(ScheduleAgentType agentType) {
         agentType.setUpdatedAt(LocalDateTime.now());
-        agentTypeService.updateById(agentType);
+        scheduleAgentTypeMapper.updateById(agentType);
         return Result.success("更新成功");
     }
 

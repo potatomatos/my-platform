@@ -26,26 +26,26 @@ public class FailureHandler extends JSONAuthentication implements Authentication
         Result<String> result;
         if (e instanceof AccountExpiredException) {
             //账号过期
-            result = Result.failure(Result.ResultEnum.USER_ACCOUNT_EXPIRED,e.getMessage());
+            result = Result.failure(Result.ResultEnum.USER_ACCOUNT_EXPIRED, e.getMessage());
         } else if (e instanceof BadCredentialsException) {
             //密码错误
-            result = Result.failure(Result.ResultEnum.USER_CREDENTIALS_ERROR,e.getMessage());
+            result = Result.failure(Result.ResultEnum.USER_CREDENTIALS_ERROR, e.getMessage());
         } else if (e instanceof CredentialsExpiredException) {
             //密码过期
-            result = Result.failure(Result.ResultEnum.USER_CREDENTIALS_EXPIRED,e.getMessage());
+            result = Result.failure(Result.ResultEnum.USER_CREDENTIALS_EXPIRED, e.getMessage());
         } else if (e instanceof DisabledException) {
             //账号不可用
-            result = Result.failure(Result.ResultEnum.USER_ACCOUNT_DISABLE,e.getMessage());
+            result = Result.failure(Result.ResultEnum.USER_ACCOUNT_DISABLE, e.getMessage());
         } else if (e instanceof LockedException) {
             //账号锁定
-            result = Result.failure(Result.ResultEnum.USER_ACCOUNT_LOCKED,e.getMessage());
+            result = Result.failure(Result.ResultEnum.USER_ACCOUNT_LOCKED, e.getMessage());
         } else if (e instanceof InternalAuthenticationServiceException) {
             //用户不存在
-            result = Result.failure(Result.ResultEnum.USER_ACCOUNT_NOT_EXIST,e.getMessage());
-        }else{
+            result = Result.failure(Result.ResultEnum.USER_ACCOUNT_NOT_EXIST, e.getMessage());
+        } else {
             //其他错误
             result = Result.failure(e.getMessage());
         }
-        this.writeJSON(httpServletRequest,httpServletResponse,result);
+        this.writeJSON(httpServletRequest, httpServletResponse, result);
     }
 }

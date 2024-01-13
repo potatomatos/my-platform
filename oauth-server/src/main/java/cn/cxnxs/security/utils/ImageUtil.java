@@ -37,7 +37,7 @@ public class ImageUtil {
 
         int codeY;
         int i;
-        for(codeY = 0; codeY < length * 6; ++codeY) {
+        for (codeY = 0; codeY < length * 6; ++codeY) {
             i = rand.nextInt(width);
             int y = rand.nextInt(height);
             g.drawRect(i, y, 1, 1);
@@ -47,7 +47,7 @@ public class ImageUtil {
         g.setColor(new Color(19, 148, 246));
         g.setFont(new Font("Georgia", 1, fSize));
 
-        for(i = 0; i < length; ++i) {
+        for (i = 0; i < length; ++i) {
             g.drawString(String.valueOf(securityCode.charAt(i)), i * fSize + 5, codeY);
         }
 

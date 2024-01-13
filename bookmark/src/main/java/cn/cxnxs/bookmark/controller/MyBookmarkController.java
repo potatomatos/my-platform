@@ -104,10 +104,10 @@ public class MyBookmarkController {
                                   @RequestParam("file") MultipartFile multipartFile,
                                   @RequestParam(value = "clearFlag", required = false) String clearFlag,
                                   @RequestParam(value = "newFolderFlag", required = false) String newFolderFlag) throws IOException {
-        if (multipartFile!=null) {
-            myBookmarkService.importBookmark(request,multipartFile, clearFlag, newFolderFlag);
+        if (multipartFile != null) {
+            myBookmarkService.importBookmark(request, multipartFile, clearFlag, newFolderFlag);
             return true;
-        }else {
+        } else {
             return false;
         }
     }
@@ -154,9 +154,9 @@ public class MyBookmarkController {
     }
 
     @GetMapping("/redirect")
-    public Result<String> redirect(Integer id,String url) {
+    public Result<String> redirect(Integer id, String url) {
         myBookmarkService.saveHistory(id);
-        return Result.success("成功",url);
+        return Result.success("成功", url);
     }
 
 }

@@ -33,7 +33,7 @@ public class LogoutHandler extends JSONAuthentication implements LogoutSuccessHa
     private TokenStore jdbcTokenStore;
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Override
     public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException {
@@ -42,13 +42,13 @@ public class LogoutHandler extends JSONAuthentication implements LogoutSuccessHa
         OAuth2AccessToken oAuth2AccessToken = jdbcTokenStore.readAccessToken(accessToken);
         OAuth2Authentication oAuth2Authentication = jdbcTokenStore.readAuthentication(accessToken);
         UserPasswordAuthenticationToken userAuthentication = (UserPasswordAuthenticationToken) oAuth2Authentication.getUserAuthentication();
-        if (!Objects.isNull(oAuth2AccessToken)){
+        if (!Objects.isNull(oAuth2AccessToken)) {
             jdbcTokenStore.removeAccessToken(oAuth2AccessToken);
         }
         //删除缓存信息
         JwtUser jwtUser = userAuthentication.getJwtUser();
-        redisTemplate.delete(RedisKeyPrefix.KEY_USER_INFO+jwtUser.getId());
+        redisTemplate.delete(RedisKeyPrefix.KEY_USER_INFO + jwtUser.getId());
         Result<String> result = Result.success("注销成功");
-        this.writeJSON(httpServletRequest,httpServletResponse,result);
+        this.writeJSON(httpServletRequest, httpServletResponse, result);
     }
 }

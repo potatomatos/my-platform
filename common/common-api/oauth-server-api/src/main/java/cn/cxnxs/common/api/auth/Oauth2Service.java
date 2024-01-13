@@ -34,7 +34,8 @@ public interface Oauth2Service {
                                        @RequestParam("redirect_uri") String redirect_uri);
 
     @GetMapping("/oauth/check_token")
-    Map<String,?> checkToken(@RequestParam("token")String token);
+    Map<String, ?> checkToken(@RequestParam("token") String token);
+
     /**
      * 获取公钥
      */
@@ -52,6 +53,7 @@ public interface Oauth2Service {
 
     /**
      * 校验token
+     *
      * @param accessToken
      * @return
      */
@@ -60,10 +62,11 @@ public interface Oauth2Service {
 
     /**
      * 校验前端路由
+     *
      * @param accessToken
      * @param path
      * @return
      */
     @GetMapping("/verifyPage")
-    Result<JSONObject> verifyPage(@RequestParam("accessToken")String accessToken, @RequestParam("path")String path);
+    Result<JSONObject> verifyPage(@RequestParam("accessToken") String accessToken, @RequestParam("path") String path);
 }

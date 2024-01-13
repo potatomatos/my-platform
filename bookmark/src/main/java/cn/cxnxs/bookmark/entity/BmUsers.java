@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 public class BmUsers extends Model<BmUsers> {
 
-    private static final long serialVersionUID=1L;
+    private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;

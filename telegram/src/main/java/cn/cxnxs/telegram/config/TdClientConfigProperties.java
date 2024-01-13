@@ -26,7 +26,7 @@ public class TdClientConfigProperties {
      */
     private Proxy proxy;
 
-    public static class Proxy{
+    public static class Proxy {
         private Class<? extends TdApi.ProxyType> type;
 
         private Properties config;

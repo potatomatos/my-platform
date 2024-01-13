@@ -24,8 +24,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * <p>统一鉴权过滤器</p>
@@ -78,7 +76,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
 
         boolean match = false;
         for (String path : list) {
-            if (matcher.match(path,url)) {
+            if (matcher.match(path, url)) {
                 match = true;
             }
         }
@@ -88,7 +86,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
             } else {
                 Map<String, ?> stringMap = oauth2Service.checkToken(accessToken);
                 if (stringMap.get("active") == null) {
-                     return this.setUnauthorizedResponse(exchange, Result.failure(Result.ResultEnum.INVALID_TOKEN,null));
+                    return this.setUnauthorizedResponse(exchange, Result.failure(Result.ResultEnum.INVALID_TOKEN, null));
                 }
             }
         }

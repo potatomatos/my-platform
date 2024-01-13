@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cxnxs.scheduler.mapper.ScheduleScenariosMapper">
 
-    <select id="selectScenariosList" resultType="cn.cxnxs.webspider.web.vo.ScenariosVo">
+    <select id="selectScenariosList" resultType="cn.cxnxs.scheduler.vo.ScenariosVo">
         select a.*,(select count(*) from scenario_agent_rel where scenario_id=a.id) as agentCount
         from scheduleScenarios a
         <where>

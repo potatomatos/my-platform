@@ -1,12 +1,11 @@
 package cn.cxnxs.system.controller;
 
 import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.web.annotation.ResponseResult;
-import cn.cxnxs.system.service.IUserService;
-import cn.cxnxs.system.vo.PageVO;
+import cn.cxnxs.system.service.UserServiceImpl;
 import cn.cxnxs.system.vo.UserVO;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,10 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
     @Autowired
-    private IUserService userService;
+    private UserServiceImpl userService;
 
     @PostMapping("list")
-    public PageVO<UserVO> selectUsersForPage(@RequestBody PageWrapper<UserVO> wrapper) {
+    public PageResult<UserVO> selectUsersForPage(@RequestBody PageWrapper<UserVO> wrapper) {
         return userService.selectUsersForPage(wrapper);
     }
 
@@ -59,11 +58,11 @@ public class UserController {
     @ResponseResult
     @PostMapping("updatePassword")
     public Boolean updatePassword(@RequestBody UserVO userVO) {
-        return userService.updatePassword(userVO.getId(),userVO.getPassword());
+        return userService.updatePassword(userVO.getId(), userVO.getPassword());
     }
 
     @PostMapping("avatar/upload")
-    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file){
+    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String avatar = userService.uploadAvatar(file);
         Result<String> success = Result.success();
         success.setData(avatar);

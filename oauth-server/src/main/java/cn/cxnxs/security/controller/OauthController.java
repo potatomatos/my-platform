@@ -85,10 +85,10 @@ public class OauthController {
     @ResponseResult
     @GetMapping("currentUser")
     public JSONObject user(Principal principal) {
-        if (principal!=null){
+        if (principal != null) {
             UserPasswordAuthenticationToken userPasswordAuthenticationToken = (UserPasswordAuthenticationToken) principal;
             return JSONObject.parseObject(JSON.toJSONString(userPasswordAuthenticationToken.getJwtUser()));
-        }else {
+        } else {
             throw new CommonException("登录信息获取失败，请登录后再调用");
         }
 
@@ -101,14 +101,15 @@ public class OauthController {
 
     /**
      * 菜单权限校验
+     *
      * @return
      */
     @GetMapping("verifyPage")
-    public Result<Object> verifyPage(Principal principal,String path) {
+    public Result<Object> verifyPage(Principal principal, String path) {
         UserPasswordAuthenticationToken userPasswordAuthenticationToken = (UserPasswordAuthenticationToken) principal;
         JwtUser jwtUser = userPasswordAuthenticationToken.getJwtUser();
         List<String> userMenus = jwtUser.getUserMenuPaths();
-        if (!userMenus.contains(path)){
+        if (!userMenus.contains(path)) {
             return Result.failure(Result.ResultEnum.FORBIDDEN,
                     Result.ResultEnum.FORBIDDEN.getInfo(),
                     Result.ResultEnum.FORBIDDEN.getResult());

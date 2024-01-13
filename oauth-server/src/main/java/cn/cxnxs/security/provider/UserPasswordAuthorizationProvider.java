@@ -37,7 +37,7 @@ public class UserPasswordAuthorizationProvider implements AuthenticationProvider
 
 
     @Autowired
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private UserDetailsService userDetailService;

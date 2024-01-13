@@ -31,11 +31,12 @@ public class CheckVo extends BaseVo {
     /**
      * 是否有效
      */
-    private Boolean valid=true;
+    private Boolean valid = true;
 
-    public CheckVo() {}
+    public CheckVo() {
+    }
 
-    public CheckVo(Integer total, Integer invalidDataCount,Integer checkedCount) {
+    public CheckVo(Integer total, Integer invalidDataCount, Integer checkedCount) {
         this.total = total;
         this.invalidDataCount = invalidDataCount;
         this.checkedCount = checkedCount;

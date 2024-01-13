@@ -33,7 +33,7 @@ public class GatewayConfig {
 
     @Bean
     @LoadBalanced
-    public WebClient.Builder webBuilder(){
+    public WebClient.Builder webBuilder() {
         return WebClient.builder();
     }
 
@@ -43,6 +43,7 @@ public class GatewayConfig {
     WebSocketClient tomcatWebSocketClient() {
         return new TomcatWebSocketClient();
     }
+
     @Bean
     @Primary
     public RequestUpgradeStrategy requestUpgradeStrategy() {

@@ -2,7 +2,6 @@ package cn.cxnxs.security.filter;
 
 import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.entity.response.Result;
-import cn.cxnxs.security.entity.JwtUser;
 import cn.cxnxs.security.entity.UserPasswordAuthenticationToken;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
@@ -71,12 +70,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 render(request, response, Result.failure(Result.ResultEnum.NEED_LOGIN, null));
                 return;
             }
-            String key=REDIS_KEY + accessToken;
+            String key = REDIS_KEY + accessToken;
             try {
                 UserPasswordAuthenticationToken passwordAuthenticationToken;
                 if (redisUtils.hasKey(key)) {
-                    passwordAuthenticationToken= redisUtils.get(key);
-                }else {
+                    passwordAuthenticationToken = redisUtils.get(key);
+                } else {
                     OAuth2AccessToken oAuth2AccessToken = jdbcTokenStore.readAccessToken(accessToken);
                     if (Objects.isNull(oAuth2AccessToken)) {
                         render(request, response, Result.failure(Result.ResultEnum.TOKEN_REQUIRED, null));
@@ -93,7 +92,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                         return;
                     }
                     passwordAuthenticationToken = (UserPasswordAuthenticationToken) oAuth2Authentication.getUserAuthentication();
-                    redisUtils.set(key,passwordAuthenticationToken,3600);
+                    redisUtils.set(key, passwordAuthenticationToken, 3600);
                 }
                 SecurityContextHolder.getContext().setAuthentication(passwordAuthenticationToken);
             } catch (Exception e) {

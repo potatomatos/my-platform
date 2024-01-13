@@ -1,9 +1,10 @@
-package cn.cxnxs.system.service.impl;
+package cn.cxnxs.system.service;
 
 import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.entity.request.PageWrapper;
+import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.exception.CommonException;
 import cn.cxnxs.common.core.utils.ObjectUtil;
@@ -16,15 +17,13 @@ import cn.cxnxs.system.entity.SysUsers;
 import cn.cxnxs.system.mapper.SysMenuMapper;
 import cn.cxnxs.system.mapper.SysUserRoleMapper;
 import cn.cxnxs.system.mapper.SysUsersMapper;
-import cn.cxnxs.system.service.IUserService;
 import cn.cxnxs.system.vo.MenuVO;
-import cn.cxnxs.system.vo.PageVO;
 import cn.cxnxs.system.vo.RoleVO;
 import cn.cxnxs.system.vo.UserVO;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,7 +46,7 @@ import java.util.stream.Collectors;
  * @date 2022-10-27 23:59
  **/
 @Service
-public class UserServiceImpl implements IUserService {
+public class UserServiceImpl {
 
     @Resource
     private SysUsersMapper sysUsersMapper;
@@ -79,8 +78,8 @@ public class UserServiceImpl implements IUserService {
      * @param wrapper
      * @return
      */
-    @Override
-    public PageVO<UserVO> selectUsersForPage(PageWrapper<UserVO> wrapper) {
+
+    public PageResult<UserVO> selectUsersForPage(PageWrapper<UserVO> wrapper) {
         UserVO param = wrapper.getParam();
         LambdaQueryWrapper<SysUsers> queryWrapper = new LambdaQueryWrapper<>();
         if (StringUtil.isNotEmpty(param.getUsername())) {
@@ -99,15 +98,12 @@ public class UserServiceImpl implements IUserService {
             queryWrapper.eq(SysUsers::getId, param.getId());
         }
         queryWrapper.orderByDesc(SysUsers::getId);
-        IPage<SysUsers> page = new Page<>();
-        page.setCurrent(wrapper.getPage());
-        page.setSize(wrapper.getLimit());
-        sysUsersMapper.selectPage(page, queryWrapper);
-        PageVO<UserVO> pageResult = new PageVO<>(page.getTotal());
+        Page<Object> page = PageHelper.startPage(wrapper.getPage(), wrapper.getLimit());
+        List<SysUsers> sysUsers = sysUsersMapper.selectList(queryWrapper);
+        PageResult<UserVO> pageResult = new PageResult<>(wrapper.getPage(), wrapper.getLimit());
         pageResult.setCode(Result.ResultEnum.SUCCESS.getCode());
-        pageResult.setRows(ObjectUtil.copyListProperties(page.getRecords(), UserVO.class));
+        pageResult.setRows(ObjectUtil.copyListProperties(sysUsers, UserVO.class));
         pageResult.setCount(page.getTotal());
-        pageResult.setPageSize((long) wrapper.getLimit());
         pageResult.setPages(page.getPages());
         return pageResult;
     }
@@ -118,7 +114,7 @@ public class UserServiceImpl implements IUserService {
      * @return 变动行数
      */
     @Transactional
-    @Override
+
     public Integer updateUser(UserVO userVO) {
         if (userVO.getId() == null) {
             throw new CommonException("id不能为空");
@@ -148,7 +144,7 @@ public class UserServiceImpl implements IUserService {
      * @return
      */
     @Transactional
-    @Override
+
     public Integer addUser(UserVO userVO) {
         SysUsers sysUsers = new SysUsers();
         ObjectUtil.transValues(userVO, sysUsers);
@@ -175,7 +171,7 @@ public class UserServiceImpl implements IUserService {
      * @param userId
      * @return
      */
-    @Override
+
     public Integer delUser(Integer userId) {
         return sysUsersMapper.deleteById(userId);
     }
@@ -186,7 +182,7 @@ public class UserServiceImpl implements IUserService {
      * @param userId
      * @return
      */
-    @Override
+
     public Integer logicDelUser(Integer userId) {
         SysUsers sysUsers = new SysUsers();
         sysUsers.setId(userId);
@@ -194,7 +190,7 @@ public class UserServiceImpl implements IUserService {
         return sysUsersMapper.updateById(sysUsers);
     }
 
-    @Override
+
     public UserVO getUser(Integer userId) {
         SysUsers sysUsers = sysUsersMapper.selectById(userId);
         UserVO userVO = new UserVO();
@@ -213,12 +209,12 @@ public class UserServiceImpl implements IUserService {
      * @param roleVO
      * @return
      */
-    @Override
+
     public List<RoleVO> selectUserRoles(RoleVO roleVO) {
         return sysUsersMapper.getUserRolesBound(roleVO);
     }
 
-    @Override
+
     public UserApiEntity getUserByName(String username) {
         SysUsers sysUsers = sysUsersMapper.selectOne(new LambdaQueryWrapper<SysUsers>()
                 .eq(SysUsers::getUsername, username).ne(SysUsers::getState, UserVO.USER_STATE.DELETED.getCode())
@@ -244,20 +240,22 @@ public class UserServiceImpl implements IUserService {
 
     /**
      * 重置密码
+     *
      * @param userId
      * @return
      */
-    @Override
+
     public Boolean resetPassword(Integer userId) {
-        return this.updatePassword(userId,"123456");
+        return this.updatePassword(userId, "123456");
     }
 
     /**
      * 修改密码
+     *
      * @param userId
      * @return
      */
-    @Override
+
     public Boolean updatePassword(Integer userId, String password) {
         SysUsers sysUsers = new SysUsers();
         sysUsers.setId(userId);
@@ -268,14 +266,15 @@ public class UserServiceImpl implements IUserService {
 
     /**
      * 头像上传
+     *
      * @param file
      * @return
      */
-    @Override
-    public String uploadAvatar(MultipartFile file){
+
+    public String uploadAvatar(MultipartFile file) {
         Result<JSONObject> result = oauth2Service.currentUser();
         String filename = minioTemplate.upload(file, minioProperties.getBucketName(), "avatar/" + result.getData().getString("id"));
-        return minioProperties.getUrl()+ "/" +filename;
+        return minioProperties.getUrl() + "/" + filename;
     }
 
     private List<MenuVO> buildPath(List<TreeVo> menuTree, List<MenuVO> list, MenuVO parent) {
@@ -292,7 +291,7 @@ public class UserServiceImpl implements IUserService {
                 }
             }
             list.add(menuVO);
-            if (menuVO.getChildren()!=null&&!menuVO.getChildren().isEmpty()) {
+            if (menuVO.getChildren() != null && !menuVO.getChildren().isEmpty()) {
                 buildPath(menuVO.getChildren(), list, menuVO);
             }
         }

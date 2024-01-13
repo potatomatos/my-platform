@@ -6,7 +6,7 @@ package cn.cxnxs.common.core.exception;
  * @author mengjinyuan
  * @date 2022-02-18 09:32
  **/
-public class CommonException extends RuntimeException{
+public class CommonException extends RuntimeException {
     public CommonException() {
     }
 

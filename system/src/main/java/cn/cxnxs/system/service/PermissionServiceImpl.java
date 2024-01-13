@@ -1,9 +1,8 @@
-package cn.cxnxs.system.service.impl;
+package cn.cxnxs.system.service;
 
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.system.entity.SysPermission;
 import cn.cxnxs.system.mapper.SysPermissionMapper;
-import cn.cxnxs.system.service.IPermissionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
  **/
 @Service
 @Slf4j
-public class PermissionServiceImpl implements IPermissionService {
+public class PermissionServiceImpl {
 
 
     @Resource
@@ -34,7 +33,6 @@ public class PermissionServiceImpl implements IPermissionService {
      * @param clientId
      * @return
      */
-    @Override
     public boolean permit(String uri, String clientId) {
         List<String> permitPermissions = this.permitPermissions(clientId);
         AntPathMatcher antPathMatcher = new AntPathMatcher();
@@ -51,7 +49,6 @@ public class PermissionServiceImpl implements IPermissionService {
      *
      * @return
      */
-    @Override
     public List<String> permitPermissions(String clientId) {
         LambdaQueryWrapper<SysPermission> queryWrapper = new LambdaQueryWrapper<SysPermission>()
                 .eq(SysPermission::getPermissionType, 1)

@@ -5,7 +5,7 @@ import cn.cxnxs.common.core.entity.TreeVo;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.system.entity.SysMenu;
-import cn.cxnxs.system.service.IMenuService;
+import cn.cxnxs.system.service.MenuServiceImpl;
 import cn.cxnxs.system.vo.MenuVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ import java.util.List;
 public class MenuController {
 
     @Autowired
-    private IMenuService menuService;
+    private MenuServiceImpl menuService;
 
     @ResponseResult
     @GetMapping("userMenus")
@@ -58,12 +58,12 @@ public class MenuController {
     public MenuVO menuDetail(@PathVariable("id") Integer id) {
         SysMenu sysMenu = new SysMenu().selectById(id);
         MenuVO menuVO = new MenuVO();
-        ObjectUtil.transValues(sysMenu,menuVO);
+        ObjectUtil.transValues(sysMenu, menuVO);
         MenuVO parent = new MenuVO();
-        if (menuVO.getParentId()!=null){
+        if (menuVO.getParentId() != null) {
             SysMenu sysParent = new SysMenu().selectById(menuVO.getParentId());
-            if (sysParent!=null){
-                ObjectUtil.transValues(sysParent,parent);
+            if (sysParent != null) {
+                ObjectUtil.transValues(sysParent, parent);
             }
         }
         menuVO.setParent(parent);
