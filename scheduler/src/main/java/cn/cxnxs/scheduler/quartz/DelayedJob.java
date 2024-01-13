@@ -11,8 +11,8 @@ import cn.cxnxs.scheduler.service.EventsServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.util.concurrent.*;
 import lombok.SneakyThrows;
@@ -75,7 +75,7 @@ public class DelayedJob extends QuartzJobBean {
             } else {
                 List<Integer> sourceAgentsIdList = sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList());
                 IPage<ScheduleEvents> eventsPage = eventsService.page(new Page<>(pageNo, pageSize),
-                        new QueryWrapper<ScheduleEvents>().in("agent_id", sourceAgentsIdList).isNull("locked_by"));
+                        Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getAgentId, sourceAgentsIdList).isNull(ScheduleEvents::getLockedBy));
                 List<ScheduleEvents> events = eventsPage.getRecords();
                 while (events.size() > 0) {
                     //将事件添加到代理
@@ -90,7 +90,7 @@ public class DelayedJob extends QuartzJobBean {
                     }
                     pageNo++;
                     eventsPage = eventsService.page(new Page<>(pageNo, pageSize),
-                            new QueryWrapper<ScheduleEvents>().eq("agent_id", id));
+                            Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id));
                     events = eventsPage.getRecords();
                 }
             }

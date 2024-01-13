@@ -15,7 +15,7 @@ import cn.cxnxs.scheduler.vo.AgentVo;
 import cn.cxnxs.scheduler.vo.ScenariosVo;
 import com.alibaba.fastjson.JSONObject;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -73,7 +73,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         ObjectUtil.transValues(agentVo, scheduleAgent);
         scheduleAgent.insertOrUpdate();
         //保存代理和方案关系
-        scenarioAgentRelService.remove(new QueryWrapper<ScheduleScenarioAgentRel>().eq("agent_id", scheduleAgent.getId()));
+        scenarioAgentRelService.remove(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getAgentId, scheduleAgent.getId()));
         if (StringUtil.isNotEmpty(agentVo.getScenarioIds())) {
             String[] scenarios = agentVo.getScenarioIds().split(",");
             for (String scenarioId : scenarios) {
@@ -85,7 +85,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
             }
         }
         //保存代理-代理关系
-        linksService.remove(new QueryWrapper<ScheduleLinks>().eq("source_id", scheduleAgent.getId()));
+        linksService.remove(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getSourceId, scheduleAgent.getId()));
         if (StringUtil.isNotEmpty(agentVo.getReceivers())) {
             String[] receivers = agentVo.getReceivers().split(",");
             for (String receiverId : receivers) {
@@ -96,7 +96,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
                 scheduleLinks.insertOrUpdate();
             }
         }
-        linksService.remove(new QueryWrapper<ScheduleLinks>().eq("receiver_id", scheduleAgent.getId()));
+        linksService.remove(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getReceiverId, scheduleAgent.getId()));
         if (StringUtil.isNotEmpty(agentVo.getSources())) {
             String[] sources = agentVo.getSources().split(",");
             for (String sourceId : sources) {
@@ -124,33 +124,33 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         AgentVo agentVo = new AgentVo();
         ObjectUtil.transValues(scheduleAgent, agentVo);
         //获取数据源
-        List<ScheduleLinks> sourcesLinks = new ScheduleLinks().selectList(new QueryWrapper<ScheduleLinks>().eq("receiver_id", id));
+        List<ScheduleLinks> sourcesLinks = new ScheduleLinks().selectList(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getReceiverId, id));
         if (sourcesLinks.size() != 0) {
             List<Integer> sourcesIds = new ArrayList<>();
             for (ScheduleLinks scheduleLinks : sourcesLinks) {
                 sourcesIds.add(scheduleLinks.getSourceId());
             }
-            List<ScheduleAgent> sources = new ScheduleAgent().selectList(new QueryWrapper<ScheduleAgent>().in("id", sourcesIds));
+            List<ScheduleAgent> sources = new ScheduleAgent().selectList(Wrappers.lambdaQuery(ScheduleAgent.class).in(ScheduleAgent::getId, sourcesIds));
             agentVo.setSourceAgents(ObjectUtil.copyListProperties(sources, AgentVo.class));
         }
         //获取接收者
-        List<ScheduleLinks> receiversLinks = new ScheduleLinks().selectList(new QueryWrapper<ScheduleLinks>().eq("source_id", id));
+        List<ScheduleLinks> receiversLinks = new ScheduleLinks().selectList(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getSourceId, id));
         if (receiversLinks.size() != 0) {
             List<Integer> receiversIds = new ArrayList<>();
             for (ScheduleLinks scheduleLinks : receiversLinks) {
                 receiversIds.add(scheduleLinks.getReceiverId());
             }
-            List<ScheduleAgent> receivers = new ScheduleAgent().selectList(new QueryWrapper<ScheduleAgent>().in("id", receiversIds));
+            List<ScheduleAgent> receivers = new ScheduleAgent().selectList(Wrappers.lambdaQuery(ScheduleAgent.class).in(ScheduleAgent::getId, receiversIds));
             agentVo.setReceiverAgents(ObjectUtil.copyListProperties(receivers, AgentVo.class));
         }
         //获取方案
-        List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ScheduleScenarioAgentRel().selectList(new QueryWrapper<ScheduleScenarioAgentRel>().eq("agent_id", id));
+        List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ScheduleScenarioAgentRel().selectList(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getAgentId, id));
         if (scheduleScenarioAgentRels.size() != 0) {
             List<Integer> scenarioIds = new ArrayList<>();
             for (ScheduleScenarioAgentRel scheduleScenarioAgentRel : scheduleScenarioAgentRels) {
                 scenarioIds.add(scheduleScenarioAgentRel.getScenarioId());
             }
-            List<ScheduleScenarios> scenarios = new ScheduleScenarios().selectList(new QueryWrapper<ScheduleScenarios>().in("id", scenarioIds));
+            List<ScheduleScenarios> scenarios = new ScheduleScenarios().selectList(Wrappers.lambdaQuery(ScheduleScenarios.class).in(ScheduleScenarios::getId, scenarioIds));
             agentVo.setScenarios(ObjectUtil.copyListProperties(scenarios, ScenariosVo.class));
         }
         if (agentVo.getType() != null) {
@@ -174,13 +174,13 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         List<AgentVo> agentVos = ObjectUtil.copyListProperties(list, AgentVo.class);
         agentVos.forEach(agent -> {
             //获取方案
-            List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ScheduleScenarioAgentRel().selectList(new QueryWrapper<ScheduleScenarioAgentRel>().eq("agent_id", agent.getId()));
+            List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ScheduleScenarioAgentRel().selectList(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getAgentId, agent.getId()));
             if (scheduleScenarioAgentRels.size() != 0) {
                 List<Integer> scenarioIds = new ArrayList<>();
                 for (ScheduleScenarioAgentRel scheduleScenarioAgentRel : scheduleScenarioAgentRels) {
                     scenarioIds.add(scheduleScenarioAgentRel.getScenarioId());
                 }
-                List<ScheduleScenarios> scenarios = new ScheduleScenarios().selectList(new QueryWrapper<ScheduleScenarios>().in("id", scenarioIds));
+                List<ScheduleScenarios> scenarios = new ScheduleScenarios().selectList(Wrappers.lambdaQuery(ScheduleScenarios.class).in(ScheduleScenarios::getId, scenarioIds));
                 agent.setScenarios(ObjectUtil.copyListProperties(scenarios, ScenariosVo.class));
             }
             //获取类型
@@ -191,8 +191,8 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
                 agent.setAgentType(agentTypeVo);
             }
             //是否有数据源
-            Integer hasSources = new ScheduleLinks().selectCount(new QueryWrapper<ScheduleLinks>().eq("receiver_id", agent.getId()));
-            Integer hasReceiver = new ScheduleLinks().selectCount(new QueryWrapper<ScheduleLinks>().eq("source_id", agent.getId()));
+            Integer hasSources = new ScheduleLinks().selectCount(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getReceiverId, agent.getId()));
+            Integer hasReceiver = new ScheduleLinks().selectCount(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getSourceId, agent.getId()));
             agent.setHasSources(hasSources != 0);
             agent.setHasReceivers(hasReceiver != 0);
         });

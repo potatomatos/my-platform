@@ -8,7 +8,7 @@ import cn.cxnxs.scheduler.exception.BusinessException;
 import cn.cxnxs.scheduler.mapper.ScheduleScenariosMapper;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import cn.cxnxs.scheduler.vo.ScenariosVo;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
         if (scheduleScenarios != null) {
             BeanUtils.copyProperties(scheduleScenarios, scenariosVo);
             List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = scenarioAgentRelService
-                    .list(new QueryWrapper<ScheduleScenarioAgentRel>().eq("scenario_id", id));
+                    .list(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getScenarioId, id));
             if (scheduleScenarioAgentRels.size() != 0) {
                 List<ScheduleAgent> allScheduleAgents = agentService.list();
                 List<AgentVo> agentVos = ObjectUtil.copyListProperties(allScheduleAgents, AgentVo.class);
@@ -90,7 +90,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
         //保存关系
         if (scenariosVo.getAgentIds() != null) {
             if (scenariosVo.getId() != null) {
-                scenarioAgentRelService.remove(new QueryWrapper<ScheduleScenarioAgentRel>().eq("scenario_id", scenariosVo.getId()));
+                scenarioAgentRelService.remove(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getScenarioId, scenariosVo.getId()));
             }
             List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = new ArrayList<>();
             for (Integer agentId : scenariosVo.getAgentIds()) {
@@ -125,7 +125,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
         } else if (TYPE_SCEN_AGENT.equals(type)) {
             //删除方案
             super.removeById(id);
-            List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = scenarioAgentRelService.list(new QueryWrapper<ScheduleScenarioAgentRel>().eq("scenario_id", id));
+            List<ScheduleScenarioAgentRel> scheduleScenarioAgentRels = scenarioAgentRelService.list(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getScenarioId, id));
             if (scheduleScenarioAgentRels.size() != 0) {
                 List<Integer> ids = new ArrayList<>();
                 scheduleScenarioAgentRels.forEach(s -> {
@@ -134,7 +134,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
                 //删除代理
                 agentService.removeByIds(ids);
                 //删除方案和代理关系
-                scenarioAgentRelService.remove(new QueryWrapper<ScheduleScenarioAgentRel>().in("agent_id", ids));
+                scenarioAgentRelService.remove(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).in(ScheduleScenarioAgentRel::getAgentId, ids));
             }
         } else {
             throw new BusinessException("删除类型不正确");
