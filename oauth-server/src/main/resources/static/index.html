@@ -24,7 +24,7 @@
                 <input type="password" name="password" placeholder="密码" class="input-item">
                 <div><img alt="验证码" id="captchaImg" src="/captcha" onclick="refreshImg()"></div>
                 <input type="text" name="captcha" placeholder="验证码" class="input-item">
-                <div class="btn pointer" onclick="login()">登录</div>
+                <div class="btn pointer btn-login">登录</div>
             </div>
             <div class="msg">
                 <p>Don't have account?
@@ -49,6 +49,8 @@
             $('[name="captcha"]').attr('disabled', true)
             doing = true
         }
+
+        $('.btn-login').click(login)
 
     })
     var doing = false
@@ -85,6 +87,7 @@
         $('.login-frame').removeClass('frame_turn')
         $('.login-wrapper').addClass('Frame_exit')
         doing = true
+        $(this).html('登陆中...')
         $.ajax({
             url: '/login',
             type: 'post',
@@ -103,10 +106,12 @@
                 console.log('登录成功,跳转认证地址')
                 doing = false
                 if (res.code === 200) {
+                    $(this).html('登陆成功')
                     window.location = res.data.authorizeUrl
                 } else {
                     $('#errorMsg').html(res.msg)
                     refreshImg()
+                    $(this).html('登陆')
                 }
             },
             error: function () {
@@ -115,6 +120,7 @@
                 $('.login-wrapper').removeClass('Frame_exit')
                 $('#errorMsg').html('请求异常')
                 refreshImg()
+                $(this).html('登陆')
             }
         })
 
