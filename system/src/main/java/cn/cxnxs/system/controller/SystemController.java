@@ -30,31 +30,31 @@ public class SystemController {
     @Autowired
     private Oauth2Service oauth2Service;
 
-    @Value("${oauth.clientId}")
-    private String clientId;
     @Value("${oauth.clientSecret}")
     private String clientSecret;
-    @Value("${oauth.redirectUri}")
-    private String redirectUri;
 
     /**
      * 获取token
      */
     @GetMapping("api/getAccessToken")
-    public Result<Map<String, String>> getAccessToken(String code) {
+    public Result<Map<String, String>> getAccessToken(String code, String clientId, String redirectUri) {
         log.info("code:{}", code);
         if (StringUtil.isEmpty(code)) {
             return Result.failure("code不能为空！");
         }
         log.info("------开始获取token------");
-        Map<String, String> accessToken = oauth2Service.getAccessToken(
-                "authorization_code",
-                clientId,
-                clientSecret,
-                code,
-                redirectUri);
-        log.info("token信息：{}", JSON.toJSONString(accessToken));
-        return Result.success(accessToken);
+        try {
+            Map<String, String> accessToken = oauth2Service.getAccessToken(
+                    "authorization_code",
+                    clientId,
+                    clientSecret,
+                    code,
+                    redirectUri);
+            log.info("token信息：{}", JSON.toJSONString(accessToken));
+            return Result.success(accessToken);
+        } catch (Exception e) {
+            return Result.failure("认证失败:" + e.getMessage());
+        }
     }
 
     /**

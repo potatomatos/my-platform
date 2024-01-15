@@ -88,6 +88,7 @@
         $('.login-wrapper').addClass('Frame_exit')
         doing = true
         $(this).html('登陆中...')
+        let _this = this
         $.ajax({
             url: '/login',
             type: 'post',
@@ -106,12 +107,12 @@
                 console.log('登录成功,跳转认证地址')
                 doing = false
                 if (res.code === 200) {
-                    $(this).html('登陆成功')
+                    $(_this).html('登陆成功')
                     window.location = res.data.authorizeUrl
                 } else {
                     $('#errorMsg').html(res.msg)
                     refreshImg()
-                    $(this).html('登陆')
+                    $(_this).html('登陆')
                 }
             },
             error: function () {
@@ -120,7 +121,7 @@
                 $('.login-wrapper').removeClass('Frame_exit')
                 $('#errorMsg').html('请求异常')
                 refreshImg()
-                $(this).html('登陆')
+                $(_this).html('登陆')
             }
         })
 
