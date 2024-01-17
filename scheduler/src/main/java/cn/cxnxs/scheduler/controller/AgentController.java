@@ -5,6 +5,7 @@ import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.web.annotation.ResponseResult;
+import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
@@ -98,9 +99,9 @@ public class AgentController {
      */
     @ResponseResult
     @RequestMapping("dryRun/{type}")
-    public List<Map<String, String>> dryRun(@PathVariable("type") Integer type,
-                                            String options,
-                                            String payload) throws HttpProcessException, ClassNotFoundException {
+    public RunResult dryRun(@PathVariable("type") Integer type,
+                            String options,
+                            String payload) throws HttpProcessException, ClassNotFoundException {
         JSONObject optionsJson = JSON.parseObject(options);
         JSONObject payloadJson = JSON.parseObject(payload);
         return agentService.dryRun(type, optionsJson, payloadJson);

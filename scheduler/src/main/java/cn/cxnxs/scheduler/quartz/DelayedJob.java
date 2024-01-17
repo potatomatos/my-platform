@@ -5,6 +5,7 @@ import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
+import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.service.EventsServiceImpl;
@@ -27,7 +28,6 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -125,14 +125,14 @@ public class DelayedJob extends QuartzJobBean {
         taskRunnable.setAgent(agentInstance);
         taskRunnable.setEvent(event);
         ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());
-        ListenableFuture<List<Map<String, String>>> future = service.submit(taskRunnable);
-        Futures.addCallback(future, new FutureCallback<List<Map<String, String>>>() {
+        ListenableFuture<RunResult> future = service.submit(taskRunnable);
+        Futures.addCallback(future, new FutureCallback<RunResult>() {
             @SneakyThrows
             @Override
-            public void onSuccess(List<Map<String, String>> maps) {
-                logger.info("执行结果：{}", maps);
+            public void onSuccess(RunResult runResult) {
+                logger.info("执行结果：{}", runResult);
                 List<ScheduleEvents> scheduleEventsList = new ArrayList<>();
-                maps.forEach(map -> {
+                runResult.getPayload().forEach(map -> {
                     ScheduleEvents eventAdd = new ScheduleEvents();
                     eventAdd.setAgentId(id);
                     eventAdd.setPayload(JSON.toJSONString(map));
@@ -144,7 +144,7 @@ public class DelayedJob extends QuartzJobBean {
                     scheduleEventsList.add(eventAdd);
                 });
 
-                if (maps.size() > 0) {
+                if (runResult.getPayload().size() > 0) {
                     runNextDelayedJobs(agentVo, scheduleEventsList);
                 }
             }

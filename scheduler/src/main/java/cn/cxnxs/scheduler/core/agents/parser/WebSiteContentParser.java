@@ -2,11 +2,9 @@ package cn.cxnxs.scheduler.core.agents.parser;
 
 
 import cn.cxnxs.scheduler.core.http.ContentType;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * 网页内容处理器
@@ -36,7 +34,7 @@ public abstract class WebSiteContentParser {
      * @param payload 提取内容
      * @return 解析成列表返回
      */
-    public abstract List<Map<String, String>> parse(JSONObject extract, String payload);
+    public abstract JSONArray parse(JSONObject extract, String payload);
 
 
     public ContentType getContentType() {

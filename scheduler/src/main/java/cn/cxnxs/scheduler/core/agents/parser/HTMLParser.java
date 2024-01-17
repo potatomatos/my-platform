@@ -2,6 +2,7 @@ package cn.cxnxs.scheduler.core.agents.parser;
 
 import cn.cxnxs.scheduler.core.http.ContentType;
 import cn.cxnxs.scheduler.exception.IllegalOptionException;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -34,7 +35,7 @@ public class HTMLParser extends WebSiteContentParser {
     }
 
     @Override
-    public List<Map<String, String>> parse(JSONObject extract, String payload) {
+    public JSONArray parse(JSONObject extract, String payload) {
         if (extract == null) {
             throw new IllegalOptionException("数据提取配置为空");
         }
@@ -105,19 +106,19 @@ public class HTMLParser extends WebSiteContentParser {
     }
 
 
-    private List<Map<String, String>> format(Map<String, List<String>> resultData, JSONObject extract) {
-        List<Map<String, String>> result = new ArrayList<>();
+    private JSONArray format(Map<String, List<String>> resultData, JSONObject extract) {
+        JSONArray result = new JSONArray();
         boolean flag = true;
         Set<String> keySet = extract.keySet();
         for (String key : keySet) {
             List<String> dataList = resultData.get(key);
             for (int i = 0; i < dataList.size(); i++) {
                 if (flag) {
-                    Map<String, String> formatDataMap = new HashMap<>();
+                    JSONObject formatDataMap = new JSONObject();
                     formatDataMap.put(key, dataList.get(i));
                     result.add(formatDataMap);
                 } else {
-                    Map<String, String> formatDataMap = result.get(i);
+                    JSONObject formatDataMap = result.getJSONObject(i);
                     formatDataMap.put(key, dataList.get(i));
                 }
 

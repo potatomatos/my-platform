@@ -1,10 +1,6 @@
 package cn.cxnxs.scheduler.core;
 
 import com.alibaba.fastjson.JSONObject;
-import com.arronlong.httpclientutil.exception.HttpProcessException;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * 代理接口
@@ -14,12 +10,12 @@ import java.util.Map;
 public interface IAgent {
 
     /**
-     * 接收上个代理传来的事件
+     * 执行
      *
-     * @param event 数据源事件
-     * @return 当前对象
+     * @param event
+     * @return
      */
-    List<Map<String, String>> collect(Event event) throws HttpProcessException;
+    RunResult runAgent(Event event);
 
 
     /**

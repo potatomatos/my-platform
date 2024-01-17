@@ -2,11 +2,9 @@ package cn.cxnxs.scheduler.core.agents.parser;
 
 
 import cn.cxnxs.scheduler.core.http.ContentType;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>XML解析器</p>
@@ -22,7 +20,7 @@ public class TextParser extends WebSiteContentParser {
     }
 
     @Override
-    public List<Map<String, String>> parse(JSONObject extract, String payload) {
+    public JSONArray parse(JSONObject extract, String payload) {
         return null;
     }
 }

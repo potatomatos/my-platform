@@ -3,25 +3,24 @@ package cn.cxnxs.scheduler.core.agents;
 
 import cn.cxnxs.scheduler.core.AbstractAgent;
 import cn.cxnxs.scheduler.core.Event;
+import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.core.agents.parser.WebSiteContentParser;
 import cn.cxnxs.scheduler.core.agents.parser.WebSiteParserFactory;
 import cn.cxnxs.scheduler.core.http.ContentType;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.builder.HCB;
 import com.arronlong.httpclientutil.common.*;
-import com.arronlong.httpclientutil.exception.HttpProcessException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * <p>网站代理</p>
@@ -35,8 +34,7 @@ import java.util.Map;
 public class WebsiteAgent extends AbstractAgent {
 
     @Override
-    public List<Map<String, String>> collect(Event event) throws HttpProcessException {
-
+    public void start(Event event, RunResult runResult) throws Exception {
         //请求地址
         String url = this.getOptions().getString("url");
         //插件式配置Header（各种header信息、自定义header）
@@ -79,16 +77,17 @@ public class WebsiteAgent extends AbstractAgent {
                 config.method(HttpMethods.GET);
             }
         }
-        log.info("-----------请求参数-----------");
-        log.info("-----------------------------");
+        runResult.info("-----------请求参数-----------");
+        runResult.info("-----------------------------");
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
-        log.info("-----------------------------");
+        runResult.info("-----------------------------");
 
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
-        List<Map<String, String>> maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult());
+        JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult());
         log.debug("数据大小：{}，解析结果：{}", maps.size(), JSON.toJSONString(maps, SerializerFeature.PrettyFormat));
-        return maps;
+        runResult.log(maps.toString(SerializerFeature.PrettyFormat));
+        runResult.setPayload(maps);
     }
 
     @Override

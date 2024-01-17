@@ -6,6 +6,7 @@ import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
+import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.entity.*;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
@@ -202,7 +203,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     }
 
 
-    public List<Map<String, String>> dryRun(Integer type, JSONObject options, JSONObject payload) throws AgentNotFoundException, ClassNotFoundException, HttpProcessException {
+    public RunResult dryRun(Integer type, JSONObject options, JSONObject payload) throws AgentNotFoundException, ClassNotFoundException, HttpProcessException {
         ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(type);
         if (scheduleAgentType == null) {
             throw new AgentNotFoundException("代理类型不存在");
@@ -211,7 +212,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         IAgent agent = SpringContextUtil.getBean(clazz);
         Event event = new Event();
         event.setPayload(payload);
-        return agent.option(options).collect(event);
+        return agent.option(options).runAgent(event);
     }
 
 }
