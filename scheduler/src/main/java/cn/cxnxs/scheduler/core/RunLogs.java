@@ -2,6 +2,8 @@ package cn.cxnxs.scheduler.core;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 运行日志
@@ -10,10 +12,7 @@ import lombok.Setter;
 @Setter
 public class RunLogs {
 
-    /**
-     * 日志类型
-     */
-    private String type;
+    private static final Logger logger = LoggerFactory.getLogger(RunLogs.class);
 
     /**
      * 线程ID
@@ -24,6 +23,10 @@ public class RunLogs {
      * 日志内容
      */
     private StringBuilder log;
+
+    public RunLogs() {
+        this.log = new StringBuilder();
+    }
 
     public static RunLogs create(String threadId) {
         RunLogs runLogs = new RunLogs();
@@ -37,14 +40,17 @@ public class RunLogs {
 
     public void info(String logger) {
         this.log(LogType.INFO, logger);
+        RunLogs.logger.info(logger);
     }
 
     public void error(String logger) {
         this.log(LogType.ERROR, logger);
+        RunLogs.logger.error(logger);
     }
 
     public void warn(String logger) {
         this.log(LogType.WARN, logger);
+        RunLogs.logger.warn(logger);
     }
 
     @Override

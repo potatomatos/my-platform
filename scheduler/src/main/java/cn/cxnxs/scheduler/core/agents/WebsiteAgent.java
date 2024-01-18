@@ -1,6 +1,7 @@
 package cn.cxnxs.scheduler.core.agents;
 
 
+import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.AbstractAgent;
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.RunResult;
@@ -51,6 +52,9 @@ public class WebsiteAgent extends AbstractAgent {
         //是否绕过ssl
         if (this.getOptions().get("disable_ssl_verification") != null) {
             if (this.getOptions().getBoolean("disable_ssl_verification")) {
+                if (StringUtil.isNotEmpty(this.getOptions().getString("sslpv"))) {
+                    hcb.sslpv(this.getOptions().getString("sslpv"));
+                }
                 hcb.ssl();
             }
         }
@@ -78,7 +82,10 @@ public class WebsiteAgent extends AbstractAgent {
             }
         }
         runResult.info("-----------请求参数-----------");
+        runResult.info(this.getOptions().toJSONString());
         runResult.info("-----------------------------");
+        runResult.info("-----------------------------");
+//        trustEveryone();
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
         runResult.info("-----------------------------");
 
