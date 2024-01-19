@@ -7,10 +7,11 @@ import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.scheduler.entity.ScheduleScenarios;
 import cn.cxnxs.scheduler.service.ScenariosServiceImpl;
 import cn.cxnxs.scheduler.vo.ScenariosVo;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,13 +34,13 @@ public class ScenariosController {
     private ScenariosServiceImpl scenariosService;
 
     @RequestMapping
-    public PageResult<ScenariosVo> list(PageWrapper<ScenariosVo> param) {
+    public PageResult<ScenariosVo> list(@RequestBody PageWrapper<ScenariosVo> param) {
         PageResult<ScenariosVo> res = new PageResult<>(param.getPage(), param.getLimit());
-        PageHelper.startPage(param.getPage(), param.getLimit());
-        List<ScheduleScenarios> list = scenariosService.list(Wrappers.lambdaQuery(ScheduleScenarios.class).setEntity(ObjectUtil.transValues(param.getParam(), ScheduleScenarios.class)));
-        res.setCount(res.getCount());
-        res.setPages(res.getPages());
-        res.setRows(ObjectUtil.copyListProperties(list, ScenariosVo.class));
+        Page<Object> page = PageHelper.startPage(param.getPage(), param.getLimit());
+        List<ScenariosVo> list = scenariosService.selectScenariosList(param.getParam());
+        res.setCount(page.getTotal());
+        res.setPages(page.getPages());
+        res.setRows(list);
         return res;
     }
 

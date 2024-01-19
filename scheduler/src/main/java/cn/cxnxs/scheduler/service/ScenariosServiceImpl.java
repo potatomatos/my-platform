@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ import java.util.Map;
 @Service
 public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, ScheduleScenarios> {
 
-    @Autowired
+    @Resource
     private ScheduleScenariosMapper scheduleScenariosMapper;
 
     @Autowired
@@ -43,6 +44,11 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
 
     private static final String TYPE_ONLY_SCEN = "1";
     private static final String TYPE_SCEN_AGENT = "2";
+
+
+    public List<ScenariosVo> selectScenariosList(ScenariosVo scenariosVo) {
+        return scheduleScenariosMapper.selectScenariosList(scenariosVo);
+    }
 
     /**
      * 获取详情

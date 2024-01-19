@@ -3,8 +3,8 @@ package cn.cxnxs.scheduler.mapper;
 import cn.cxnxs.scheduler.entity.ScheduleScenarios;
 import cn.cxnxs.scheduler.vo.ScenariosVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
+import java.util.List;
 
 /**
  * <p>
@@ -16,5 +16,5 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
  */
 public interface ScheduleScenariosMapper extends BaseMapper<ScheduleScenarios> {
 
-    IPage<ScenariosVo> selectScenariosList(Page<ScenariosVo> page, ScenariosVo scenariosVo);
+    List<ScenariosVo> selectScenariosList(ScenariosVo scenariosVo);
 }

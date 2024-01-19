@@ -3,11 +3,11 @@
 <mapper namespace="cn.cxnxs.scheduler.mapper.ScheduleScenariosMapper">
 
     <select id="selectScenariosList" resultType="cn.cxnxs.scheduler.vo.ScenariosVo">
-        select a.*,(select count(*) from scenario_agent_rel where scenario_id=a.id) as agentCount
-        from scheduleScenarios a
+        select a.*,(select count(*) from schedule_scenario_agent_rel where scenario_id=a.id) as agentCount
+        from schedule_scenarios a
         <where>
-            <if test="scenariosVo.name!=null and scenariosVo.name!=''">
-                and a.name like '%${scenariosVo.name}%'
+            <if test="name!=null and name!=''">
+                and a.name like concat('%',#{name},'%')
             </if>
         </where>
     </select>
