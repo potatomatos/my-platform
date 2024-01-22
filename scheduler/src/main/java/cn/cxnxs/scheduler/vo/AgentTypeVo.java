@@ -101,6 +101,11 @@ public class AgentTypeVo {
     private JSONArray keepEventsTimes;
 
     /**
+     * 搜索关键字
+     */
+    private String keyword;
+
+    /**
      * 执行计划枚举
      */
     public enum ScheduleEnum {
