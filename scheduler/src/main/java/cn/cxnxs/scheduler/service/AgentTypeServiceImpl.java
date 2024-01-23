@@ -5,6 +5,9 @@ import cn.cxnxs.scheduler.mapper.ScheduleAgentTypeMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
+
 /**
  * <p>
  * 爬虫任务配置信息 服务实现类
@@ -16,4 +19,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class AgentTypeServiceImpl extends ServiceImpl<ScheduleAgentTypeMapper, ScheduleAgentType> {
 
+    public Integer updateOrSave(ScheduleAgentType agentType) {
+        if (!Objects.isNull(agentType.getId())) {
+            agentType.setCreatedAt(LocalDateTime.now());
+            updateById(agentType);
+            return agentType.getId();
+        } else {
+            agentType.setUpdatedAt(LocalDateTime.now());
+            save(agentType);
+            return agentType.getId();
+        }
+    }
 }

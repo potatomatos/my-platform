@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -58,11 +57,8 @@ public class AgentTypeController {
     }
 
     @RequestMapping("save")
-    public Result<String> save(ScheduleAgentType agentType) {
-        agentType.setCreatedAt(LocalDateTime.now());
-        agentType.setUpdatedAt(LocalDateTime.now());
-        agentTypeService.save(agentType);
-        return Result.success("保存成功");
+    public Result<Integer> save(@RequestBody ScheduleAgentType agentType) {
+        return Result.success("保存成功", agentTypeService.updateOrSave(agentType));
     }
 
     @SneakyThrows
@@ -78,13 +74,6 @@ public class AgentTypeController {
     public Result<String> delete(@PathVariable("id") Integer id) {
         agentTypeService.removeById(id);
         return Result.success("删除成功");
-    }
-
-    @RequestMapping("modify")
-    public Result<String> modify(ScheduleAgentType agentType) {
-        agentType.setUpdatedAt(LocalDateTime.now());
-        agentTypeService.updateById(agentType);
-        return Result.success("更新成功");
     }
 
     @ResponseResult
