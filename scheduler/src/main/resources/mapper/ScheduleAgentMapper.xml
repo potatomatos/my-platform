@@ -5,7 +5,7 @@
     <select id="selectByTypeProperties" resultType="cn.cxnxs.scheduler.entity.ScheduleAgent">
         select
         a.*
-        from scheduleAgent a join agent_type b on a.type=b.id
+        from schedule_agent a join schedule_agent_type b on a.type=b.id
         <where>
             <if test="canCreateEvents!=null">
                 and b.can_create_events=#{canCreateEvents}
@@ -17,14 +17,14 @@
     </select>
 
     <select id="pageSelectList" resultType="cn.cxnxs.scheduler.entity.ScheduleAgent">
-        SELECT * FROM scheduleAgent
+        SELECT * FROM schedule_agent
         <where>
             <if test="name!=null and name!=''">
                 and name like #{name}
             </if>
             <if test="scenarioId!=null">
                 and id in(
-                SELECT agent_id FROM scenario_agent_rel WHERE scenario_id=#{scenarioId}
+                SELECT agent_id FROM schedule_scenario_agent_rel WHERE scenario_id=#{scenarioId}
                 )
             </if>
         </where>

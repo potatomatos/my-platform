@@ -53,7 +53,7 @@ public class AgentController {
 
     @ResponseResult
     @RequestMapping("find")
-    public List<AgentVo> find(AgentTypeVo agentTypeVo) {
+    public List<AgentVo> find(@RequestBody AgentTypeVo agentTypeVo) {
         return agentService.findByTypeProperties(agentTypeVo);
     }
 
