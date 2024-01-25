@@ -20,7 +20,7 @@
         SELECT * FROM schedule_agent
         <where>
             <if test="name!=null and name!=''">
-                and name like #{name}
+                and name like concat('%',#{name},'%')
             </if>
             <if test="scenarioId!=null">
                 and id in(

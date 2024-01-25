@@ -50,7 +50,7 @@ public class AgentVo {
     /**
      * 服务运行周期计划
      */
-    private String schedule;
+    private Integer schedule;
 
     /**
      * 数据总数
@@ -167,6 +167,10 @@ public class AgentVo {
     public String getKeepDataTimeStr() {
         this.keepDataTimeStr = AgentTypeVo.KeepEventsTime.getDesc(this.keepDataTime);
         return this.keepDataTimeStr;
+    }
+
+    public String getScheduleStr() {
+        return AgentTypeVo.ScheduleEnum.getDesc(this.schedule);
     }
 
     public Integer getValue() {

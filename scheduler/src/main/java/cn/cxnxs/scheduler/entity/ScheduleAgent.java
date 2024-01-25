@@ -53,7 +53,7 @@ public class ScheduleAgent extends Model<ScheduleAgent> {
     /**
      * 服务运行周期计划
      */
-    private String schedule;
+    private Integer schedule;
 
     /**
      * 数据总数

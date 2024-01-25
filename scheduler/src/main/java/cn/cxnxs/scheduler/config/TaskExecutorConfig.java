@@ -78,7 +78,7 @@ public class TaskExecutorConfig {
             ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(scheduleAgentItem.getType());
             if (scheduleAgentType.getCanBeScheduled()) {
                 //如果代理为定时执行，则创建定时任务
-                String cron = AgentTypeVo.ScheduleEnum.getCron(Integer.parseInt(scheduleAgentItem.getSchedule()));
+                String cron = AgentTypeVo.ScheduleEnum.getCron(scheduleAgentItem.getSchedule());
                 TaskDetail taskDetail = new TaskDetail();
                 taskDetail.setJobName(scheduleAgentItem.getName());
                 taskDetail.setJobGroupName(scheduleAgentType.getAgentTypeName());
