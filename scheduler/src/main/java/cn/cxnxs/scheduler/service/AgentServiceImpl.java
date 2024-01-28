@@ -87,8 +87,8 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         }
         //保存代理-代理关系
         linksService.remove(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getSourceId, scheduleAgent.getId()));
-        if (StringUtil.isNotEmpty(agentVo.getReceivers())) {
-            String[] receivers = agentVo.getReceivers().split(",");
+        if (StringUtil.isNotEmpty(agentVo.getReceiverIds())) {
+            String[] receivers = agentVo.getReceiverIds().split(",");
             for (String receiverId : receivers) {
                 ScheduleLinks scheduleLinks = new ScheduleLinks();
                 scheduleLinks.setSourceId(scheduleAgent.getId());
@@ -98,8 +98,8 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
             }
         }
         linksService.remove(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getReceiverId, scheduleAgent.getId()));
-        if (StringUtil.isNotEmpty(agentVo.getSources())) {
-            String[] sources = agentVo.getSources().split(",");
+        if (StringUtil.isNotEmpty(agentVo.getSourcesIds())) {
+            String[] sources = agentVo.getSourcesIds().split(",");
             for (String sourceId : sources) {
                 ScheduleLinks scheduleLinks = new ScheduleLinks();
                 scheduleLinks.setSourceId(Integer.parseInt(sourceId));

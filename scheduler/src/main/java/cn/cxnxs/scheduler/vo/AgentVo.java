@@ -120,11 +120,11 @@ public class AgentVo {
 
     private Boolean selected = false;
 
-    private String receivers;
+    private String sourcesIds;
+
+    private String receiverIds;
 
     private String scenarioIds;
-
-    private String sources;
 
     private List<AgentVo> sourceAgents = new ArrayList<>();
 
