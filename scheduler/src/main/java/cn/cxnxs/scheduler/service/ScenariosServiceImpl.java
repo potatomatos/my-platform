@@ -125,9 +125,7 @@ public class ScenariosServiceImpl extends ServiceImpl<ScheduleScenariosMapper, S
             //删除方案
             super.removeById(id);
             //删除方案和代理关系
-            Map<String, Object> condition = new HashMap<>(1);
-            condition.put("scenario_id", id);
-            scenarioAgentRelService.removeByMap(condition);
+            scenarioAgentRelService.remove(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getScenarioId, id));
         } else if (TYPE_SCEN_AGENT.equals(type)) {
             //删除方案
             super.removeById(id);

@@ -8,7 +8,6 @@ import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.core.agents.parser.WebSiteContentParser;
 import cn.cxnxs.scheduler.core.agents.parser.WebSiteParserFactory;
 import cn.cxnxs.scheduler.core.http.ContentType;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -89,7 +88,7 @@ public class WebsiteAgent extends AbstractAgent {
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
         JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(),runResult);
-        runResult.log("数据大小：{}，最终解析结果：{}",maps.size(),maps.toString(SerializerFeature.PrettyFormat));
+        runResult.log("数据大小：{}，最终解析结果：\n{}", maps.size(), maps.toString(SerializerFeature.PrettyFormat));
         runResult.setPayload(maps);
     }
 

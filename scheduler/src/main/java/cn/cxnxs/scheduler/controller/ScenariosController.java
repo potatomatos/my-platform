@@ -59,7 +59,7 @@ public class ScenariosController {
 
     @ResponseResult
     @RequestMapping("save")
-    public Map<String, String> save(ScenariosVo scenariosVo) {
+    public Map<String, String> save(@RequestBody ScenariosVo scenariosVo) {
         return scenariosService.saveScenarios(scenariosVo);
     }
 
