@@ -84,16 +84,12 @@ public class WebsiteAgent extends AbstractAgent {
         runResult.info("-----------请求参数-----------");
         runResult.info(this.getOptions().toJSONString());
         runResult.info("-----------------------------");
-        runResult.info("-----------------------------");
-//        trustEveryone();
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
-        runResult.info("-----------------------------");
 
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
-        JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult());
-        log.debug("数据大小：{}，解析结果：{}", maps.size(), JSON.toJSONString(maps, SerializerFeature.PrettyFormat));
-        runResult.log(maps.toString(SerializerFeature.PrettyFormat));
+        JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(),runResult);
+        runResult.log("数据大小：{}，最终解析结果：{}",maps.size(),maps.toString(SerializerFeature.PrettyFormat));
         runResult.setPayload(maps);
     }
 

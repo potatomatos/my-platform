@@ -1,6 +1,7 @@
 package cn.cxnxs.scheduler.core.agents.parser;
 
 
+import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.core.http.ContentType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -18,6 +19,8 @@ public abstract class WebSiteContentParser {
 
     protected String name;
 
+    protected RunResult runResult;
+
     public WebSiteContentParser(ContentType contentType, String name) {
         this.contentType = contentType;
         this.name = name;
@@ -27,6 +30,10 @@ public abstract class WebSiteContentParser {
     private WebSiteContentParser() {
     }
 
+    public final JSONArray parse(JSONObject extract, String payload,RunResult runResult){
+        this.runResult = runResult;
+        return this.parse(extract,payload);
+    }
     /**
      * 根据配置解析网站内容
      *
@@ -34,7 +41,7 @@ public abstract class WebSiteContentParser {
      * @param payload 提取内容
      * @return 解析成列表返回
      */
-    public abstract JSONArray parse(JSONObject extract, String payload);
+    protected abstract JSONArray parse(JSONObject extract, String payload);
 
 
     public ContentType getContentType() {

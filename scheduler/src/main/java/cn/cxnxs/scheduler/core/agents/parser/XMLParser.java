@@ -1,6 +1,7 @@
 package cn.cxnxs.scheduler.core.agents.parser;
 
 
+import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.core.http.ContentType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

@@ -1,5 +1,6 @@
 package cn.cxnxs.scheduler.core.agents.parser;
 
+import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.core.http.ContentType;
 import cn.cxnxs.scheduler.exception.IllegalOptionException;
 import com.alibaba.fastjson.JSONArray;
@@ -75,12 +76,15 @@ public class HTMLParser extends WebSiteContentParser {
      */
     private List<String> cssParse(Document doc, JSONObject extractOptions) {
         List<String> result = new ArrayList<>();
-        Elements elements = doc.select(extractOptions.getString("css"));
+        String css = extractOptions.getString("css");
+        runResult.info("正在解析css选择器：{}",css);
+        Elements elements = doc.select(css);
         if (elements != null && !elements.isEmpty()) {
             for (Element element : elements) {
                 result.add(this.getContent(element, extractOptions.getString("value")));
             }
         }
+        runResult.info("解析数据结果：{}",result);
         return result;
     }
 
