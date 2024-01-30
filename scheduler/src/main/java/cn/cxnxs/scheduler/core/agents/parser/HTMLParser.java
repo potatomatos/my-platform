@@ -1,8 +1,8 @@
 package cn.cxnxs.scheduler.core.agents.parser;
 
-import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.core.http.ContentType;
 import cn.cxnxs.scheduler.exception.IllegalOptionException;
+import cn.cxnxs.scheduler.exception.WebsiteParseException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -43,25 +43,25 @@ public class HTMLParser extends WebSiteContentParser {
         Document doc = Jsoup.parse(payload);
         Set<String> extractKeys = extract.keySet();
         Map<String, List<String>> resultData = new HashMap<>();
+        List<String> res = new ArrayList<>();
         int size = 0;
         for (String extractKey : extractKeys) {
             JSONObject extractOptions = extract.getJSONObject(extractKey);
             Set<String> keys = extractOptions.keySet();
             for (String key : keys) {
+                res.clear();
                 if (TYPE_CSS.equals(key)) {
-                    List<String> res = this.cssParse(doc, extractOptions);
-                    if (size != 0 && size != res.size()) {
-                        throw new IllegalOptionException("抓取的数据条数不一致");
-                    }
+                    res = this.cssParse(doc, extractOptions);
                     size = res.size();
                     resultData.put(extractKey, res);
                 } else if (TYPE_XPATH.equals(key)) {
-                    List<String> res = this.xpathParse(doc, extractOptions);
-                    if (size != 0 && size != res.size()) {
-                        throw new IllegalOptionException("抓取的数据条数不一致");
-                    }
+                    res = this.xpathParse(doc, extractOptions);
+                    assert res != null;
                     size = res.size();
                     resultData.put(extractKey, res);
+                }
+                if (size != 0 && size != res.size()) {
+                    throw new WebsiteParseException("抓取的数据条数不一致");
                 }
             }
         }
@@ -77,14 +77,14 @@ public class HTMLParser extends WebSiteContentParser {
     private List<String> cssParse(Document doc, JSONObject extractOptions) {
         List<String> result = new ArrayList<>();
         String css = extractOptions.getString("css");
-        runResult.info("正在解析css选择器：{}",css);
+        runResult.info("正在解析css选择器：{}", css);
         Elements elements = doc.select(css);
         if (elements != null && !elements.isEmpty()) {
             for (Element element : elements) {
                 result.add(this.getContent(element, extractOptions.getString("value")));
             }
         }
-        runResult.info("解析数据结果：{}",result);
+        runResult.info("解析数据结果：{}", result);
         return result;
     }
 

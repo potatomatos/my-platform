@@ -30,10 +30,11 @@ public abstract class WebSiteContentParser {
     private WebSiteContentParser() {
     }
 
-    public final JSONArray parse(JSONObject extract, String payload,RunResult runResult){
+    public final JSONArray parse(JSONObject extract, String payload, RunResult runResult) {
         this.runResult = runResult;
-        return this.parse(extract,payload);
+        return this.parse(extract, payload);
     }
+
     /**
      * 根据配置解析网站内容
      *

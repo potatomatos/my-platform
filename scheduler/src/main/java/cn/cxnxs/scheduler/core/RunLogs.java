@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 
 /**
  * 运行日志
@@ -38,8 +37,8 @@ public class RunLogs {
         return runLogs;
     }
 
-    public void log(LogType logType, String logger,Object ...args) {
-        logger = replacePlaceholder(logger,args);
+    public void log(LogType logType, String logger, Object... args) {
+        logger = replacePlaceholder(logger, args);
         log.append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("[").append(logType).append("]").append("-").append(threadId).append(":").append(logger).append("\n\r");
     }
 
@@ -50,19 +49,19 @@ public class RunLogs {
         return logger;
     }
 
-    public void info(String logger,Object ...args) {
-        this.log(LogType.INFO, logger,args);
-        RunLogs.logger.info(logger,args);
+    public void info(String logger, Object... args) {
+        this.log(LogType.INFO, logger, args);
+        RunLogs.logger.info(logger, args);
     }
 
-    public void error(String logger,Object ...args) {
-        this.log(LogType.ERROR, logger,args);
-        RunLogs.logger.error(logger,args);
+    public void error(String logger, Object... args) {
+        this.log(LogType.ERROR, logger, args);
+        RunLogs.logger.error(logger, args);
     }
 
-    public void warn(String logger,Object ...args) {
-        this.log(LogType.WARN, logger,args);
-        RunLogs.logger.warn(logger,args);
+    public void warn(String logger, Object... args) {
+        this.log(LogType.WARN, logger, args);
+        RunLogs.logger.warn(logger, args);
     }
 
     @Override

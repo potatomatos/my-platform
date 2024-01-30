@@ -23,15 +23,15 @@ public class RunResult {
         this.runLogs = runLogs;
     }
 
-    public void log(String logger,Object ...args) {
-        this.runLogs.info(logger,args);
+    public void log(String logger, Object... args) {
+        this.runLogs.info(logger, args);
     }
 
-    public void error(String logger,Object ...args) {
-        this.runLogs.error(logger,args);
+    public void error(String logger, Object... args) {
+        this.runLogs.error(logger, args);
     }
 
-    public void info(String logger,Object ...args) {
-        this.runLogs.info(logger,args);
+    public void info(String logger, Object... args) {
+        this.runLogs.info(logger, args);
     }
 }

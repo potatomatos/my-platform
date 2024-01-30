@@ -87,7 +87,7 @@ public class WebsiteAgent extends AbstractAgent {
 
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
-        JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(),runResult);
+        JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);
         runResult.log("数据大小：{}，最终解析结果：\n{}", maps.size(), maps.toString(SerializerFeature.PrettyFormat));
         runResult.setPayload(maps);
     }
