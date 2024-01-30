@@ -1,6 +1,7 @@
 package cn.cxnxs.scheduler.core;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,8 @@ public class RunResult {
      */
     private JSONArray payload;
 
+    private String payloadString = "";
+
     /**
      * 运行日志
      */
@@ -21,6 +24,11 @@ public class RunResult {
     public RunResult(JSONArray payload, RunLogs runLogs) {
         this.payload = payload;
         this.runLogs = runLogs;
+    }
+
+    public void setPayload(JSONArray payload) {
+        this.payload = payload;
+        this.payloadString = this.payload.toString(SerializerFeature.PrettyFormat);
     }
 
     public void log(String logger, Object... args) {

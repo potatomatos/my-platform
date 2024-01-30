@@ -43,25 +43,25 @@ public class HTMLParser extends WebSiteContentParser {
         Document doc = Jsoup.parse(payload);
         Set<String> extractKeys = extract.keySet();
         Map<String, List<String>> resultData = new HashMap<>();
-        List<String> res = new ArrayList<>();
         int size = 0;
         for (String extractKey : extractKeys) {
             JSONObject extractOptions = extract.getJSONObject(extractKey);
             Set<String> keys = extractOptions.keySet();
             for (String key : keys) {
-                res.clear();
                 if (TYPE_CSS.equals(key)) {
-                    res = this.cssParse(doc, extractOptions);
+                    List<String> res = this.cssParse(doc, extractOptions);
+                    if (size != 0 && size != res.size()) {
+                        throw new WebsiteParseException("抓取的数据条数不一致");
+                    }
                     size = res.size();
                     resultData.put(extractKey, res);
                 } else if (TYPE_XPATH.equals(key)) {
-                    res = this.xpathParse(doc, extractOptions);
-                    assert res != null;
+                    List<String> res = this.xpathParse(doc, extractOptions);
+                    if (size != 0 && size != res.size()) {
+                        throw new WebsiteParseException("抓取的数据条数不一致");
+                    }
                     size = res.size();
                     resultData.put(extractKey, res);
-                }
-                if (size != 0 && size != res.size()) {
-                    throw new WebsiteParseException("抓取的数据条数不一致");
                 }
             }
         }
