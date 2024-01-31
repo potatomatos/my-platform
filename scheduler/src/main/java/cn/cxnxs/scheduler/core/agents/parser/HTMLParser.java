@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import us.codecraft.xsoup.Xsoup;
 
 import java.util.*;
 
@@ -81,7 +82,8 @@ public class HTMLParser extends WebSiteContentParser {
         Elements elements = doc.select(css);
         if (elements != null && !elements.isEmpty()) {
             for (Element element : elements) {
-                result.add(this.getContent(element, extractOptions.getString("value")));
+                String value = this.getContent(element, extractOptions.getString("value"));
+                result.add(Objects.isNull(value) ? "" : value);
             }
         }
         runResult.info("解析数据结果：{}", result);
@@ -95,12 +97,28 @@ public class HTMLParser extends WebSiteContentParser {
      * @return 解析结果
      */
     private List<String> xpathParse(Document doc, JSONObject extractOptions) {
-        return null;
+        List<String> result = new ArrayList<>();
+        String xpath = extractOptions.getString("xpath");
+        runResult.info("正在解析xpath选择器：{}", xpath);
+        Elements elements = Xsoup.compile(xpath).evaluate(doc).getElements();
+        if (elements != null && !elements.isEmpty()) {
+            for (Element element : elements) {
+                String value;
+                if ("string(.)".equals(extractOptions.getString("value"))) {
+                    value = element.text();
+                } else {
+                    value = Xsoup.compile("/" + extractOptions.getString("value")).evaluate(element).get();
+                }
+                result.add(Objects.isNull(value) ? "" : value);
+            }
+        }
+        runResult.info("解析数据结果：{}", result);
+        return result;
     }
 
     private String getContent(Element element, String value) {
         if (value != null) {
-            if ("string()".equals(value)) {
+            if ("string(.)".equals(value)) {
                 return element.text();
             } else if (value.contains("@")) {
                 return element.attr(value.substring(1));

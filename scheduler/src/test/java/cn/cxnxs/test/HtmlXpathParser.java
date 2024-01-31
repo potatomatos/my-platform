@@ -10,6 +10,7 @@ import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import us.codecraft.xsoup.Xsoup;
 
@@ -33,7 +34,10 @@ public class HtmlXpathParser {
         // 使用Jsoup-XPath提取需要的内容
         Elements titles = Xsoup.compile("//*[@id=\"mainContent\"]/div/div/div[2]/a/span").evaluate(doc).getElements();
         for (int i = 0; i < titles.size(); i++) {
-            System.out.println("Title " + i + ": " + titles.get(i).text());
+            //TODO 使用xpath函数获取span中的文字内容
+            Element element = titles.get(i);
+            String text = Xsoup.compile("/@href").evaluate(element).get();
+            System.out.println("Title " + i + ": " + text);
         }
     }
 }

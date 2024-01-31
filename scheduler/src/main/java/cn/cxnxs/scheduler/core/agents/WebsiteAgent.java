@@ -34,6 +34,7 @@ public class WebsiteAgent extends AbstractAgent {
 
     @Override
     public void start(Event event, RunResult runResult) throws Exception {
+        long start = System.currentTimeMillis();
         //请求地址
         String url = this.getOptions().getString("url");
         //插件式配置Header（各种header信息、自定义header）
@@ -87,7 +88,7 @@ public class WebsiteAgent extends AbstractAgent {
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
         JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);
-        runResult.log("数据大小：{}，最终解析结果：\n{}", maps.size(), maps.toJSONString());
+        runResult.log("解析完成！用时：{}ms,数据大小：{}，最终解析结果：\n{}", System.currentTimeMillis() - start, maps.size(), maps.toJSONString());
         runResult.setPayload(maps);
     }
 
