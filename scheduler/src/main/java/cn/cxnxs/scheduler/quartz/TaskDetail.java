@@ -2,6 +2,7 @@ package cn.cxnxs.scheduler.quartz;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 
@@ -13,6 +14,7 @@ import org.quartz.JobDataMap;
  **/
 @Getter
 @Setter
+@ToString
 public class TaskDetail {
 
     private String jobName;
@@ -28,4 +30,6 @@ public class TaskDetail {
     private String cron;
 
     private JobDataMap jobDataMap = new JobDataMap();
+
+
 }

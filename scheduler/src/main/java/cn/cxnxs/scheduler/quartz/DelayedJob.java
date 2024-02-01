@@ -15,6 +15,7 @@ import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -31,6 +32,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -77,8 +79,7 @@ public class DelayedJob extends QuartzJobBean {
                 this.runTask(agentVo, null);
             } else {
                 List<Integer> sourceAgentsIdList = sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList());
-                IPage<ScheduleEvents> eventsPage = eventsService.page(new Page<>(pageNo, pageSize),
-                        Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getAgentId, sourceAgentsIdList).isNull(ScheduleEvents::getLockedBy));
+                IPage<ScheduleEvents> eventsPage = eventsService.page(new Page<>(pageNo, pageSize), Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getAgentId, sourceAgentsIdList).isNull(ScheduleEvents::getLockedBy));
                 List<ScheduleEvents> events = eventsPage.getRecords();
                 while (events.size() > 0) {
                     //将事件添加到代理
@@ -92,8 +93,7 @@ public class DelayedJob extends QuartzJobBean {
                         }
                     }
                     pageNo++;
-                    eventsPage = eventsService.page(new Page<>(pageNo, pageSize),
-                            Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id));
+                    eventsPage = eventsService.page(new Page<>(pageNo, pageSize), Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id));
                     events = eventsPage.getRecords();
                 }
             }
@@ -127,6 +127,9 @@ public class DelayedJob extends QuartzJobBean {
         TaskRunnable taskRunnable = new TaskRunnable();
         taskRunnable.setAgent(agentInstance);
         taskRunnable.setEvent(event);
+        // 保存日志，记录运行记录
+        ScheduleAgentLogs agentLogs = saveLogs(null, event, null, null);
+
         ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());
         ListenableFuture<RunResult> future = service.submit(taskRunnable);
         Futures.addCallback(future, new FutureCallback<RunResult>() {
@@ -135,9 +138,10 @@ public class DelayedJob extends QuartzJobBean {
             public void onSuccess(RunResult runResult) {
                 logger.info("执行结果：{}", runResult);
                 // 保存日志
-                ScheduleAgentLogs agentLogs = saveLogs(runResult.getRunLogs(), runResult.getSuccess());
+                saveLogs(agentLogs, null, runResult.getRunLogs(), runResult.getSuccess());
                 if (runResult.getSuccess()) {
-                    List<ScheduleEvents> scheduleEvents = saveEvents(agentLogs.getId(), agentType, runResult.getPayload());
+                    // 保存结果
+                    List<ScheduleEvents> scheduleEvents = saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
                     runNextDelayedJobs(agentVo, scheduleEvents);
                 }
             }
@@ -149,7 +153,7 @@ public class DelayedJob extends QuartzJobBean {
                 RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
                 runLogs.error("执行发生异常：{}", e.getMessage());
                 // 保存日志
-                saveLogs(runLogs, false);
+                saveLogs(agentLogs, null, runLogs, false);
             }
         }, threadPoolTaskExecutor);
     }
@@ -157,12 +161,14 @@ public class DelayedJob extends QuartzJobBean {
     /**
      * 保存运行结果到数据库
      *
-     * @param agentType
-     * @param payload
+     * @param canCreateEvents 是否保存结果
+     * @param payload         采集到的数据内容列表
+     * @param options         任务配置信息
      * @return
      */
-    public List<ScheduleEvents> saveEvents(Integer taskId, AgentTypeVo agentType, JSONArray payload) {
+    public List<ScheduleEvents> saveEvents(final Integer taskId, final Boolean canCreateEvents, final JSONObject options, final JSONArray payload) {
         List<ScheduleEvents> scheduleEventsList = new ArrayList<>();
+        String mode = options.getString("mode");
         payload.forEach(map -> {
             ScheduleEvents eventAdd = new ScheduleEvents();
             eventAdd.setAgentId(id);
@@ -170,8 +176,15 @@ public class DelayedJob extends QuartzJobBean {
             eventAdd.setPayload(JSON.toJSONString(map));
             eventAdd.setCreatedAt(LocalDateTime.now());
             //是否保存事件
-            if (agentType.getCanCreateEvents()) {
-                eventAdd.insert();
+            if (canCreateEvents) {
+                // on_change 表示数据发生改变的时候才插入，即不产生重复数据
+                if (Objects.equals(mode, "on_change")) {
+                    if (!eventsService.exists(id, eventAdd.getPayload())) {
+                        eventAdd.insert();
+                    }
+                } else {
+                    eventAdd.insert();
+                }
             }
             scheduleEventsList.add(eventAdd);
         });
@@ -184,15 +197,24 @@ public class DelayedJob extends QuartzJobBean {
      * @param runLogs
      * @param success
      */
-    public ScheduleAgentLogs saveLogs(RunLogs runLogs, Boolean success) {
-        ScheduleAgentLogs scheduleAgentLogs = new ScheduleAgentLogs();
-        scheduleAgentLogs.setAgentId(getId());
-        scheduleAgentLogs.setMessage(runLogs.toString());
-        scheduleAgentLogs.setLevel(success ? 0 : 1);
-        scheduleAgentLogs.setInboundEventId(0);
-        scheduleAgentLogs.setCreatedAt(LocalDateTime.now());
-        scheduleAgentLogs.setUpdatedAt(LocalDateTime.now());
-        scheduleAgentLogs.insert();
+    public ScheduleAgentLogs saveLogs(ScheduleAgentLogs scheduleAgentLogs, Event event, RunLogs runLogs, Boolean success) {
+        if (scheduleAgentLogs == null) {
+            //新增
+            scheduleAgentLogs = new ScheduleAgentLogs();
+            scheduleAgentLogs.setAgentId(getId());
+            // 待运行
+            scheduleAgentLogs.setLevel(3);
+            scheduleAgentLogs.setCreatedAt(LocalDateTime.now());
+            scheduleAgentLogs.setInboundEventId(event != null ? event.getId() : null);
+            scheduleAgentLogs.insert();
+        } else {
+            // 更新
+            scheduleAgentLogs.setMessage(runLogs.toString());
+            // 1：成功2：失败
+            scheduleAgentLogs.setLevel(success ? 1 : 2);
+            scheduleAgentLogs.setUpdatedAt(LocalDateTime.now());
+            scheduleAgentLogs.insertOrUpdate();
+        }
         return scheduleAgentLogs;
     }
 
@@ -202,9 +224,11 @@ public class DelayedJob extends QuartzJobBean {
      * @param agentVo
      */
     public void runNextDelayedJobs(AgentVo agentVo, List<ScheduleEvents> events) throws SchedulerException, ClassNotFoundException {
-        logger.info("------执行下个代理------");
         //查出所有下一级代理信息
         List<AgentVo> receivers = agentVo.getReceiverAgents();
+        if (!receivers.isEmpty()) {
+            logger.info("------执行下个代理------");
+        }
         for (AgentVo receiver : receivers) {
             //判断是否立即传播事件
             AgentVo receiverAgentVo = agentService.getAgentById(receiver.getId());

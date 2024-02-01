@@ -1,6 +1,8 @@
 package cn.cxnxs.scheduler.vo;
 
+import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.enums.AgentState;
+import com.alibaba.fastjson.JSONObject;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -175,5 +177,16 @@ public class AgentVo {
 
     public Integer getValue() {
         return this.id;
+    }
+
+    /**
+     * 获取配置
+     */
+    public JSONObject getOptionsJSON() {
+        JSONObject options = new JSONObject();
+        if (StringUtil.isNotEmpty(this.options)) {
+            options = JSONObject.parseObject(this.options);
+        }
+        return options;
     }
 }

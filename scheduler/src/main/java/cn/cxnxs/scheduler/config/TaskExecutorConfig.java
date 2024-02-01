@@ -10,6 +10,7 @@ import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.PostConstruct;
@@ -23,7 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author mengjinyuan
  * @date 2021-02-03 10:15
  **/
-//@Configuration
+@Configuration
 public class TaskExecutorConfig {
 
     /**
@@ -76,9 +77,9 @@ public class TaskExecutorConfig {
         for (ScheduleAgent scheduleAgentItem : scheduleAgents) {
             //获取类型
             ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(scheduleAgentItem.getType());
-            if (scheduleAgentType.getCanBeScheduled()) {
-                //如果代理为定时执行，则创建定时任务
-                String cron = AgentTypeVo.ScheduleEnum.getCron(scheduleAgentItem.getSchedule());
+            String cron = AgentTypeVo.ScheduleEnum.getCron(scheduleAgentItem.getSchedule());
+            //如果代理为定时执行，则创建定时任务
+            if (scheduleAgentType.getCanBeScheduled() && cron != null) {
                 TaskDetail taskDetail = new TaskDetail();
                 taskDetail.setJobName(scheduleAgentItem.getName());
                 taskDetail.setJobGroupName(scheduleAgentType.getAgentTypeName());

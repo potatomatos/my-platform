@@ -2,6 +2,7 @@ package cn.cxnxs.scheduler.service;
 
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.mapper.ScheduleEventsMapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -16,4 +17,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class EventsServiceImpl extends ServiceImpl<ScheduleEventsMapper, ScheduleEvents> {
 
+    /**
+     * 判断内容是否存在
+     *
+     * @param agentId
+     * @param payload
+     * @return
+     */
+    public Boolean exists(Integer agentId, String payload) {
+        return baseMapper.selectCount(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, agentId)
+                .eq(ScheduleEvents::getPayload, payload)) > 0;
+    }
 }
