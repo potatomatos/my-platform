@@ -5,13 +5,16 @@ import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
+import cn.cxnxs.scheduler.core.RunLogs;
 import cn.cxnxs.scheduler.core.RunResult;
+import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.service.EventsServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -131,29 +134,66 @@ public class DelayedJob extends QuartzJobBean {
             @Override
             public void onSuccess(RunResult runResult) {
                 logger.info("执行结果：{}", runResult);
-                List<ScheduleEvents> scheduleEventsList = new ArrayList<>();
-                runResult.getPayload().forEach(map -> {
-                    ScheduleEvents eventAdd = new ScheduleEvents();
-                    eventAdd.setAgentId(id);
-                    eventAdd.setPayload(JSON.toJSONString(map));
-                    eventAdd.setCreatedAt(LocalDateTime.now());
-                    //是否保存事件
-                    if (agentType.getCanCreateEvents()) {
-                        eventAdd.insert();
-                    }
-                    scheduleEventsList.add(eventAdd);
-                });
-
-                if (runResult.getPayload().size() > 0) {
-                    runNextDelayedJobs(agentVo, scheduleEventsList);
+                // 保存日志
+                ScheduleAgentLogs agentLogs = saveLogs(runResult.getRunLogs(), runResult.getSuccess());
+                if (runResult.getSuccess()) {
+                    List<ScheduleEvents> scheduleEvents = saveEvents(agentLogs.getId(), agentType, runResult.getPayload());
+                    runNextDelayedJobs(agentVo, scheduleEvents);
                 }
             }
 
             @Override
-            public void onFailure(Throwable throwable) {
-                logger.error("线程运行发生异常,任务执行失败", throwable);
+            public void onFailure(Throwable e) {
+                logger.error("线程运行发生异常,任务执行失败", e);
+                Thread thread = Thread.currentThread();
+                RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
+                runLogs.error("执行发生异常：{}", e.getMessage());
+                // 保存日志
+                saveLogs(runLogs, false);
             }
         }, threadPoolTaskExecutor);
+    }
+
+    /**
+     * 保存运行结果到数据库
+     *
+     * @param agentType
+     * @param payload
+     * @return
+     */
+    public List<ScheduleEvents> saveEvents(Integer taskId, AgentTypeVo agentType, JSONArray payload) {
+        List<ScheduleEvents> scheduleEventsList = new ArrayList<>();
+        payload.forEach(map -> {
+            ScheduleEvents eventAdd = new ScheduleEvents();
+            eventAdd.setAgentId(id);
+            eventAdd.setTaskId(taskId);
+            eventAdd.setPayload(JSON.toJSONString(map));
+            eventAdd.setCreatedAt(LocalDateTime.now());
+            //是否保存事件
+            if (agentType.getCanCreateEvents()) {
+                eventAdd.insert();
+            }
+            scheduleEventsList.add(eventAdd);
+        });
+        return scheduleEventsList;
+    }
+
+    /**
+     * 保存日志信息
+     *
+     * @param runLogs
+     * @param success
+     */
+    public ScheduleAgentLogs saveLogs(RunLogs runLogs, Boolean success) {
+        ScheduleAgentLogs scheduleAgentLogs = new ScheduleAgentLogs();
+        scheduleAgentLogs.setAgentId(getId());
+        scheduleAgentLogs.setMessage(runLogs.toString());
+        scheduleAgentLogs.setLevel(success ? 0 : 1);
+        scheduleAgentLogs.setInboundEventId(0);
+        scheduleAgentLogs.setCreatedAt(LocalDateTime.now());
+        scheduleAgentLogs.setUpdatedAt(LocalDateTime.now());
+        scheduleAgentLogs.insert();
+        return scheduleAgentLogs;
     }
 
     /**

@@ -107,7 +107,7 @@
         <dependency>
             <groupId>us.codecraft</groupId>
             <artifactId>xsoup</artifactId>
-            <version>0.2.2</version>
+            <version>0.3.7</version>
         </dependency>
     </dependencies>
     <build>

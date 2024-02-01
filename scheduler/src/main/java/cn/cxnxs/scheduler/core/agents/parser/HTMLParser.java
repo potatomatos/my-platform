@@ -103,12 +103,7 @@ public class HTMLParser extends WebSiteContentParser {
         Elements elements = Xsoup.compile(xpath).evaluate(doc).getElements();
         if (elements != null && !elements.isEmpty()) {
             for (Element element : elements) {
-                String value;
-                if ("string(.)".equals(extractOptions.getString("value"))) {
-                    value = element.text();
-                } else {
-                    value = Xsoup.compile("/" + extractOptions.getString("value")).evaluate(element).get();
-                }
+                String value = Xsoup.compile("/" + extractOptions.getString("value")).evaluate(element).get();
                 result.add(Objects.isNull(value) ? "" : value);
             }
         }

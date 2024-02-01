@@ -21,6 +21,11 @@ public class RunResult {
      */
     private RunLogs runLogs;
 
+    /**
+     * 成功失败标记
+     */
+    private Boolean success;
+
     public RunResult(JSONArray payload, RunLogs runLogs) {
         this.payload = payload;
         this.runLogs = runLogs;

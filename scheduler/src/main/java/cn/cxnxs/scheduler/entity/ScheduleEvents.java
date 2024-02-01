@@ -40,6 +40,11 @@ public class ScheduleEvents extends Model<ScheduleEvents> {
     private Integer agentId;
 
     /**
+     * 关联的任务Id
+     */
+    private Integer taskId;
+
+    /**
      * 内容
      */
     private String payload;

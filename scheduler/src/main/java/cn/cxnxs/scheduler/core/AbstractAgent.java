@@ -32,9 +32,11 @@ public abstract class AbstractAgent implements IAgent {
         RunResult runResult = new RunResult(new JSONArray(), RunLogs.create(thread.getId() + "-" + thread.getName()));
         try {
             this.start(event, runResult);
+            runResult.setSuccess(true);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             runResult.error(e.getMessage());
+            runResult.setSuccess(false);
         }
         return runResult;
     }
