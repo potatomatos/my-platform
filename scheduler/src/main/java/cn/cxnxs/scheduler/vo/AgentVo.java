@@ -122,7 +122,7 @@ public class AgentVo {
 
     private Boolean selected = false;
 
-    private String sourcesIds;
+    private String sourceIds;
 
     private String receiverIds;
 

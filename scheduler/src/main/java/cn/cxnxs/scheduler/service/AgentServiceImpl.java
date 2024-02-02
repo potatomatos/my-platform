@@ -98,8 +98,8 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
             }
         }
         linksService.remove(Wrappers.lambdaQuery(ScheduleLinks.class).eq(ScheduleLinks::getReceiverId, scheduleAgent.getId()));
-        if (StringUtil.isNotEmpty(agentVo.getSourcesIds())) {
-            String[] sources = agentVo.getSourcesIds().split(",");
+        if (StringUtil.isNotEmpty(agentVo.getSourceIds())) {
+            String[] sources = agentVo.getSourceIds().split(",");
             for (String sourceId : sources) {
                 ScheduleLinks scheduleLinks = new ScheduleLinks();
                 scheduleLinks.setSourceId(Integer.parseInt(sourceId));

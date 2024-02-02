@@ -22,8 +22,11 @@ import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -71,15 +74,31 @@ public class AgentController {
     }
 
     /**
-     * 获取数据源数据
+     * 获取数据源产生的数据
      *
      * @return 数据源产生的数据列表
+     */
+    @ResponseResult
+    @GetMapping("source/events/{id}")
+    public List<ScheduleEvents> getSourcesEvents(@PathVariable("id") Integer id) {
+        AgentVo agent = agentService.getAgentById(id);
+        if (!Objects.isNull(agent.getSourceAgents()) && !agent.getSourceAgents().isEmpty()) {
+            List<Integer> sourceIds = agent.getSourceAgents().stream().map(AgentVo::getId).collect(Collectors.toList());
+            return new ScheduleEvents().selectList(Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getAgentId, sourceIds).orderByDesc(ScheduleEvents::getCreatedAt).last(" limit 10"));
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 获取采集数据
+     *
+     * @return 产生的数据列表
      */
     @ResponseResult
     @GetMapping("events/{id}")
     public PageResult<ScheduleEvents> getEvents(@PathVariable("id") Integer id, Integer pageNo, Integer limit) {
         Page<ScheduleEvents> page = PageHelper.startPage(pageNo, limit);
-        List<ScheduleEvents> events = new ScheduleEvents().selectList(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id).orderByDesc(ScheduleEvents::getId));
+        List<ScheduleEvents> events = new ScheduleEvents().selectList(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id).orderByDesc(ScheduleEvents::getCreatedAt));
         PageResult<ScheduleEvents> result = new PageResult<>(page.getTotal());
         result.setCurrent(page.getPageNum());
         result.setPageSize(page.getPageSize());
