@@ -33,3 +33,4 @@ build/
 .vscode/
 
 /logs/
+/docs/中间件/nacos-server-1.2.1/nacos/logs/
