@@ -32,24 +32,26 @@ import java.util.Locale;
 @Slf4j
 public class WebsiteAgent extends AbstractAgent {
 
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.81 Safari/537.36 SE 2.X MetaSr 1.0";
+    private static final int TIMEOUT = 5000;
+    private static final int RETRY_TIMES = 5;
+
     @Override
     public void start(Event event, RunResult runResult) throws Exception {
         long start = System.currentTimeMillis();
         //请求地址
         String url = this.getOptions().getString("url");
         //插件式配置Header（各种header信息、自定义header）
-        HttpHeader httpHeader = HttpHeader.custom().userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.81 Safari/537.36 SE 2.X MetaSr 1.0");
-        if (this.getOptions().get("headers") != null) {
+        HttpHeader httpHeader = HttpHeader.custom().userAgent(USER_AGENT);
+        if (this.getOptions().containsKey("headers")) {
             JSONObject headers = this.getOptions().getJSONObject("headers");
-            for (String key : headers.keySet()) {
-                httpHeader.other(key, headers.getString(key));
-            }
+            headers.forEach((key, value) -> httpHeader.other(key, value.toString()));
         }
         Header[] headers = httpHeader.build();
         //重试5次
-        HCB hcb = HCB.custom().retry(5);
+        HCB hcb = HCB.custom().retry(RETRY_TIMES);
         //是否绕过ssl
-        if (this.getOptions().get("disable_ssl_verification") != null) {
+        if (this.getOptions().containsKey("disable_ssl_verification")) {
             if (this.getOptions().getBoolean("disable_ssl_verification")) {
                 if (StringUtil.isNotEmpty(this.getOptions().getString("sslpv"))) {
                     hcb.sslpv(this.getOptions().getString("sslpv"));
@@ -66,13 +68,13 @@ public class WebsiteAgent extends AbstractAgent {
                 .headers(headers)
                 .client(client)
                 .encoding("utf-8")
-                .timeout(5000).context(cookies.getContext());
+                .timeout(TIMEOUT).context(cookies.getContext());
         //请求方式判断
-        if (this.getOptions().get("method") != null) {
+        if (this.getOptions().containsKey("method")) {
             if (this.getOptions().getString("method").toUpperCase().equals(HttpMethods.POST.getName())) {
                 config.method(HttpMethods.POST);
                 //设置请求体
-                if (this.getOptions().get("data") != null) {
+                if (this.getOptions().containsKey("data")) {
                     JSONObject data = this.getOptions().getJSONObject("data");
                     config.json(data.toJSONString());
                 }
