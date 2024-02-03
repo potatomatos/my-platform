@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * <p>网站代理</p>
@@ -41,6 +42,10 @@ public class WebsiteAgent extends AbstractAgent {
         long start = System.currentTimeMillis();
         //请求地址
         String url = this.getOptions().getString("url");
+        String urlFromEvent = this.getOptions().getString("url_from_event");
+        if (Objects.nonNull(event) && !event.getPayload().isEmpty() && Objects.nonNull(urlFromEvent)) {
+            url = urlFromEvent;
+        }
         //插件式配置Header（各种header信息、自定义header）
         HttpHeader httpHeader = HttpHeader.custom().userAgent(USER_AGENT);
         if (this.getOptions().containsKey("headers")) {

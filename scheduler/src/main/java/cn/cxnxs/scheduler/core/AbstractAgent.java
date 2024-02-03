@@ -73,7 +73,7 @@ public abstract class AbstractAgent implements IAgent {
      * @param event     数据源
      */
     public final void replacePlaceHolder(RunResult runResult, Event event) {
-        if (!Objects.isNull(event) && !Objects.isNull(this.getOptions())) {
+        if (!Objects.isNull(event) && !event.getPayload().isEmpty() && !Objects.isNull(this.getOptions())) {
             runResult.info("入参数据：{}", event);
             runResult.info("-------开始替换配置占位符------");
             String optionsStr = getOptions().toJSONString();

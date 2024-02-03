@@ -50,23 +50,43 @@ public class HTMLParser extends WebSiteContentParser {
             Set<String> keys = extractOptions.keySet();
             for (String key : keys) {
                 if (TYPE_CSS.equals(key)) {
-                    List<String> res = this.cssParse(doc, extractOptions);
-                    if (size != 0 && size != res.size()) {
-                        throw new WebsiteParseException("抓取的数据条数不一致");
+                    List<String> values = this.cssParse(doc, extractOptions);
+                    boolean repeat = extract.getJSONObject(extractKey).getBooleanValue("repeat");
+                    if (checkSize(size, values, repeat)) {
+                        if (!repeat) {
+                            size = values.size();
+                        }
+                        resultData.put(extractKey, values);
                     }
-                    size = res.size();
-                    resultData.put(extractKey, res);
                 } else if (TYPE_XPATH.equals(key)) {
-                    List<String> res = this.xpathParse(doc, extractOptions);
-                    if (size != 0 && size != res.size()) {
-                        throw new WebsiteParseException("抓取的数据条数不一致");
+                    List<String> values = this.xpathParse(doc, extractOptions);
+                    boolean repeat = extract.getJSONObject(extractKey).getBooleanValue("repeat");
+                    if (checkSize(size, values, repeat)) {
+                        if (!repeat) {
+                            size = values.size();
+                        }
+                        resultData.put(extractKey, values);
                     }
-                    size = res.size();
-                    resultData.put(extractKey, res);
                 }
             }
         }
         return this.format(resultData, extract);
+    }
+
+    /**
+     * 校验每个选择器个数是否一致，以及是否是重复行
+     */
+    public boolean checkSize(int size, List<String> values, boolean repeat) {
+        if (repeat) {
+            if (values.size() != 1) {
+                throw new WebsiteParseException("配置了可重复，抓取结果只能有一条！");
+            }
+        } else {
+            if (size != 0 && size != values.size()) {
+                throw new WebsiteParseException("抓取的数据条数不一致");
+            }
+        }
+        return true;
     }
 
     /**
@@ -125,20 +145,36 @@ public class HTMLParser extends WebSiteContentParser {
 
     private JSONArray format(Map<String, List<String>> resultData, JSONObject extract) {
         JSONArray result = new JSONArray();
+        //找出所有的可重复值
+        Map<String, String> keysWithRepeat = new HashMap<>();
+        List<String> keysToRemove = new ArrayList<>();
+        extract.entrySet().stream()
+                .filter(entry -> entry.getValue() instanceof JSONObject)
+                .forEach(entry -> {
+                    boolean repeat = ((JSONObject) entry.getValue()).getBooleanValue("repeat");
+                    if (repeat) {
+                        keysWithRepeat.put(entry.getKey(), resultData.get(entry.getKey()).get(0));
+                        // 保存要删除的键
+                        keysToRemove.add(entry.getKey());
+                    }
+                });
+        // 从数据行中删除重复键
+        keysToRemove.forEach(extract::remove);
+        keysToRemove.forEach(resultData::remove);
         boolean flag = true;
-        Set<String> keySet = extract.keySet();
-        for (String key : keySet) {
-            List<String> dataList = resultData.get(key);
+        for (Map.Entry<String, List<String>> entry : resultData.entrySet()) {
+            String key = entry.getKey();
+            List<String> dataList = entry.getValue();
             for (int i = 0; i < dataList.size(); i++) {
                 if (flag) {
                     JSONObject formatDataMap = new JSONObject();
                     formatDataMap.put(key, dataList.get(i));
+                    formatDataMap.putAll(keysWithRepeat);
                     result.add(formatDataMap);
                 } else {
                     JSONObject formatDataMap = result.getJSONObject(i);
                     formatDataMap.put(key, dataList.get(i));
                 }
-
             }
             flag = false;
         }
