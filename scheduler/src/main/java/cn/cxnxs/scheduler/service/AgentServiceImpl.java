@@ -48,17 +48,6 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     @Autowired
     private LinksServiceImpl linksService;
 
-    /**
-     * 获取agent配置信息
-     *
-     * @param agentType agent类型
-     * @return agent配置json数据
-     */
-
-    public Map<String, Object> getAgentConfig(String agentType) {
-        return null;
-    }
-
 
     public List<AgentVo> findByTypeProperties(AgentTypeVo agentTypeVo) {
         ScheduleAgentMapper scheduleAgentMapper = getBaseMapper();
@@ -213,6 +202,19 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         Event event = new Event();
         event.setPayload(payload);
         return agent.option(options).runAgent(event);
+    }
+
+    /**
+     * 更新任务状态
+     *
+     * @param id         任务id
+     * @param agentState 状态枚举
+     */
+    public void updateAgentState(Integer id, AgentVo.AgentState agentState) {
+        ScheduleAgent agent = new ScheduleAgent();
+        agent.setId(id);
+        agent.setState(agentState.getCode());
+        super.updateById(agent);
     }
 
 }

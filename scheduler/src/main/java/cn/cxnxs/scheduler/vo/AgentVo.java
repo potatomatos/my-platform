@@ -1,7 +1,6 @@
 package cn.cxnxs.scheduler.vo;
 
 import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.scheduler.enums.AgentState;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -160,9 +159,7 @@ public class AgentVo {
     }
 
     public String getStateStr() {
-        if (this.stateStr == null) {
-            this.stateStr = AgentState.getStr(this.state);
-        }
+        this.stateStr = AgentState.getStr(this.state);
         return stateStr;
     }
 
@@ -188,5 +185,37 @@ public class AgentVo {
             options = JSONObject.parseObject(this.options);
         }
         return options;
+    }
+
+    @Getter
+    public enum AgentState {
+        PAUSE(0, "暂停"),
+        ENABLE(1, "待运行"),
+        WORKING(2, "执行中"),
+        DISABLE(3, "已禁用"),
+        ERROR(-1, "发生错误"),
+        ;
+        private final Integer code;
+
+        private final String name;
+
+        AgentState(Integer code, String name) {
+            this.name = name;
+            this.code = code;
+        }
+
+        public static String getStr(Integer code) {
+            for (AgentState e : AgentState.values()) {
+                if (e.getCode().equals(code)) {
+                    return e.name;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return code.toString();
+        }
     }
 }

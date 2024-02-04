@@ -7,6 +7,7 @@ import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
 import cn.cxnxs.scheduler.core.RunLogs;
 import cn.cxnxs.scheduler.core.RunResult;
+import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
@@ -65,19 +66,39 @@ public class DelayedJob extends QuartzJobBean {
      */
     private Integer id;
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    /**
+     * 定时任务执行入口
+     *
+     * @param jobExecutionContext 上下文信息
+     */
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) {
+        AgentVo agentVo = agentService.getAgentById(id);
+        if (Objects.equals(agentVo.getState(), AgentVo.AgentState.DISABLE.getCode())) {
+            // 任务已禁用
+            return;
+        }
         try {
-            logger.info("------定时任务开始执行------");
-            AgentVo agentVo = agentService.getAgentById(id);
-            int pageNo = 1;
-            int pageSize = 1000;
-
+            logger.info("------开始运行:{}------", agentVo.getName());
             //获取来源代理
             List<AgentVo> sourceAgents = agentVo.getSourceAgents();
             if (sourceAgents.size() == 0) {
                 this.runTask(agentVo, null);
             } else {
+                logger.info("数据来源：{}", sourceAgents.stream().map(AgentVo::getName).collect(Collectors.toList()));
+                if (sourcesAreRunning(sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList()))) {
+                    return;
+                }
+                int pageNo = 1;
+                int pageSize = 1000;
                 List<Integer> sourceAgentsIdList = sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList());
                 IPage<ScheduleEvents> eventsPage = eventsService.page(new Page<>(pageNo, pageSize), Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getAgentId, sourceAgentsIdList).isNull(ScheduleEvents::getLockedBy));
                 List<ScheduleEvents> events = eventsPage.getRecords();
@@ -97,17 +118,11 @@ public class DelayedJob extends QuartzJobBean {
                     events = eventsPage.getRecords();
                 }
             }
-        } catch (ClassNotFoundException e) {
-            logger.error("定时任务执行失败,找不到 指定的执行类", e);
+        } catch (Exception e) {
+            logger.error("定时任务执行失败", e);
+            // 将任务状态修改为错误
+            agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.ERROR);
         }
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     /**
@@ -130,6 +145,9 @@ public class DelayedJob extends QuartzJobBean {
         // 保存日志，记录运行记录
         ScheduleAgentLogs agentLogs = saveLogs(null, event, null, null);
 
+        // 更新状态为运行中
+        agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.WORKING);
+
         ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());
         ListenableFuture<RunResult> future = service.submit(taskRunnable);
         Futures.addCallback(future, new FutureCallback<RunResult>() {
@@ -143,6 +161,8 @@ public class DelayedJob extends QuartzJobBean {
                     // 保存结果
                     List<ScheduleEvents> scheduleEvents = saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
                     runNextDelayedJobs(agentVo, scheduleEvents);
+                    //任务暂停，等待下次运行
+                    agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.PAUSE);
                 }
             }
 
@@ -154,6 +174,8 @@ public class DelayedJob extends QuartzJobBean {
                 runLogs.error("执行发生异常：{}", e.getMessage());
                 // 保存日志
                 saveLogs(agentLogs, null, runLogs, false);
+                // 任务错误
+                agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.ERROR);
             }
         }, threadPoolTaskExecutor);
     }
@@ -246,5 +268,22 @@ public class DelayedJob extends QuartzJobBean {
                 }
             }
         }
+    }
+
+    /**
+     * 判断数据源是否没有正在运行的，停止了数据准备好了，才可以运行
+     *
+     * @param sourceIds 数据源任务id
+     */
+    public Boolean sourcesAreRunning(List<Integer> sourceIds) {
+        List<ScheduleAgent> runningAgents = agentService.list(Wrappers.lambdaQuery(ScheduleAgent.class)
+                .in(ScheduleAgent::getId, sourceIds)
+                .eq(ScheduleAgent::getState, AgentVo.AgentState.WORKING)
+        );
+        if (runningAgents.size() > 0) {
+            logger.info("数据源{}正在执行中，本次任务取消", runningAgents.stream().map(ScheduleAgent::getName).collect(Collectors.toList()));
+            return true;
+        }
+        return false;
     }
 }
