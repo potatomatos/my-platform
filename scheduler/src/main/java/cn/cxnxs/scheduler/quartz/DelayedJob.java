@@ -242,7 +242,7 @@ public class DelayedJob extends QuartzJobBean {
                 taskScheduler.triggerJob(taskDetail);
             } else {
                 for (ScheduleEvents event : events) {
-                    this.runTask(receiver, event);
+                    this.runTask(receiverAgentVo, event);
                 }
             }
         }
