@@ -1,7 +1,6 @@
 package cn.cxnxs.scheduler.quartz;
 
 import cn.cxnxs.scheduler.core.IAgent;
-import cn.cxnxs.scheduler.entity.ScheduleAgentType;
 import cn.cxnxs.scheduler.utils.SpringContextUtil;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import org.slf4j.Logger;
@@ -20,11 +19,8 @@ public class JobGenerator {
     private static final Logger logger = LoggerFactory.getLogger(JobGenerator.class);
 
     public IAgent buildAgent(AgentVo agent) throws ClassNotFoundException {
-        Integer typeId = agent.getType();
-        ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(typeId);
-        logger.info("创建代理实例:{}", scheduleAgentType.getHandler());
-        Class<IAgent> agentClass = (Class<IAgent>) Class.forName(scheduleAgentType.getHandler());
-        IAgent agentInstance = SpringContextUtil.getBean(agentClass);
+        logger.info("创建任务实例:{}", agent.getAgentType().getHandler());
+        IAgent agentInstance = SpringContextUtil.getBean(agent.getAgentType().getHandlerClass());
         agentInstance.setName(agent.getName());
         return agentInstance.option(agent.getOptionsJSON());
     }

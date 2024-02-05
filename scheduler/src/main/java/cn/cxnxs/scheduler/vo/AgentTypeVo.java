@@ -1,5 +1,7 @@
 package cn.cxnxs.scheduler.vo;
 
+import cn.cxnxs.common.core.utils.StringUtil;
+import cn.cxnxs.scheduler.core.IAgent;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
@@ -339,5 +341,20 @@ public class AgentTypeVo {
         if (optionsSchema != null) {
             this.optionsSchema = JSONObject.parseObject(optionsSchema, Feature.OrderedField);
         }
+    }
+
+    /**
+     * 获取处理器class
+     *
+     * @return
+     * @throws ClassNotFoundException
+     */
+    private Class<? extends IAgent> handlerClass;
+
+    public Class<? extends IAgent> getHandlerClass() throws ClassNotFoundException {
+        if (handlerClass == null && StringUtil.isNotEmpty(this.handler)) {
+            this.handlerClass = (Class<IAgent>) Class.forName(this.handler);
+        }
+        return handlerClass;
     }
 }

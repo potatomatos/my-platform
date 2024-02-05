@@ -197,11 +197,12 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         if (scheduleAgentType == null) {
             throw new AgentNotFoundException("代理类型不存在");
         }
-        Class<AbstractAgent> clazz = (Class<AbstractAgent>) Class.forName(scheduleAgentType.getHandler());
-        AbstractAgent agent = SpringContextUtil.getBean(clazz);
+        AgentTypeVo agentTypeVo = ObjectUtil.transValues(scheduleAgentType, AgentTypeVo.class);
+        assert agentTypeVo != null;
+        IAgent agent = SpringContextUtil.getBean(agentTypeVo.getHandlerClass());
         agent.setName("调试任务");
-        agent.setOptions(options);
-        if (SingleSourceAgent.class.isAssignableFrom(clazz)) {
+        agent.option(options);
+        if (SingleSourceAgent.class.isAssignableFrom(agentTypeVo.getHandlerClass())) {
             if (!CollectionUtils.isEmpty(payloads)) {
                 // 单个任务只能接收一个入参
                 if (payloads.size() != 1) {
@@ -216,7 +217,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
                 ((SingleSourceAgent) agent).setEvent(event);
             }
         }
-        if (MultipleSourcesAgent.class.isAssignableFrom(clazz)) {
+        if (MultipleSourcesAgent.class.isAssignableFrom(agentTypeVo.getHandlerClass())) {
             if (!CollectionUtils.isEmpty(payloads)) {
                 ((MultipleSourcesAgent) agent).setEvents(payloads.stream().map(payload -> {
                     Event event = new Event();
@@ -225,7 +226,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
                 }).collect(Collectors.toList()));
             }
         }
-        return agent.option(options).runAgent();
+        return agent.runAgent();
     }
 
     /**

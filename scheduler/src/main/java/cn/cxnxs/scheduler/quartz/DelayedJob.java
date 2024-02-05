@@ -152,15 +152,28 @@ public class DelayedJob extends QuartzJobBean {
 
         ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());
         AgentTypeVo agentType = agentVo.getAgentType();
-        111
-        IAgent agentInstance = jobGenerator.buildAgent(agentVo);
-        if (agentInstance instanceof MultipleSourcesAgent) {
+        if (MultipleSourcesAgent.class.isAssignableFrom(agentType.getHandlerClass())) {
+            // 处理多条数据
+            IAgent agentInstance = jobGenerator.buildAgent(agentVo);
             ((MultipleSourcesAgent) agentInstance).setEvents(events);
+            TaskRunnable taskRunnable = new TaskRunnable();
+            taskRunnable.setAgent(agentInstance);
+            ListenableFuture<RunResult> future = service.submit(taskRunnable);
+            Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
+        } else if (SingleSourceAgent.class.isAssignableFrom(agentType.getHandlerClass())) {
+            // 处理单条数据
+            if (!CollectionUtils.isEmpty(events)) {
+                for (Event event : events) {
+                    IAgent agentInstance = jobGenerator.buildAgent(agentVo);
+                    ((SingleSourceAgent) agentInstance).setEvent(event);
+                    TaskRunnable taskRunnable = new TaskRunnable();
+                    taskRunnable.setAgent(agentInstance);
+                    ListenableFuture<RunResult> future = service.submit(taskRunnable);
+                    Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
+                }
+            }
+
         }
-        TaskRunnable taskRunnable = new TaskRunnable();
-        taskRunnable.setAgent(agentInstance);
-        ListenableFuture<RunResult> future = service.submit(taskRunnable);
-        Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
     }
 
     /**
@@ -182,8 +195,9 @@ public class DelayedJob extends QuartzJobBean {
                 saveLogs(agentLogs, runResult.getRunLogs(), runResult.getSuccess());
                 if (runResult.getSuccess()) {
                     // 保存结果
-                    List<ScheduleEvents> scheduleEvents = saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
-                    runNextDelayedJobs(agentVo, scheduleEvents);
+                    saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
+                    //执行接收者任务
+                    runNextDelayedJobs(agentVo);
                     //任务暂停，等待下次运行
                     agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.PAUSE);
                 }
@@ -207,10 +221,8 @@ public class DelayedJob extends QuartzJobBean {
      * @param canCreateEvents 是否保存结果
      * @param payload         采集到的数据内容列表
      * @param options         任务配置信息
-     * @return
      */
-    public List<ScheduleEvents> saveEvents(final Integer taskId, final Boolean canCreateEvents, final JSONObject options, final JSONArray payload) {
-        List<ScheduleEvents> scheduleEventsList = new ArrayList<>();
+    public void saveEvents(final Integer taskId, final Boolean canCreateEvents, final JSONObject options, final JSONArray payload) {
         String mode = options.getString("mode");
         payload.forEach(map -> {
             ScheduleEvents eventAdd = new ScheduleEvents();
@@ -229,9 +241,7 @@ public class DelayedJob extends QuartzJobBean {
                     eventAdd.insert();
                 }
             }
-            scheduleEventsList.add(eventAdd);
         });
-        return scheduleEventsList;
     }
 
     /**
@@ -261,34 +271,6 @@ public class DelayedJob extends QuartzJobBean {
     }
 
     /**
-     * 执行下一个任务
-     *
-     * @param agentVo
-     */
-    public void runNextDelayedJobs(AgentVo agentVo, List<ScheduleEvents> events) throws SchedulerException, ClassNotFoundException {
-        //查出所有下一级代理信息
-        List<AgentVo> receivers = agentVo.getReceiverAgents();
-        if (!receivers.isEmpty()) {
-            logger.info("------执行下个代理------");
-        }
-        for (AgentVo receiver : receivers) {
-            //判断是否立即传播事件
-            AgentVo receiverAgentVo = agentService.getAgentById(receiver.getId());
-            AgentTypeVo agentType = receiverAgentVo.getAgentType();
-            //判断是不是定时任务，是：启动定时任务，否：直接执行任务
-            if (agentType.getCanBeScheduled()) {
-                //手动触发定时任务
-                TaskDetail taskDetail = new TaskDetail();
-                taskDetail.setJobName(receiverAgentVo.getName());
-                taskDetail.setJobGroupName(agentType.getAgentTypeName());
-                taskScheduler.triggerJob(taskDetail);
-            } else {
-                this.runTask(receiverAgentVo, events);
-            }
-        }
-    }
-
-    /**
      * 判断数据源是否没有正在运行的，停止了数据准备好了，才可以运行
      *
      * @param sourceIds 数据源任务id
@@ -302,5 +284,32 @@ public class DelayedJob extends QuartzJobBean {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 执行下一个任务
+     *
+     * @param agentVo
+     */
+    public void runNextDelayedJobs(AgentVo agentVo) throws SchedulerException, ClassNotFoundException {
+        //查出所有下一级代理信息
+        List<AgentVo> receivers = agentVo.getReceiverAgents();
+        if (receivers.isEmpty()) {
+            return;
+        }
+        logger.info("------执行下个代理------");
+        for (AgentVo receiver : receivers) {
+            //判断是否立即传播事件
+            AgentVo receiverAgentVo = agentService.getAgentById(receiver.getId());
+            AgentTypeVo agentType = receiverAgentVo.getAgentType();
+            if (agentType.getCanReceiveEvents()
+                    && receiverAgentVo.getPropagateImmediately()) {
+                //立即触发定时任务，否则让定时任务自己定时执行
+                TaskDetail taskDetail = new TaskDetail();
+                taskDetail.setJobName(receiverAgentVo.getName());
+                taskDetail.setJobGroupName(agentType.getAgentTypeName());
+                taskScheduler.triggerJob(taskDetail);
+            }
+        }
     }
 }
