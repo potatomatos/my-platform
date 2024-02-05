@@ -25,6 +25,7 @@ public class JobGenerator {
         logger.info("创建代理实例:{}", scheduleAgentType.getHandler());
         Class<IAgent> agentClass = (Class<IAgent>) Class.forName(scheduleAgentType.getHandler());
         IAgent agentInstance = SpringContextUtil.getBean(agentClass);
+        agentInstance.setName(agent.getName());
         return agentInstance.option(agent.getOptionsJSON());
     }
 }

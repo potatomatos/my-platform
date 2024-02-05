@@ -15,15 +15,7 @@ public interface IAgent {
      * @param event
      * @return
      */
-    RunResult runAgent(Event event);
-
-
-    /**
-     * 获取状态
-     *
-     * @return int
-     */
-    int getStatus();
+    RunResult runAgent();
 
     /**
      * 设置配置参数
@@ -32,5 +24,24 @@ public interface IAgent {
      * @return 当前对象
      */
     IAgent option(JSONObject options);
+
+    /**
+     * 获取配置文件信息
+     *
+     * @return
+     */
+    JSONObject getOptions();
+
+    /**
+     * 名称
+     */
+    void setName(String name);
+
+    /**
+     * 获取任务名称
+     *
+     * @return
+     */
+    String getName();
 
 }

@@ -4,9 +4,7 @@ import cn.cxnxs.common.core.entity.request.PageWrapper;
 import cn.cxnxs.common.core.entity.response.PageResult;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.scheduler.core.Event;
-import cn.cxnxs.scheduler.core.IAgent;
-import cn.cxnxs.scheduler.core.RunResult;
+import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.*;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
@@ -14,8 +12,8 @@ import cn.cxnxs.scheduler.utils.SpringContextUtil;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import cn.cxnxs.scheduler.vo.ScenariosVo;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.arronlong.httpclientutil.exception.HttpProcessException;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
@@ -23,12 +21,14 @@ import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -192,16 +192,40 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     }
 
 
-    public RunResult dryRun(Integer type, JSONObject options, JSONObject payload) throws AgentNotFoundException, ClassNotFoundException, HttpProcessException {
+    public RunResult dryRun(Integer type, JSONObject options, List<JSONObject> payloads) throws AgentNotFoundException, ClassNotFoundException {
         ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(type);
         if (scheduleAgentType == null) {
             throw new AgentNotFoundException("代理类型不存在");
         }
-        Class<IAgent> clazz = (Class<IAgent>) Class.forName(scheduleAgentType.getHandler());
-        IAgent agent = SpringContextUtil.getBean(clazz);
-        Event event = new Event();
-        event.setPayload(payload);
-        return agent.option(options).runAgent(event);
+        Class<AbstractAgent> clazz = (Class<AbstractAgent>) Class.forName(scheduleAgentType.getHandler());
+        AbstractAgent agent = SpringContextUtil.getBean(clazz);
+        agent.setName("调试任务");
+        agent.setOptions(options);
+        if (SingleSourceAgent.class.isAssignableFrom(clazz)) {
+            if (!CollectionUtils.isEmpty(payloads)) {
+                // 单个任务只能接收一个入参
+                if (payloads.size() != 1) {
+                    Thread currentThread = Thread.currentThread();
+                    RunLogs runLogs = RunLogs.create(currentThread.getId() + "-" + currentThread.getName());
+                    RunResult runResult = new RunResult(new JSONArray(), runLogs);
+                    runResult.error("该任务只能接收一条数据！");
+                    return runResult;
+                }
+                Event event = new Event();
+                event.setPayload(payloads.get(0));
+                ((SingleSourceAgent) agent).setEvent(event);
+            }
+        }
+        if (MultipleSourcesAgent.class.isAssignableFrom(clazz)) {
+            if (!CollectionUtils.isEmpty(payloads)) {
+                ((MultipleSourcesAgent) agent).setEvents(payloads.stream().map(payload -> {
+                    Event event = new Event();
+                    event.setPayload(payload);
+                    return event;
+                }).collect(Collectors.toList()));
+            }
+        }
+        return agent.option(options).runAgent();
     }
 
     /**

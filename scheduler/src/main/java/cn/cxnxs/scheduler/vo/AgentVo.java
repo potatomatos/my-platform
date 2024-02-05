@@ -190,10 +190,8 @@ public class AgentVo {
     @Getter
     public enum AgentState {
         PAUSE(0, "暂停"),
-        ENABLE(1, "待运行"),
-        WORKING(2, "执行中"),
-        DISABLE(3, "已禁用"),
-        ERROR(-1, "发生错误"),
+        ENABLE(1, "启用"),
+        DISABLE(-1, "已关闭"),
         ;
         private final Integer code;
 

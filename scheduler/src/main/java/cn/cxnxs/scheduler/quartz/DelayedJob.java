@@ -2,14 +2,10 @@ package cn.cxnxs.scheduler.quartz;
 
 
 import cn.cxnxs.common.core.utils.ObjectUtil;
-import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.scheduler.core.Event;
-import cn.cxnxs.scheduler.core.IAgent;
-import cn.cxnxs.scheduler.core.RunLogs;
-import cn.cxnxs.scheduler.core.RunResult;
-import cn.cxnxs.scheduler.entity.ScheduleAgent;
+import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
+import cn.cxnxs.scheduler.enums.RunState;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.service.EventsServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
@@ -17,9 +13,8 @@ import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.util.concurrent.*;
 import lombok.SneakyThrows;
 import org.quartz.JobExecutionContext;
@@ -29,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -83,80 +79,107 @@ public class DelayedJob extends QuartzJobBean {
     protected void executeInternal(JobExecutionContext jobExecutionContext) {
         AgentVo agentVo = agentService.getAgentById(id);
         if (Objects.equals(agentVo.getState(), AgentVo.AgentState.DISABLE.getCode())) {
-            // 任务已禁用
+            // 任务已关闭或者暂停
             return;
         }
         try {
-            logger.info("------开始运行:{}------", agentVo.getName());
             //获取来源代理
             List<AgentVo> sourceAgents = agentVo.getSourceAgents();
-            if (sourceAgents.size() == 0) {
+            logger.info("------开始运行:{}，数据来源：{}------", agentVo.getName(), sourceAgents.stream().map(AgentVo::getName).collect(Collectors.toList()));
+
+            if (CollectionUtils.isEmpty(sourceAgents)) {
+                // 无输入数据源来源直接运行
                 this.runTask(agentVo, null);
             } else {
-                logger.info("数据来源：{}", sourceAgents.stream().map(AgentVo::getName).collect(Collectors.toList()));
-                if (sourcesAreRunning(sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList()))) {
+                // 假如不是立即传播的话，先检查数据源任务是不是都执行完成了，否则等待数据准备完成才能执行
+                if (!agentVo.getPropagateImmediately()
+                        && sourcesAreRunning(sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList()))) {
                     return;
                 }
-                int pageNo = 1;
-                int pageSize = 1000;
                 List<Integer> sourceAgentsIdList = sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList());
-                IPage<ScheduleEvents> eventsPage = eventsService.page(new Page<>(pageNo, pageSize), Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getAgentId, sourceAgentsIdList).isNull(ScheduleEvents::getLockedBy));
-                List<ScheduleEvents> events = eventsPage.getRecords();
-                while (events.size() > 0) {
-                    //将事件添加到代理
-                    for (ScheduleEvents event : events) {
-                        event = event.selectById();
-                        //判断该数据是否被其他线程处理
-                        if (StringUtil.isEmpty(event.getLockedBy())) {
-                            this.runTask(agentVo, event);
-                        } else {
-                            logger.info("该数据正在被线程");
-                        }
-                    }
-                    pageNo++;
-                    eventsPage = eventsService.page(new Page<>(pageNo, pageSize), Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id));
-                    events = eventsPage.getRecords();
-                }
+                List<ScheduleEvents> events = getSourceEvents(sourceAgentsIdList, agentVo);
+                this.runTask(agentVo, events);
             }
         } catch (Exception e) {
             logger.error("定时任务执行失败", e);
-            // 将任务状态修改为错误
-            agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.ERROR);
         }
     }
 
     /**
-     * 执行任务
+     * 分页获取数据源数据
+     *
+     * @param sourceIds
+     * @param agentVo
+     * @return
      */
-    public void runTask(AgentVo agentVo, final ScheduleEvents ev) throws ClassNotFoundException {
-        Thread t = Thread.currentThread();
-        Event event = null;
-        if (ev != null) {
-            event = new Event();
-            ObjectUtil.transValues(ev, Event.class);
-            ev.setLockedBy(t.getName());
-            ev.updateById();
-        }
+    public List<ScheduleEvents> getSourceEvents(List<Integer> sourceIds, AgentVo agentVo) {
         AgentTypeVo agentType = agentVo.getAgentType();
-        IAgent agentInstance = jobGenerator.buildAgent(agentVo);
-        TaskRunnable taskRunnable = new TaskRunnable();
-        taskRunnable.setAgent(agentInstance);
-        taskRunnable.setEvent(event);
-        // 保存日志，记录运行记录
-        ScheduleAgentLogs agentLogs = saveLogs(null, event, null, null);
+        // 是否接收数据
+        Boolean canReceiveEvents = agentType.getCanReceiveEvents();
+        // 是否接收数据源
+        Boolean hasSources = agentVo.getHasSources();
+        JSONObject optionsJSON = agentVo.getOptionsJSON();
+        // 需要找的数据上溯多上天
+        Integer uniquenessLookBack = optionsJSON.getInteger("expected_update_period_in_days");
+        if (canReceiveEvents && hasSources) {
+            LambdaQueryWrapper<ScheduleEvents> query = Wrappers.lambdaQuery(ScheduleEvents.class);
+            query.in(ScheduleEvents::getAgentId, sourceIds);
+            // 还没被别的任务处理的任务
+            query.isNull(ScheduleEvents::getLockedBy);
+            if (Objects.nonNull(uniquenessLookBack)) {
+                query.ge(ScheduleEvents::getCreatedAt, LocalDateTime.now().minusDays(uniquenessLookBack));
+            }
+            return eventsService.list(query);
+        }
+        return new ArrayList<>();
+    }
 
-        // 更新状态为运行中
-        agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.WORKING);
+    /**
+     * <h1>执行任务</h1>
+     */
+    public void runTask(AgentVo agentVo, final List<ScheduleEvents> evs) throws ClassNotFoundException {
+        Thread t = Thread.currentThread();
+        List<Event> events = null;
+        if (!CollectionUtils.isEmpty(evs)) {
+            events = ObjectUtil.copyListProperties(evs, Event.class);
+            // 把任务锁定
+            evs.forEach(item -> {
+                item.setLockedBy(t.getName());
+                item.setUpdatedAt(LocalDateTime.now());
+                item.updateById();
+            });
+        }
 
         ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());
+        AgentTypeVo agentType = agentVo.getAgentType();
+        111
+        IAgent agentInstance = jobGenerator.buildAgent(agentVo);
+        if (agentInstance instanceof MultipleSourcesAgent) {
+            ((MultipleSourcesAgent) agentInstance).setEvents(events);
+        }
+        TaskRunnable taskRunnable = new TaskRunnable();
+        taskRunnable.setAgent(agentInstance);
         ListenableFuture<RunResult> future = service.submit(taskRunnable);
-        Futures.addCallback(future, new FutureCallback<RunResult>() {
+        Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
+    }
+
+    /**
+     * 回调方法
+     *
+     * @param agentType
+     * @param agentVo
+     * @return
+     */
+    private FutureCallback<RunResult> buildCallBack(AgentTypeVo agentType, AgentVo agentVo) {
+        // 保存日志，记录运行记录
+        ScheduleAgentLogs agentLogs = saveLogs(null, null, null);
+        return new FutureCallback<RunResult>() {
             @SneakyThrows
             @Override
             public void onSuccess(RunResult runResult) {
                 logger.info("执行结果：{}", runResult);
                 // 保存日志
-                saveLogs(agentLogs, null, runResult.getRunLogs(), runResult.getSuccess());
+                saveLogs(agentLogs, runResult.getRunLogs(), runResult.getSuccess());
                 if (runResult.getSuccess()) {
                     // 保存结果
                     List<ScheduleEvents> scheduleEvents = saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
@@ -173,11 +196,9 @@ public class DelayedJob extends QuartzJobBean {
                 RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
                 runLogs.error("执行发生异常：{}", e.getMessage());
                 // 保存日志
-                saveLogs(agentLogs, null, runLogs, false);
-                // 任务错误
-                agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.ERROR);
+                saveLogs(agentLogs, runLogs, false);
             }
-        }, threadPoolTaskExecutor);
+        };
     }
 
     /**
@@ -219,22 +240,21 @@ public class DelayedJob extends QuartzJobBean {
      * @param runLogs
      * @param success
      */
-    public ScheduleAgentLogs saveLogs(ScheduleAgentLogs scheduleAgentLogs, Event event, RunLogs runLogs, Boolean success) {
+    public ScheduleAgentLogs saveLogs(ScheduleAgentLogs scheduleAgentLogs, RunLogs runLogs, Boolean success) {
+
         if (scheduleAgentLogs == null) {
             //新增
             scheduleAgentLogs = new ScheduleAgentLogs();
             scheduleAgentLogs.setAgentId(getId());
-            // 待运行
-            scheduleAgentLogs.setLevel(3);
+            scheduleAgentLogs.setLevel(1);
             scheduleAgentLogs.setCreatedAt(LocalDateTime.now());
-            scheduleAgentLogs.setInboundEventId(event != null ? event.getId() : null);
+            scheduleAgentLogs.setState(RunState.WORKING.getCode());
             scheduleAgentLogs.insert();
         } else {
             // 更新
             scheduleAgentLogs.setMessage(runLogs.toString());
-            // 1：成功2：失败
-            scheduleAgentLogs.setLevel(success ? 1 : 2);
             scheduleAgentLogs.setUpdatedAt(LocalDateTime.now());
+            scheduleAgentLogs.setState(success ? RunState.COMPLETE.getCode() : RunState.ERROR.getCode());
             scheduleAgentLogs.insertOrUpdate();
         }
         return scheduleAgentLogs;
@@ -263,9 +283,7 @@ public class DelayedJob extends QuartzJobBean {
                 taskDetail.setJobGroupName(agentType.getAgentTypeName());
                 taskScheduler.triggerJob(taskDetail);
             } else {
-                for (ScheduleEvents event : events) {
-                    this.runTask(receiverAgentVo, event);
-                }
+                this.runTask(receiverAgentVo, events);
             }
         }
     }
@@ -276,12 +294,11 @@ public class DelayedJob extends QuartzJobBean {
      * @param sourceIds 数据源任务id
      */
     public Boolean sourcesAreRunning(List<Integer> sourceIds) {
-        List<ScheduleAgent> runningAgents = agentService.list(Wrappers.lambdaQuery(ScheduleAgent.class)
-                .in(ScheduleAgent::getId, sourceIds)
-                .eq(ScheduleAgent::getState, AgentVo.AgentState.WORKING)
-        );
-        if (runningAgents.size() > 0) {
-            logger.info("数据源{}正在执行中，本次任务取消", runningAgents.stream().map(ScheduleAgent::getName).collect(Collectors.toList()));
+
+        Integer count = new ScheduleAgentLogs().selectCount(Wrappers.lambdaQuery(ScheduleAgentLogs.class)
+                .in(ScheduleAgentLogs::getAgentId, sourceIds).eq(ScheduleAgentLogs::getState, RunState.WORKING));
+        if (count > 0) {
+            logger.info("数据源有任务正在执行中，本次任务取消");
             return true;
         }
         return false;

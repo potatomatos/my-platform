@@ -35,6 +35,8 @@ public class ScheduleAgentLogs extends Model<ScheduleAgentLogs> {
 
     private Integer inboundEventId;
 
+    private Integer state;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

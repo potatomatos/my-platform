@@ -14,8 +14,8 @@ import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.arronlong.httpclientutil.exception.HttpProcessException;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -110,22 +110,24 @@ public class AgentController {
     /**
      * 测试运行
      *
-     * @param type    代理类型id
-     * @param options 配置
-     * @param payload 数据源
+     * @param type     代理类型id
+     * @param options  配置
+     * @param payloads 数据源
      * @return 代理数据
-     * @throws HttpProcessException
      * @throws ClassNotFoundException
      */
     @ResponseResult
     @RequestMapping("dryRun/{type}")
     public RunResult dryRun(@PathVariable("type") Integer type,
                             @RequestParam String options,
-                            String payload) throws HttpProcessException, ClassNotFoundException {
+                            String payloads) throws ClassNotFoundException {
         JSONObject optionsJson = JSON.parseObject(options);
-        JSONObject payloadJson = null;
-        if (StringUtil.isNotEmpty(payload)) {
-            payloadJson = JSON.parseObject(payload);
+        List<JSONObject> payloadJson = new ArrayList<>();
+        if (StringUtil.isNotEmpty(payloads)) {
+            JSONArray jsonArray = JSONArray.parseArray(payloads);
+            for (int i = 0; i < jsonArray.size(); i++) {
+                payloadJson.add(jsonArray.getJSONObject(i));
+            }
         }
         return agentService.dryRun(type, optionsJson, payloadJson);
     }

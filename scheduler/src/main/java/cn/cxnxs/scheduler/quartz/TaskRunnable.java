@@ -1,12 +1,10 @@
 package cn.cxnxs.scheduler.quartz;
 
-import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.IAgent;
 import cn.cxnxs.scheduler.core.RunResult;
 import lombok.Getter;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Callable;
 
@@ -16,19 +14,16 @@ import java.util.concurrent.Callable;
  * @author mengjinyuan
  * @date 2021-02-03 11:06
  **/
+@Slf4j
 @Setter
 @Getter
 public class TaskRunnable implements Callable<RunResult> {
 
     private IAgent agent;
 
-    private Event event;
-
-    private static final Logger logger = LoggerFactory.getLogger(TaskRunnable.class);
-
     @Override
-    public RunResult call() throws Exception {
-        logger.info("------开始运行代理------");
-        return agent.runAgent(getEvent());
+    public RunResult call() {
+        log.info("------开始运行任务：{}------", agent.getName());
+        return agent.runAgent();
     }
 }

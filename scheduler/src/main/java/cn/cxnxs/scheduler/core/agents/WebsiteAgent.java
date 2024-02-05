@@ -2,9 +2,8 @@ package cn.cxnxs.scheduler.core.agents;
 
 
 import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.scheduler.core.AbstractAgent;
-import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.RunResult;
+import cn.cxnxs.scheduler.core.SingleSourceAgent;
 import cn.cxnxs.scheduler.core.agents.parser.WebSiteContentParser;
 import cn.cxnxs.scheduler.core.agents.parser.WebSiteParserFactory;
 import cn.cxnxs.scheduler.core.http.ContentType;
@@ -31,19 +30,19 @@ import java.util.Objects;
 @Component
 @Scope("prototype")
 @Slf4j
-public class WebsiteAgent extends AbstractAgent {
+public class WebsiteAgent extends SingleSourceAgent {
 
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.81 Safari/537.36 SE 2.X MetaSr 1.0";
     private static final int TIMEOUT = 5000;
     private static final int RETRY_TIMES = 5;
 
     @Override
-    public void start(Event event, RunResult runResult) throws Exception {
+    public void start(RunResult runResult) throws Exception {
         long start = System.currentTimeMillis();
         //请求地址
         String url = this.getOptions().getString("url");
         String urlFromEvent = this.getOptions().getString("url_from_event");
-        if (Objects.nonNull(event) && !event.getPayload().isEmpty() && Objects.nonNull(urlFromEvent)) {
+        if (Objects.nonNull(getEvent()) && !getEvent().getPayload().isEmpty() && Objects.nonNull(urlFromEvent)) {
             url = urlFromEvent;
         }
         //插件式配置Header（各种header信息、自定义header）
@@ -97,11 +96,6 @@ public class WebsiteAgent extends AbstractAgent {
         JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);
         runResult.log("解析完成！用时：{}ms,数据大小：{}，最终解析结果：\n{}", System.currentTimeMillis() - start, maps.size(), maps.toJSONString());
         runResult.setPayload(maps);
-    }
-
-    @Override
-    public int getStatus() {
-        return 0;
     }
 
     @Override
