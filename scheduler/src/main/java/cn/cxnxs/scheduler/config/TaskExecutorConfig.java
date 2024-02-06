@@ -1,5 +1,6 @@
 package cn.cxnxs.scheduler.config;
 
+import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentType;
 import cn.cxnxs.scheduler.quartz.DelayedJob;
@@ -7,6 +8,8 @@ import cn.cxnxs.scheduler.quartz.TaskDetail;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
+import cn.cxnxs.scheduler.vo.AgentVo;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -73,13 +76,13 @@ public class TaskExecutorConfig {
     @PostConstruct
     public void initScheduler() {
         //从数据库获取代理信息
-        List<ScheduleAgent> scheduleAgents = agentService.list();
+        List<ScheduleAgent> scheduleAgents = agentService.list(Wrappers.lambdaQuery(ScheduleAgent.class).ne(ScheduleAgent::getState, AgentVo.AgentState.DISABLE.getCode()));
         for (ScheduleAgent scheduleAgentItem : scheduleAgents) {
             //获取类型
             ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(scheduleAgentItem.getType());
             String cron = AgentTypeVo.ScheduleEnum.getCron(scheduleAgentItem.getSchedule());
-            //如果代理为定时执行，则创建定时任务
-            if (scheduleAgentType.getCanBeScheduled() && cron != null) {
+            //建定时任务
+            if (StringUtil.isNotEmpty(cron)) {
                 TaskDetail taskDetail = new TaskDetail();
                 taskDetail.setJobName(scheduleAgentItem.getName());
                 taskDetail.setJobGroupName(scheduleAgentType.getAgentTypeName());

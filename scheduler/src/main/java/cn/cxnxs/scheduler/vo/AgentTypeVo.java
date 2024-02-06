@@ -148,7 +148,7 @@ public class AgentTypeVo {
         PM10(35, "* * 22 * * ?", "晚上10点"),
         PM11(36, "* * 23 * * ?", "晚上11点"),
         NEVER(37, null, "从不"),
-
+        EVERY_1M30S(-1, "30 */1 * * * ?", "每1分30秒")
         ;
         /**
          * 代码
@@ -180,11 +180,13 @@ public class AgentTypeVo {
         public static JSONArray toJson() {
             JSONArray jsonArray = new JSONArray();
             for (ScheduleEnum e : ScheduleEnum.values()) {
-                JSONObject object = new JSONObject();
-                object.put("code", e.getCode());
-                object.put("cron", e.getCron());
-                object.put("desc", e.getDesc());
-                jsonArray.add(object);
+                if (!e.equals(EVERY_1M30S)) {
+                    JSONObject object = new JSONObject();
+                    object.put("code", e.getCode());
+                    object.put("cron", e.getCron());
+                    object.put("desc", e.getDesc());
+                    jsonArray.add(object);
+                }
             }
             return jsonArray;
         }

@@ -144,15 +144,21 @@ public class DelayedJob extends QuartzJobBean {
      */
     public void runTask(AgentVo agentVo, final List<ScheduleEvents> evs) throws ClassNotFoundException {
         Thread t = Thread.currentThread();
-        List<Event> events = null;
+        List<Event> events;
         if (!CollectionUtils.isEmpty(evs)) {
-            events = ObjectUtil.copyListProperties(evs, Event.class);
+            events = new ArrayList<>();
             // 把任务锁定
             evs.forEach(item -> {
+                Event event = ObjectUtil.transValues(item, Event.class);
+                assert event != null;
+                event.setPayload(JSONObject.parseObject(item.getPayload()));
+                events.add(event);
                 item.setLockedBy(t.getName());
                 item.setUpdatedAt(LocalDateTime.now());
                 item.updateById();
             });
+        } else {
+            events = null;
         }
 
         ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());

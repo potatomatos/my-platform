@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
 @Service
 public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleAgent> {
 
+    @Autowired
+    private AgentTypeServiceImpl agentTypeService;
 
     @Autowired
     private ScenarioAgentRelServiceImpl scenarioAgentRelService;
@@ -56,11 +58,14 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     }
 
     @Transactional
-
     public Map<String, String> saveAgent(AgentVo agentVo) {
         //保存代理
         ScheduleAgent scheduleAgent = new ScheduleAgent();
         ObjectUtil.transValues(agentVo, scheduleAgent);
+        ScheduleAgentType agentType = agentTypeService.getById(agentVo.getType());
+        if (!agentType.getCanBeScheduled()) {
+            scheduleAgent.setSchedule(AgentTypeVo.ScheduleEnum.EVERY_1M30S.getCode());
+        }
         scheduleAgent.insertOrUpdate();
         //保存代理和方案关系
         scenarioAgentRelService.remove(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getAgentId, scheduleAgent.getId()));
