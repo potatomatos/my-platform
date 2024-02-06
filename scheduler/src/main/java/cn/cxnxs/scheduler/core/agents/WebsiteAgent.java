@@ -97,10 +97,4 @@ public class WebsiteAgent extends SingleSourceAgent {
         runResult.log("解析完成！用时：{}ms,数据大小：{}，最终解析结果：\n{}", System.currentTimeMillis() - start, maps.size(), maps.toJSONString());
         runResult.setPayload(maps);
     }
-
-    @Override
-    public WebsiteAgent option(JSONObject options) {
-        this.setOptions(options);
-        return this;
-    }
 }

@@ -21,11 +21,11 @@ public class AgentTypeServiceImpl extends ServiceImpl<ScheduleAgentTypeMapper, S
 
     public Integer updateOrSave(ScheduleAgentType agentType) {
         if (!Objects.isNull(agentType.getId())) {
-            agentType.setCreatedAt(LocalDateTime.now());
+            agentType.setUpdatedAt(LocalDateTime.now());
             updateById(agentType);
             return agentType.getId();
         } else {
-            agentType.setUpdatedAt(LocalDateTime.now());
+            agentType.setCreatedAt(LocalDateTime.now());
             save(agentType);
             return agentType.getId();
         }

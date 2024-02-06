@@ -120,14 +120,19 @@ public class DelayedJob extends QuartzJobBean {
         Boolean hasSources = agentVo.getHasSources();
         JSONObject optionsJSON = agentVo.getOptionsJSON();
         // 需要找的数据上溯多上天
-        Integer uniquenessLookBack = optionsJSON.getInteger("expected_update_period_in_days");
+        Integer expectedUpdatePeriodInDays = optionsJSON.getInteger("expected_update_period_in_days");
+        //和之前多少条数据做对比
+        Integer lookback = optionsJSON.getInteger("lookback");
         if (canReceiveEvents && hasSources) {
             LambdaQueryWrapper<ScheduleEvents> query = Wrappers.lambdaQuery(ScheduleEvents.class);
             query.in(ScheduleEvents::getAgentId, sourceIds);
             // 还没被别的任务处理的任务
             query.isNull(ScheduleEvents::getLockedBy);
-            if (Objects.nonNull(uniquenessLookBack)) {
-                query.ge(ScheduleEvents::getCreatedAt, LocalDateTime.now().minusDays(uniquenessLookBack));
+            if (Objects.nonNull(expectedUpdatePeriodInDays)) {
+                query.ge(ScheduleEvents::getCreatedAt, LocalDateTime.now().minusDays(expectedUpdatePeriodInDays));
+            }
+            if (Objects.nonNull(lookback)) {
+                query.last("limit " + lookback);
             }
             return eventsService.list(query);
         }
@@ -152,7 +157,8 @@ public class DelayedJob extends QuartzJobBean {
 
         ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());
         AgentTypeVo agentType = agentVo.getAgentType();
-        if (MultipleSourcesAgent.class.isAssignableFrom(agentType.getHandlerClass())) {
+        if (MultipleSourcesAgent.class.isAssignableFrom(agentType.getHandlerClass())
+                && !CollectionUtils.isEmpty(events)) {
             // 处理多条数据
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
             ((MultipleSourcesAgent) agentInstance).setEvents(events);
@@ -160,19 +166,24 @@ public class DelayedJob extends QuartzJobBean {
             taskRunnable.setAgent(agentInstance);
             ListenableFuture<RunResult> future = service.submit(taskRunnable);
             Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
-        } else if (SingleSourceAgent.class.isAssignableFrom(agentType.getHandlerClass())) {
+        } else if (SingleSourceAgent.class.isAssignableFrom(agentType.getHandlerClass())
+                && !CollectionUtils.isEmpty(events)) {
             // 处理单条数据
-            if (!CollectionUtils.isEmpty(events)) {
-                for (Event event : events) {
-                    IAgent agentInstance = jobGenerator.buildAgent(agentVo);
-                    ((SingleSourceAgent) agentInstance).setEvent(event);
-                    TaskRunnable taskRunnable = new TaskRunnable();
-                    taskRunnable.setAgent(agentInstance);
-                    ListenableFuture<RunResult> future = service.submit(taskRunnable);
-                    Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
-                }
+            for (Event event : events) {
+                IAgent agentInstance = jobGenerator.buildAgent(agentVo);
+                ((SingleSourceAgent) agentInstance).setEvent(event);
+                TaskRunnable taskRunnable = new TaskRunnable();
+                taskRunnable.setAgent(agentInstance);
+                ListenableFuture<RunResult> future = service.submit(taskRunnable);
+                Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
             }
-
+        } else {
+            // 无输入数据情况
+            IAgent agentInstance = jobGenerator.buildAgent(agentVo);
+            TaskRunnable taskRunnable = new TaskRunnable();
+            taskRunnable.setAgent(agentInstance);
+            ListenableFuture<RunResult> future = service.submit(taskRunnable);
+            Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
         }
     }
 
@@ -291,7 +302,7 @@ public class DelayedJob extends QuartzJobBean {
      *
      * @param agentVo
      */
-    public void runNextDelayedJobs(AgentVo agentVo) throws SchedulerException, ClassNotFoundException {
+    public void runNextDelayedJobs(AgentVo agentVo) throws SchedulerException {
         //查出所有下一级代理信息
         List<AgentVo> receivers = agentVo.getReceiverAgents();
         if (receivers.isEmpty()) {
