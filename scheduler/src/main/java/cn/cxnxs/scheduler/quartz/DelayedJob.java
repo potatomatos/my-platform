@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +84,7 @@ public class DelayedJob extends QuartzJobBean {
         AgentVo agentVo = agentService.getAgentById(id);
         if (Objects.equals(agentVo.getState(), AgentVo.AgentState.DISABLE.getCode())) {
             // 任务已关闭或者暂停
+            taskScheduler.pauseJob(new TaskDetail(agentVo.getName(), agentVo.getAgentType().getAgentTypeName()));
             return;
         }
         try {
@@ -128,6 +130,7 @@ public class DelayedJob extends QuartzJobBean {
         Integer lookback = optionsJSON.getInteger("lookback");
         if (canReceiveEvents && hasSources) {
             LambdaQueryWrapper<ScheduleEvents> query = Wrappers.lambdaQuery(ScheduleEvents.class);
+            query.orderByDesc(ScheduleEvents::getCreatedAt);
             query.in(ScheduleEvents::getAgentId, sourceIds);
             // 还没被别的任务处理的任务
 //            query.isNull(ScheduleEvents::getLockedBy);
@@ -215,9 +218,9 @@ public class DelayedJob extends QuartzJobBean {
                 saveLogs(agentLogs, runResult.getRunLogs(), runResult.getSuccess());
                 if (runResult.getSuccess()) {
                     // 保存结果
-                    saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
+                    boolean isChange = saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
                     //执行接收者任务
-                    if (runResult.getPayload() != null && runResult.getPayload().size() > 0) {
+                    if (isChange && (runResult.getPayload() != null && runResult.getPayload().size() > 0)) {
                         // 如果运行结果没采集到数据就不立即触发下个任务了
                         runNextDelayedJobs(agentVo);
                     }
@@ -244,8 +247,13 @@ public class DelayedJob extends QuartzJobBean {
      * @param canCreateEvents 是否保存结果
      * @param payload         采集到的数据内容列表
      * @param options         任务配置信息
+     * @return 数据是否有变动
      */
-    public void saveEvents(final Integer taskId, final Boolean canCreateEvents, final JSONObject options, final JSONArray payload) {
+    public boolean saveEvents(final Integer taskId, final Boolean canCreateEvents, final JSONObject options, final JSONArray payload) {
+        AtomicBoolean isChange = new AtomicBoolean(false);
+        if (payload == null) {
+            return isChange.get();
+        }
         String mode = options.getString("mode");
         //和多少条数据对比去重
         Integer uniquenessLookBack = options.getInteger("uniqueness_look_back");
@@ -262,9 +270,11 @@ public class DelayedJob extends QuartzJobBean {
                 if (StringUtil.isNotEmpty(mode)) {
                     if (Objects.equals(mode, "on_change")) {
                         if (!eventsService.exists(id, uniquenessLookBack, eventAdd.getPayload())) {
+                            isChange.set(true);
                             eventAdd.insert();
                         }
                     } else {
+                        isChange.set(true);
                         eventAdd.insert();
                     }
                 } else {
@@ -274,6 +284,7 @@ public class DelayedJob extends QuartzJobBean {
                 }
             }
         });
+        return isChange.get();
     }
 
     /**

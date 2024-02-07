@@ -18,9 +18,6 @@ public class TaskScheduler {
     @Autowired
     SchedulerFactoryBean schedulerFactory;
 
-    @Autowired
-    private Scheduler scheduler;
-
     /**
      * 添加一个定时任务
      *
@@ -29,7 +26,10 @@ public class TaskScheduler {
     public void addJob(TaskDetail taskDetail) {
         log.info("------添加定时任务：{}", taskDetail);
         try {
-            scheduler = schedulerFactory.getScheduler();
+            if (checkExists(taskDetail)) {
+                return;
+            }
+            Scheduler scheduler = schedulerFactory.getScheduler();
             JobDetail jobDetail = JobBuilder
                     .newJob(taskDetail.getJobClass())
                     .withIdentity(taskDetail.getJobName(), taskDetail.getJobGroupName())
@@ -51,6 +51,37 @@ public class TaskScheduler {
     }
 
     /**
+     * 添加一个手动任务
+     *
+     * @param taskDetail
+     */
+    public void addManualJob(TaskDetail taskDetail) {
+        log.info("------添加定时任务：{}", taskDetail);
+        try {
+            if (checkExists(taskDetail)) {
+                return;
+            }
+            Scheduler scheduler = schedulerFactory.getScheduler();
+            JobDetail jobDetail = JobBuilder
+                    .newJob(taskDetail.getJobClass())
+                    .withIdentity(taskDetail.getJobName(), taskDetail.getJobGroupName())
+                    .setJobData(taskDetail.getJobDataMap())
+                    .build();
+            Trigger trigger = TriggerBuilder.newTrigger()
+                    .withIdentity(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName())
+                    .startAt(DateBuilder.futureDate(10, DateBuilder.IntervalUnit.YEAR)) // 设置一个未来很长的时间
+                    .build();
+            scheduler.scheduleJob(jobDetail, trigger);
+            if (!scheduler.isShutdown()) {
+                scheduler.start();
+            }
+        } catch (SchedulerException e) {
+            log.error("添加手动任务出现异常！", e);
+            throw new ScheduleException("添加手动任务出现异常!");
+        }
+    }
+
+    /**
      * 修改一个任务的触发时间
      *
      * @param taskDetail 任务信息
@@ -59,7 +90,7 @@ public class TaskScheduler {
         log.info("修改一个任务的触发时间：{}", taskDetail);
         try {
             log.info("------修改定时任务，{}", taskDetail);
-            scheduler = schedulerFactory.getScheduler();
+            Scheduler scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
             CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
             if (trigger == null) {
@@ -89,7 +120,7 @@ public class TaskScheduler {
     public void removeJob(TaskDetail taskDetail) {
         log.info("移除一个任务：{}", taskDetail);
         try {
-            scheduler = schedulerFactory.getScheduler();
+            Scheduler scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
             scheduler.pauseTrigger(triggerKey);
             scheduler.unscheduleJob(triggerKey);
@@ -109,7 +140,7 @@ public class TaskScheduler {
         log.info("暂停一个任务：{}", taskDetail);
         try {
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
-            scheduler = schedulerFactory.getScheduler();
+            Scheduler scheduler = schedulerFactory.getScheduler();
             scheduler.pauseTrigger(triggerKey);
             scheduler.pauseJob(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
         } catch (SchedulerException e) {
@@ -126,7 +157,7 @@ public class TaskScheduler {
     public void resumeJob(TaskDetail taskDetail) throws SchedulerException {
         log.info("恢复一个job：{}", taskDetail);
         TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
-        scheduler = schedulerFactory.getScheduler();
+        Scheduler scheduler = schedulerFactory.getScheduler();
         scheduler.resumeTrigger(triggerKey);
         scheduler.resumeJob(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
 
@@ -139,12 +170,16 @@ public class TaskScheduler {
      * @throws SchedulerException
      */
     public void triggerJob(TaskDetail taskDetail) throws SchedulerException {
-        scheduler = schedulerFactory.getScheduler();
+        Scheduler scheduler = schedulerFactory.getScheduler();
         JobKey jobKey = JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName());
-        if (scheduler.checkExists(jobKey)) {
+        if (checkExists(taskDetail)) {
             log.info("手动触发一个job：{}", taskDetail);
             scheduler.triggerJob(jobKey);
         }
+    }
+
+    public Boolean checkExists(TaskDetail taskDetail) throws SchedulerException {
+        return schedulerFactory.getScheduler().checkExists(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
     }
 
     /**
@@ -153,7 +188,7 @@ public class TaskScheduler {
     public void startJobs() {
         log.info("启动所有定时任务");
         try {
-            scheduler = schedulerFactory.getScheduler();
+            Scheduler scheduler = schedulerFactory.getScheduler();
             scheduler.start();
         } catch (Exception e) {
             log.error("启动所有任务出现异常！", e);
@@ -166,7 +201,7 @@ public class TaskScheduler {
     public void shutdownJobs() {
         log.info("关闭所有定时任务");
         try {
-            scheduler = schedulerFactory.getScheduler();
+            Scheduler scheduler = schedulerFactory.getScheduler();
             if (!scheduler.isShutdown()) {
                 scheduler.shutdown();
             }

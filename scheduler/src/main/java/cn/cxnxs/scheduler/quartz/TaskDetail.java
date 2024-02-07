@@ -31,5 +31,11 @@ public class TaskDetail {
 
     private JobDataMap jobDataMap = new JobDataMap();
 
+    public TaskDetail() {
+    }
 
+    public TaskDetail(String jobName, String jobGroupName) {
+        this.jobName = jobName;
+        this.jobGroupName = jobGroupName;
+    }
 }

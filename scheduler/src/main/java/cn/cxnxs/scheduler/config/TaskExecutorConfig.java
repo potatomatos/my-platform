@@ -81,20 +81,26 @@ public class TaskExecutorConfig {
             //获取类型
             ScheduleAgentType scheduleAgentType = new ScheduleAgentType().selectById(scheduleAgentItem.getType());
             String cron = AgentTypeVo.ScheduleEnum.getCron(scheduleAgentItem.getSchedule());
-            //建定时任务
-            if (StringUtil.isNotEmpty(cron)) {
-                TaskDetail taskDetail = new TaskDetail();
-                taskDetail.setJobName(scheduleAgentItem.getName());
-                taskDetail.setJobGroupName(scheduleAgentType.getAgentTypeName());
-                taskDetail.setTriggerName(scheduleAgentItem.getName());
-                taskDetail.setTriggerGroupName(scheduleAgentType.getAgentTypeName());
-                taskDetail.setJobClass(DelayedJob.class);
-                taskDetail.setCron(cron);
-                JobDataMap jobDataMap = new JobDataMap();
-                jobDataMap.put("id", scheduleAgentItem.getId());
-                taskDetail.setJobDataMap(jobDataMap);
+            TaskDetail taskDetail = new TaskDetail();
+            taskDetail.setJobName(scheduleAgentItem.getName());
+            taskDetail.setJobGroupName(scheduleAgentType.getAgentTypeName());
+            taskDetail.setTriggerName(scheduleAgentItem.getName());
+            taskDetail.setTriggerGroupName(scheduleAgentType.getAgentTypeName());
+            taskDetail.setJobClass(DelayedJob.class);
+            taskDetail.setCron(cron);
+            JobDataMap jobDataMap = new JobDataMap();
+            jobDataMap.put("id", scheduleAgentItem.getId());
+            taskDetail.setJobDataMap(jobDataMap);
+
+            //自动定时执行
+            if (scheduleAgentType.getCanBeScheduled()
+                    && StringUtil.isNotEmpty(cron)) {
                 taskScheduler.addJob(taskDetail);
+            } else {
+                // 手动触发
+                taskScheduler.addManualJob(taskDetail);
             }
+
         }
 
     }

@@ -40,7 +40,7 @@ public class RunLogs {
     }
 
     public void log(LogType logType, String logger, Object... args) {
-        logger = replacePlaceholder(logger, args);
+//        logger = replacePlaceholder(logger, args);
         log.append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("[").append(logType).append("]").append("-").append(threadId).append(":").append(logger).append("\n\r");
     }
 

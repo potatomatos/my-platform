@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,7 +64,7 @@ public class AgentController {
 
     @ResponseResult
     @RequestMapping("save")
-    public Map<String, String> saveAgent(@RequestBody AgentVo agentVo) {
+    public Map<String, String> saveAgent(@RequestBody AgentVo agentVo) throws SchedulerException {
         return agentService.saveAgent(agentVo);
     }
 

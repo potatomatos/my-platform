@@ -8,6 +8,9 @@ import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.*;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
+import cn.cxnxs.scheduler.quartz.DelayedJob;
+import cn.cxnxs.scheduler.quartz.TaskDetail;
+import cn.cxnxs.scheduler.quartz.TaskScheduler;
 import cn.cxnxs.scheduler.utils.SpringContextUtil;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
@@ -18,16 +21,15 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.quartz.JobDataMap;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +52,9 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     @Autowired
     private LinksServiceImpl linksService;
 
+    @Autowired
+    private TaskScheduler taskScheduler;
+
 
     public List<AgentVo> findByTypeProperties(AgentTypeVo agentTypeVo) {
         ScheduleAgentMapper scheduleAgentMapper = getBaseMapper();
@@ -58,14 +63,10 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     }
 
     @Transactional
-    public Map<String, String> saveAgent(AgentVo agentVo) {
+    public Map<String, String> saveAgent(AgentVo agentVo) throws SchedulerException {
         //保存代理
         ScheduleAgent scheduleAgent = new ScheduleAgent();
         ObjectUtil.transValues(agentVo, scheduleAgent);
-        ScheduleAgentType agentType = agentTypeService.getById(agentVo.getType());
-        if (!agentType.getCanBeScheduled()) {
-            scheduleAgent.setSchedule(AgentTypeVo.ScheduleEnum.EVERY_1M30S.getCode());
-        }
         scheduleAgent.insertOrUpdate();
         //保存代理和方案关系
         scenarioAgentRelService.remove(Wrappers.lambdaQuery(ScheduleScenarioAgentRel.class).eq(ScheduleScenarioAgentRel::getAgentId, scheduleAgent.getId()));
@@ -102,8 +103,44 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
                 scheduleLinks.insertOrUpdate();
             }
         }
-
+        // 修改定时任务信息
+        agentScheduleChange(scheduleAgent);
         return new HashMap<>();
+    }
+
+    private void agentScheduleChange(ScheduleAgent scheduleAgent) throws SchedulerException {
+        ScheduleAgentType agentType = agentTypeService.getById(scheduleAgent.getType());
+        if (!agentType.getCanBeScheduled()) {
+            scheduleAgent.setSchedule(AgentTypeVo.ScheduleEnum.NEVER.getCode());
+        }
+        TaskDetail taskDetail = new TaskDetail();
+        taskDetail.setJobName(scheduleAgent.getName());
+        taskDetail.setJobGroupName(agentType.getAgentTypeName());
+        taskDetail.setTriggerName(scheduleAgent.getName());
+        taskDetail.setTriggerGroupName(agentType.getAgentTypeName());
+        taskDetail.setJobClass(DelayedJob.class);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("id", scheduleAgent.getId());
+        taskDetail.setJobDataMap(jobDataMap);
+        //将自动任务改成手动
+        if (Objects.equals(AgentTypeVo.ScheduleEnum.NEVER.getCode(), scheduleAgent.getSchedule())) {
+            if (taskScheduler.checkExists(taskDetail)) {
+                //先把原来的任务删掉，再添加新任务
+                taskScheduler.removeJob(taskDetail);
+            }
+            taskScheduler.addManualJob(taskDetail);
+        } else {
+            taskDetail.setCron(AgentTypeVo.ScheduleEnum.getCron(scheduleAgent.getSchedule()));
+            if (taskScheduler.checkExists(taskDetail)) {
+                if (taskScheduler.checkExists(taskDetail)) {
+                    // 修改定时任务的时间
+                    taskScheduler.modifyJobTime(taskDetail);
+                } else {
+                    // 添加任务
+                    taskScheduler.addJob(taskDetail);
+                }
+            }
+        }
     }
 
 
