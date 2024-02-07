@@ -139,9 +139,12 @@ public class TaskScheduler {
      * @throws SchedulerException
      */
     public void triggerJob(TaskDetail taskDetail) throws SchedulerException {
-        log.info("手动触发一个job：{}", taskDetail);
         scheduler = schedulerFactory.getScheduler();
-        scheduler.triggerJob(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
+        JobKey jobKey = JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName());
+        if (scheduler.checkExists(jobKey)) {
+            log.info("手动触发一个job：{}", taskDetail);
+            scheduler.triggerJob(jobKey);
+        }
     }
 
     /**

@@ -2,6 +2,7 @@ package cn.cxnxs.scheduler.quartz;
 
 
 import cn.cxnxs.common.core.utils.ObjectUtil;
+import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
@@ -17,6 +18,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.util.concurrent.*;
 import lombok.SneakyThrows;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -38,6 +40,7 @@ import java.util.stream.Collectors;
  * @author mengjinyuan
  * @date 2021-02-01 22:53
  **/
+@DisallowConcurrentExecution
 public class DelayedJob extends QuartzJobBean {
 
     @Autowired
@@ -127,7 +130,7 @@ public class DelayedJob extends QuartzJobBean {
             LambdaQueryWrapper<ScheduleEvents> query = Wrappers.lambdaQuery(ScheduleEvents.class);
             query.in(ScheduleEvents::getAgentId, sourceIds);
             // 还没被别的任务处理的任务
-            query.isNull(ScheduleEvents::getLockedBy);
+//            query.isNull(ScheduleEvents::getLockedBy);
             if (Objects.nonNull(expectedUpdatePeriodInDays)) {
                 query.ge(ScheduleEvents::getCreatedAt, LocalDateTime.now().minusDays(expectedUpdatePeriodInDays));
             }
@@ -214,7 +217,10 @@ public class DelayedJob extends QuartzJobBean {
                     // 保存结果
                     saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
                     //执行接收者任务
-                    runNextDelayedJobs(agentVo);
+                    if (runResult.getPayload() != null && runResult.getPayload().size() > 0) {
+                        // 如果运行结果没采集到数据就不立即触发下个任务了
+                        runNextDelayedJobs(agentVo);
+                    }
                     //任务暂停，等待下次运行
                     agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.PAUSE);
                 }
@@ -241,6 +247,9 @@ public class DelayedJob extends QuartzJobBean {
      */
     public void saveEvents(final Integer taskId, final Boolean canCreateEvents, final JSONObject options, final JSONArray payload) {
         String mode = options.getString("mode");
+        //和多少条数据对比去重
+        Integer uniquenessLookBack = options.getInteger("uniqueness_look_back");
+
         payload.forEach(map -> {
             ScheduleEvents eventAdd = new ScheduleEvents();
             eventAdd.setAgentId(id);
@@ -250,12 +259,18 @@ public class DelayedJob extends QuartzJobBean {
             //是否保存事件
             if (canCreateEvents) {
                 // on_change 表示数据发生改变的时候才插入，即不产生重复数据
-                if (Objects.equals(mode, "on_change")) {
-                    if (!eventsService.exists(id, eventAdd.getPayload())) {
+                if (StringUtil.isNotEmpty(mode)) {
+                    if (Objects.equals(mode, "on_change")) {
+                        if (!eventsService.exists(id, uniquenessLookBack, eventAdd.getPayload())) {
+                            eventAdd.insert();
+                        }
+                    } else {
                         eventAdd.insert();
                     }
                 } else {
-                    eventAdd.insert();
+                    if ((!eventsService.exists(id, uniquenessLookBack, eventAdd.getPayload()))) {
+                        eventAdd.insert();
+                    }
                 }
             }
         });

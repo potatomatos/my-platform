@@ -2,4 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cxnxs.scheduler.mapper.ScheduleEventsMapper">
 
+    <select id="getUniquenessLookBackCount" resultType="int">
+        select count(1) from (
+        select payload from schedule_events where agent_id=#{agentId} order by created_at desc
+        <if test="uniquenessLookBack!=null">
+            limit ${uniquenessLookBack}
+        </if>
+        ) T where T.payload = #{payload}
+    </select>
 </mapper>

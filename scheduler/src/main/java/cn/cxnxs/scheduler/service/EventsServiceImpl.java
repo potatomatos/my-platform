@@ -2,7 +2,6 @@ package cn.cxnxs.scheduler.service;
 
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.mapper.ScheduleEventsMapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +23,7 @@ public class EventsServiceImpl extends ServiceImpl<ScheduleEventsMapper, Schedul
      * @param payload
      * @return
      */
-    public Boolean exists(Integer agentId, String payload) {
-        return baseMapper.selectCount(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, agentId)
-                .eq(ScheduleEvents::getPayload, payload)) > 0;
+    public Boolean exists(Integer agentId, Integer uniquenessLookBack, String payload) {
+        return baseMapper.getUniquenessLookBackCount(agentId, uniquenessLookBack, payload) > 0;
     }
 }

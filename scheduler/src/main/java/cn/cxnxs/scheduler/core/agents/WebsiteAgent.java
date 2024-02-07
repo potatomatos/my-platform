@@ -45,6 +45,9 @@ public class WebsiteAgent extends SingleSourceAgent {
         if (Objects.nonNull(getEvent()) && !getEvent().getPayload().isEmpty() && Objects.nonNull(urlFromEvent)) {
             url = urlFromEvent;
         }
+        if (StringUtil.isEmpty(url)) {
+            return;
+        }
         //插件式配置Header（各种header信息、自定义header）
         HttpHeader httpHeader = HttpHeader.custom().userAgent(USER_AGENT);
         if (this.getOptions().containsKey("headers")) {

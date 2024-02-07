@@ -3,6 +3,7 @@ package cn.cxnxs.scheduler.mapper;
 
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -14,4 +15,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ScheduleEventsMapper extends BaseMapper<ScheduleEvents> {
 
+    Integer getUniquenessLookBackCount(@Param("agentId") Integer agentId, @Param("uniquenessLookBack") Integer uniquenessLookBack, @Param("payload") String payload);
 }

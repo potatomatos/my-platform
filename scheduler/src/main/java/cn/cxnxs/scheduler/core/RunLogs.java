@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 运行日志
@@ -44,7 +46,7 @@ public class RunLogs {
 
     public static String replacePlaceholder(String logger, Object... replacement) {
         for (Object value : replacement) {
-            logger = logger.replaceFirst("\\{\\}", value.toString());
+            logger = logger.replaceFirst(Pattern.quote("\\{\\}"), Matcher.quoteReplacement(value.toString()));
         }
         return logger;
     }
