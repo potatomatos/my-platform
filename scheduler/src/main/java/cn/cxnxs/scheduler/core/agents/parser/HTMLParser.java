@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.util.CollectionUtils;
 import us.codecraft.xsoup.Xsoup;
 
 import java.util.*;
@@ -78,7 +79,7 @@ public class HTMLParser extends WebSiteContentParser {
      */
     public boolean checkSize(int size, List<String> values, boolean repeat) {
         if (repeat) {
-            if (values.size() != 1) {
+            if (values.size() > 1) {
                 throw new WebsiteParseException("配置了可重复，抓取结果只能有一条！");
             }
         } else {
@@ -153,7 +154,12 @@ public class HTMLParser extends WebSiteContentParser {
                 .forEach(entry -> {
                     boolean repeat = ((JSONObject) entry.getValue()).getBooleanValue("repeat");
                     if (repeat) {
-                        keysWithRepeat.put(entry.getKey(), resultData.get(entry.getKey()).get(0));
+                        List<String> values = resultData.get(entry.getKey());
+                        String value = "";
+                        if (!CollectionUtils.isEmpty(values)) {
+                            value = values.get(0);
+                        }
+                        keysWithRepeat.put(entry.getKey(), value);
                         // 保存要删除的键
                         keysToRemove.add(entry.getKey());
                     }
