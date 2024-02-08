@@ -18,7 +18,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.util.concurrent.*;
 import lombok.SneakyThrows;
-import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -41,7 +40,6 @@ import java.util.stream.Collectors;
  * @author mengjinyuan
  * @date 2021-02-01 22:53
  **/
-@DisallowConcurrentExecution
 public class DelayedJob extends QuartzJobBean {
 
     @Autowired

@@ -106,7 +106,7 @@ public class HTMLParser extends WebSiteContentParser {
                 result.add(Objects.isNull(value) ? "" : value);
             }
         }
-        runResult.info("解析数据结果：{}", result);
+        runResult.info("数据大小：{}，解析数据结果：{}", result.size(), result);
         return result;
     }
 
@@ -127,7 +127,7 @@ public class HTMLParser extends WebSiteContentParser {
                 result.add(Objects.isNull(value) ? "" : value);
             }
         }
-        runResult.info("解析数据结果：{}", result);
+        runResult.info("数据大小：{}，解析数据结果：{}", result.size(), result);
         return result;
     }
 
