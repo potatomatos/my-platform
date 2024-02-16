@@ -191,7 +191,7 @@ public class AgentVo {
     public enum AgentState {
         PAUSE(0, "暂停"),
         ENABLE(1, "启用"),
-        DISABLE(-1, "已关闭"),
+        DISABLE(-1, "停止"),
         ;
         private final Integer code;
 

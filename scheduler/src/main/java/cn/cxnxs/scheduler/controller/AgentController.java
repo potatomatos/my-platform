@@ -96,7 +96,7 @@ public class AgentController {
      * @return 产生的数据列表
      */
     @ResponseResult
-    @GetMapping("events/{id}")
+    @PostMapping("events/{id}")
     public PageResult<ScheduleEvents> getEvents(@PathVariable("id") Integer id, Integer pageNo, Integer limit) {
         Page<ScheduleEvents> page = PageHelper.startPage(pageNo, limit);
         List<ScheduleEvents> events = new ScheduleEvents().selectList(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id).orderByDesc(ScheduleEvents::getCreatedAt));
@@ -106,6 +106,20 @@ public class AgentController {
         result.setPages(page.getPages());
         result.setRows(events);
         return result;
+    }
+
+    /**
+     * 运行日志
+     *
+     * @param id
+     * @param pageNo
+     * @param limit
+     * @return
+     */
+    @ResponseResult
+    @PostMapping("logs/{id}")
+    public PageResult<JSONObject> getEventLogs(@PathVariable("id") Integer id, Integer pageNo, Integer limit) {
+        return agentService.getAgentLogs(id, pageNo, limit);
     }
 
     /**
@@ -119,9 +133,7 @@ public class AgentController {
      */
     @ResponseResult
     @RequestMapping("dryRun/{type}")
-    public RunResult dryRun(@PathVariable("type") Integer type,
-                            @RequestParam String options,
-                            String payloads) throws ClassNotFoundException {
+    public RunResult dryRun(@PathVariable("type") Integer type, @RequestParam String options, String payloads) throws ClassNotFoundException {
         JSONObject optionsJson = JSON.parseObject(options);
         List<JSONObject> payloadJson = new ArrayList<>();
         if (StringUtil.isNotEmpty(payloads)) {
@@ -132,5 +144,43 @@ public class AgentController {
         }
         return agentService.dryRun(type, optionsJson, payloadJson);
     }
+
+
+    /**
+     * 删除任务
+     */
+    @ResponseResult
+    @GetMapping("delete/{id}")
+    public Result<Boolean> delete(@PathVariable("id") Integer id) {
+        boolean b = agentService.removeById(id);
+        return Result.success("删除成功！", b);
+    }
+
+    /**
+     * 启用任务
+     */
+    @ResponseResult
+    @GetMapping("enable/{id}")
+    public Result<Boolean> enable(@PathVariable("id") Integer id) {
+        ScheduleAgent scheduleAgent = new ScheduleAgent();
+        scheduleAgent.setId(id);
+        scheduleAgent.setState(AgentVo.AgentState.ENABLE.getCode());
+        boolean b = agentService.saveOrUpdate(scheduleAgent);
+        return Result.success("启用成功！", b);
+    }
+
+    /**
+     * 关闭任务
+     */
+    @ResponseResult
+    @GetMapping("disable/{id}")
+    public Result<Boolean> disable(@PathVariable("id") Integer id) {
+        ScheduleAgent scheduleAgent = new ScheduleAgent();
+        scheduleAgent.setId(id);
+        scheduleAgent.setState(AgentVo.AgentState.DISABLE.getCode());
+        boolean b = agentService.saveOrUpdate(scheduleAgent);
+        return Result.success("关闭成功！", b);
+    }
+
 }
 

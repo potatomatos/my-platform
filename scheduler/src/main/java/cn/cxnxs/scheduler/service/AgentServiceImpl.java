@@ -284,4 +284,30 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         super.updateById(agent);
     }
 
+    public PageResult<JSONObject> getAgentLogs(Integer id, Integer pageNo, Integer limit) {
+        Page<ScheduleAgentLogs> page = PageHelper.startPage(pageNo, limit);
+        List<ScheduleAgentLogs> logs = new ScheduleAgentLogs().selectList(Wrappers.lambdaQuery(ScheduleAgentLogs.class).eq(ScheduleAgentLogs::getAgentId, id).orderByDesc(ScheduleAgentLogs::getCreatedAt));
+        PageResult<JSONObject> result = new PageResult<>(page.getTotal());
+        result.setCurrent(page.getPageNum());
+        result.setPageSize(page.getPageSize());
+        result.setPages(page.getPages());
+        List<ScheduleEvents> scheduleEvents = new ArrayList<>();
+        List<Integer> logIds = logs.stream().map(ScheduleAgentLogs::getId).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(logIds)) {
+            scheduleEvents = new ScheduleEvents().selectList(Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getTaskId, logIds).orderByAsc(ScheduleEvents::getCreatedAt));
+        }
+        List<ScheduleEvents> finalScheduleEvents = scheduleEvents;
+        List<JSONObject> collect = logs.stream().map(item -> {
+            JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(item));
+            List<JSONObject> events = finalScheduleEvents.stream()
+                    .filter(event -> event.getTaskId().equals(item.getId())).map(events1 -> JSONObject.parseObject(events1.getPayload()))
+                    .collect(Collectors.toList());
+            jsonObject.put("payload", events);
+            return jsonObject;
+        }).collect(Collectors.toList());
+
+        result.setRows(collect);
+        return result;
+    }
+
 }
