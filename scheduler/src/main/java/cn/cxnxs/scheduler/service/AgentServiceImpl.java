@@ -8,13 +8,12 @@ import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.*;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
+import cn.cxnxs.scheduler.mapper.ScheduleLinksMapper;
 import cn.cxnxs.scheduler.quartz.DelayedJob;
 import cn.cxnxs.scheduler.quartz.TaskDetail;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
 import cn.cxnxs.scheduler.utils.SpringContextUtil;
-import cn.cxnxs.scheduler.vo.AgentTypeVo;
-import cn.cxnxs.scheduler.vo.AgentVo;
-import cn.cxnxs.scheduler.vo.ScenariosVo;
+import cn.cxnxs.scheduler.vo.*;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,6 +54,9 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
 
     @Autowired
     private TaskScheduler taskScheduler;
+
+    @Resource
+    private ScheduleLinksMapper scheduleLinksMapper;
 
 
     public List<AgentVo> findByTypeProperties(AgentTypeVo agentTypeVo) {
@@ -308,6 +311,17 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
 
         result.setRows(collect);
         return result;
+    }
+
+    /**
+     * 获取流程图数据
+     *
+     * @return 节点和连接线数据
+     */
+    public TaskGraphVo getGraphData() {
+        List<GraphNode> graphNodes = scheduleLinksMapper.selectGraphNodes();
+        List<GraphLink> graphLinks = scheduleLinksMapper.selectGraphLinks();
+        return new TaskGraphVo(graphNodes, graphLinks);
     }
 
 }

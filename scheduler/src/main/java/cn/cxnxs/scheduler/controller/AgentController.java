@@ -13,6 +13,7 @@ import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
+import cn.cxnxs.scheduler.vo.TaskGraphVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -182,5 +183,13 @@ public class AgentController {
         return Result.success("关闭成功！", b);
     }
 
+    /**
+     * 关闭任务
+     */
+    @ResponseResult
+    @GetMapping("/graph")
+    public TaskGraphVo graph() {
+        return agentService.getGraphData();
+    }
 }
 
