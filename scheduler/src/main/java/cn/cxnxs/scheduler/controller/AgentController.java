@@ -183,13 +183,17 @@ public class AgentController {
         return Result.success("关闭成功！", b);
     }
 
+
     /**
-     * 关闭任务
+     * 获取流程数据
+     *
+     * @param id 分组id
+     * @return
      */
     @ResponseResult
-    @GetMapping("/graph")
-    public TaskGraphVo graph() {
-        return agentService.getGraphData();
+    @GetMapping("/graph/{id}")
+    public TaskGraphVo graph(@PathVariable("id") Integer id) {
+        return agentService.getGraphData(id);
     }
 }
 

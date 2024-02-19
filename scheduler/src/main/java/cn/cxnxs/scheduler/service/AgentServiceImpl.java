@@ -318,9 +318,9 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
      *
      * @return 节点和连接线数据
      */
-    public TaskGraphVo getGraphData() {
-        List<GraphNode> graphNodes = scheduleLinksMapper.selectGraphNodes();
-        List<GraphLink> graphLinks = scheduleLinksMapper.selectGraphLinks();
+    public TaskGraphVo getGraphData(Integer id) {
+        List<GraphNode> graphNodes = scheduleLinksMapper.selectGraphNodes(id);
+        List<GraphLink> graphLinks = scheduleLinksMapper.selectGraphLinks(id);
         return new TaskGraphVo(graphNodes, graphLinks);
     }
 

@@ -19,19 +19,25 @@ import java.util.List;
  */
 public interface ScheduleLinksMapper extends BaseMapper<ScheduleLinks> {
 
-    @Select("SELECT a.id,\n" +
-            "       a.name,\n" +
-            "       a.type,\n" +
-            "       b.agent_type_name AS typeName,\n" +
-            "       COUNT(e.agent_id) AS eventCount\n" +
-            "FROM schedule_agent a\n" +
-            "         LEFT JOIN schedule_agent_type b ON a.type = b.id\n" +
-            "         LEFT JOIN schedule_events e ON a.id = e.agent_id\n" +
-            "WHERE a.id IN (SELECT source_id FROM schedule_links)\n" +
-            "   OR a.id IN (SELECT receiver_id FROM schedule_links)\n" +
-            "GROUP BY a.id, a.name, a.type, b.agent_type_name")
-    List<GraphNode> selectGraphNodes();
+    @Select("select a.id, a.name, a.type, b.agent_type_name as typeName\n" +
+            "     , count(e.agent_id) as eventCount\n" +
+            "from schedule_agent a\n" +
+            "         left join schedule_agent_type b on a.type = b.id\n" +
+            "         left join schedule_events e on a.id = e.agent_id\n" +
+            "where a.id in (\n" +
+            "    select agent_id\n" +
+            "    from schedule_scenario_agent_rel where scenario_id = #{id}\n" +
+            ")\n" +
+            "group by a.id, a.name, a.type, b.agent_type_name")
+    List<GraphNode> selectGraphNodes(Integer id);
 
-    @Select("select id,source_id as startId,receiver_id as endId from schedule_links")
-    List<GraphLink> selectGraphLinks();
+    @Select("select id, source_id as startId, receiver_id as endId\n" +
+            "from schedule_links\n" +
+            "where source_id in (\n" +
+            "    select agent_id\n" +
+            "    from schedule_scenario_agent_rel\n" +
+            "    where scenario_id = #{id}\n" +
+            ")\n" +
+            "   or receiver_id in (select agent_id from schedule_scenario_agent_rel where scenario_id = #{id})")
+    List<GraphLink> selectGraphLinks(Integer id);
 }
