@@ -324,4 +324,17 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         return new TaskGraphVo(graphNodes, graphLinks);
     }
 
+    /**
+     * 保存流程图
+     *
+     * @param id
+     * @param diagramOption
+     */
+    public void saveDiagram(Integer id, String diagramOption) {
+        ScheduleScenarios scenarios = new ScheduleScenarios();
+        scenarios.setId(id);
+        scenarios.setDiagram(diagramOption);
+        scenarios.updateById();
+    }
+
 }

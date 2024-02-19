@@ -66,6 +66,11 @@ public class ScheduleScenarios extends Model<ScheduleScenarios> {
     private String icon;
 
     /**
+     * 流程图配置
+     */
+    private String diagram;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;

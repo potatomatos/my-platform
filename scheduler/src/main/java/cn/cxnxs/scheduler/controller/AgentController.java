@@ -195,5 +195,12 @@ public class AgentController {
     public TaskGraphVo graph(@PathVariable("id") Integer id) {
         return agentService.getGraphData(id);
     }
+
+    @ResponseResult
+    @PostMapping("/diagram/{id}")
+    public Result<Boolean> saveDiagram(@PathVariable("id") Integer id, @RequestParam String diagram) {
+        agentService.saveDiagram(id, diagram);
+        return Result.success("保存成功！", true);
+    }
 }
 
