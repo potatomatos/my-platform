@@ -92,21 +92,24 @@ public class TaskScheduler {
             log.info("------修改定时任务，{}", taskDetail);
             Scheduler scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
-            CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
+            Trigger trigger = scheduler.getTrigger(triggerKey);
             if (trigger == null) {
                 return;
             }
-            String oldTime = trigger.getCronExpression();
-            if (!oldTime.equalsIgnoreCase(taskDetail.getCron())) {
-                //方式一 ：调用 rescheduleJob 开始
-                TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
-                triggerBuilder.withIdentity(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
-                triggerBuilder.startNow();
-                triggerBuilder.withSchedule(CronScheduleBuilder.cronSchedule(taskDetail.getCron()));
-                trigger = (CronTrigger) triggerBuilder.build();
-                // 方式一 ：修改一个任务的触发时间
-                scheduler.rescheduleJob(triggerKey, trigger);
+            if (trigger instanceof CronTrigger) {
+                String oldTime = ((CronTrigger) trigger).getCronExpression();
+                if (!oldTime.equalsIgnoreCase(taskDetail.getCron())) {
+                    //方式一 ：调用 rescheduleJob 开始
+                    TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
+                    triggerBuilder.withIdentity(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
+                    triggerBuilder.startNow();
+                    triggerBuilder.withSchedule(CronScheduleBuilder.cronSchedule(taskDetail.getCron()));
+                    trigger = triggerBuilder.build();
+                    // 方式一 ：修改一个任务的触发时间
+                    scheduler.rescheduleJob(triggerKey, trigger);
+                }
             }
+
         } catch (Exception e) {
             log.error("修改任务出现异常！", e);
         }

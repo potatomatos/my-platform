@@ -230,34 +230,35 @@ public class AgentTypeVo {
     /**
      * 数据保存时间
      */
+    @Getter
     public enum KeepEventsTime {
-        FOREVER(1, "", "永久"),
-        ONR_HOUR(2, "", "1小时"),
-        SIX_HOUR(3, "", "6小时"),
-        ONE_DAY(4, "", "1天"),
-        TWO_DAYS(5, "", "2天"),
-        THREE_DAYS(6, "", "3天"),
-        FOUR_DAYS(7, "", "4天"),
-        FIVE_DAYS(8, "", "5天"),
-        SIX_DAYS(9, "", "6天"),
-        SEVEN_DAYS(10, "", "7天"),
-        FOURTEEN_DAYS(11, "", "14天"),
-        TWENTY_ONE_DAYS(12, "", "21天"),
-        THIRTY_DAYS(13, "", "30天"),
-        FORTY_FIVE_DAYS(14, "", "45天"),
-        NINETY_DAYS(15, "", "90天"),
-        ONE_HUNDRED_AND_EIGHTY_DAYS(16, "", "180天"),
-        ONE_YEAR(17, "", "1年"),
+        FOREVER(1, null, "永久"),
+        ONR_HOUR(2, 1, "1小时"),
+        SIX_HOUR(3, 6, "6小时"),
+        ONE_DAY(4, 24, "1天"),
+        TWO_DAYS(5, 2 * 24, "2天"),
+        THREE_DAYS(6, 3 * 24, "3天"),
+        FOUR_DAYS(7, 4 * 24, "4天"),
+        FIVE_DAYS(8, 5 * 24, "5天"),
+        SIX_DAYS(9, 6 * 24, "6天"),
+        SEVEN_DAYS(10, 7 * 24, "7天"),
+        FOURTEEN_DAYS(11, 14 * 24, "14天"),
+        TWENTY_ONE_DAYS(12, 21 * 24, "21天"),
+        THIRTY_DAYS(13, 30 * 24, "30天"),
+        FORTY_FIVE_DAYS(14, 45 * 24, "45天"),
+        NINETY_DAYS(15, 90 * 24, "90天"),
+        ONE_HUNDRED_AND_EIGHTY_DAYS(16, 180 * 24, "180天"),
+        ONE_YEAR(17, 365 * 24, "1年"),
         ;
         private final Integer code;
 
-        private final String cron;
+        private final Integer hours;
 
         private final String desc;
 
-        KeepEventsTime(Integer code, String cron, String desc) {
+        KeepEventsTime(Integer code, Integer hours, String desc) {
             this.code = code;
-            this.cron = cron;
+            this.hours = hours;
             this.desc = desc;
         }
 
@@ -271,17 +272,26 @@ public class AgentTypeVo {
             for (KeepEventsTime e : KeepEventsTime.values()) {
                 JSONObject object = new JSONObject();
                 object.put("code", e.getCode());
-                object.put("cron", e.getCron());
+                object.put("hours", e.getHours());
                 object.put("desc", e.getDesc());
                 jsonArray.add(object);
             }
             return jsonArray;
         }
 
-        public static String getCron(Integer code) {
+        public static Integer getHours(Integer code) {
             for (KeepEventsTime e : KeepEventsTime.values()) {
                 if (e.getCode().equals(code)) {
-                    return e.cron;
+                    return e.hours;
+                }
+            }
+            return null;
+        }
+
+        public static KeepEventsTime getValue(Integer code) {
+            for (KeepEventsTime e : KeepEventsTime.values()) {
+                if (e.getCode().equals(code)) {
+                    return e;
                 }
             }
             return null;
@@ -294,18 +304,6 @@ public class AgentTypeVo {
                 }
             }
             return null;
-        }
-
-        public Integer getCode() {
-            return code;
-        }
-
-        public String getCron() {
-            return cron;
-        }
-
-        public String getDesc() {
-            return desc;
         }
     }
 

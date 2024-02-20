@@ -84,7 +84,7 @@ public class DelayedJob extends QuartzJobBean {
         AgentVo agentVo = agentService.getAgentById(id);
         if (Objects.equals(agentVo.getState(), AgentVo.AgentState.DISABLE.getCode())) {
             // 任务已关闭或者暂停
-            taskScheduler.pauseJob(new TaskDetail(agentVo.getName(), agentVo.getAgentType().getAgentTypeName()));
+            taskScheduler.pauseJob(new TaskDetail(agentVo.getName(), agentVo.getAgentType().getAgentTypeName(), agentVo.getName(), agentVo.getAgentType().getAgentTypeName()));
             return;
         }
         try {
@@ -349,9 +349,7 @@ public class DelayedJob extends QuartzJobBean {
             if (agentType.getCanReceiveEvents()
                     && receiverAgentVo.getPropagateImmediately()) {
                 //立即触发定时任务，否则让定时任务自己定时执行
-                TaskDetail taskDetail = new TaskDetail();
-                taskDetail.setJobName(receiverAgentVo.getName());
-                taskDetail.setJobGroupName(agentType.getAgentTypeName());
+                TaskDetail taskDetail = new TaskDetail(receiverAgentVo.getName(), agentType.getAgentTypeName());
                 taskScheduler.triggerJob(taskDetail);
             }
         }

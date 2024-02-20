@@ -135,13 +135,11 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         } else {
             taskDetail.setCron(AgentTypeVo.ScheduleEnum.getCron(scheduleAgent.getSchedule()));
             if (taskScheduler.checkExists(taskDetail)) {
-                if (taskScheduler.checkExists(taskDetail)) {
-                    // 修改定时任务的时间
-                    taskScheduler.modifyJobTime(taskDetail);
-                } else {
-                    // 添加任务
-                    taskScheduler.addJob(taskDetail);
-                }
+                // 修改定时任务的时间
+                taskScheduler.modifyJobTime(taskDetail);
+            } else {
+                // 添加任务
+                taskScheduler.addJob(taskDetail);
             }
         }
     }

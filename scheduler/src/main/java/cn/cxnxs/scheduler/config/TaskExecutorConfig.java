@@ -4,6 +4,7 @@ import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentType;
 import cn.cxnxs.scheduler.quartz.DelayedJob;
+import cn.cxnxs.scheduler.quartz.ExpiredDataDeletionJob;
 import cn.cxnxs.scheduler.quartz.TaskDetail;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -100,9 +102,25 @@ public class TaskExecutorConfig {
                 // 手动触发
                 taskScheduler.addManualJob(taskDetail);
             }
-
         }
 
+        // 删除过期数据
+        initSystemScheduler(ExpiredDataDeletionJob.class);
+    }
+
+    /**
+     * 初始化
+     */
+    public void initSystemScheduler(Class<? extends QuartzJobBean> jobClass) {
+        TaskDetail taskDetail = new TaskDetail();
+        taskDetail.setJobName(jobClass.getName().replaceAll("\\.", "_"));
+        taskDetail.setJobGroupName("SYSTEM_TASK");
+        taskDetail.setTriggerName(jobClass.getName().replaceAll("\\.", "_"));
+        taskDetail.setTriggerGroupName("SYSTEM_TASK");
+        taskDetail.setJobClass(jobClass);
+        // 每5分钟执行一次
+        taskDetail.setCron(AgentTypeVo.ScheduleEnum.EVERY_5M.getCron());
+        taskScheduler.addJob(taskDetail);
     }
 
 }

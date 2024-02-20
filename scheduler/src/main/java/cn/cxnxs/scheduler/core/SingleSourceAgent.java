@@ -1,17 +1,17 @@
 package cn.cxnxs.scheduler.core;
 
 import com.alibaba.fastjson.JSONObject;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.ReadContext;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * <h2>处理单个event的任务抽象类</h2>
@@ -31,7 +31,7 @@ public abstract class SingleSourceAgent extends AbstractAgent {
 
 
     @Override
-    public void preStart(RunResult runResult) {
+    public void preStart(RunResult runResult) throws TemplateException, IOException {
         this.replacePlaceHolder(runResult);
     }
 
@@ -40,28 +40,24 @@ public abstract class SingleSourceAgent extends AbstractAgent {
      *
      * @param runResult 记录日志
      */
-    public final void replacePlaceHolder(RunResult runResult) {
+    public final void replacePlaceHolder(RunResult runResult) throws TemplateException, IOException {
         if (!Objects.isNull(event) && !event.getPayload().isEmpty() && !Objects.isNull(this.getOptions())) {
             runResult.info("入参数据：{}", event);
             runResult.info("-------开始替换配置占位符------");
             String optionsStr = getOptions().toJSONString();
-            Pattern pattern = Pattern.compile("#\\{\\s*(.*?)\\s*\\}");
-            Matcher matcher = pattern.matcher(optionsStr);
-            List<String> placeHolderList = new ArrayList<>();
-            List<String> keyList = new ArrayList<>();
-            while (matcher.find()) {
-                // 找出占位符
-                placeHolderList.add(matcher.group(0));
-                keyList.add(matcher.group(1));
-            }
             JSONObject ev = event.getPayload();
-            ReadContext context = JsonPath.parse(ev);
-            // 替换占位符的值
-            for (int i = 0; i < placeHolderList.size(); i++) {
-                String value = context.read("$." + keyList.get(i));
-                optionsStr = optionsStr.replace(placeHolderList.get(i), value);
-            }
-            setOptions(JSONObject.parseObject(optionsStr));
+
+            // 创建Freemarker配置实例
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
+
+            // 使用StringReader从字符串创建模板
+            Template template = new Template("template", new StringReader(optionsStr), cfg);
+
+            // 渲染模板
+            StringWriter out = new StringWriter();
+            template.process(ev, out);
+
+            setOptions(JSONObject.parseObject(out.toString()));
         }
     }
 }

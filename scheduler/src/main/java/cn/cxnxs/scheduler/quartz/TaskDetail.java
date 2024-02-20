@@ -34,8 +34,15 @@ public class TaskDetail {
     public TaskDetail() {
     }
 
-    public TaskDetail(String jobName, String jobGroupName) {
+    public TaskDetail(String triggerName, String triggerGroupName) {
+        this.triggerName = triggerName;
+        this.triggerGroupName = triggerGroupName;
+    }
+
+    public TaskDetail(String jobName, String jobGroupName, String triggerName, String triggerGroupName) {
         this.jobName = jobName;
         this.jobGroupName = jobGroupName;
+        this.triggerName = triggerName;
+        this.triggerGroupName = triggerGroupName;
     }
 }
