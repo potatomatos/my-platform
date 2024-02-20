@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 public class TriggerAgent extends MultipleSourcesAgent {
     @Override
-    public void start(RunResult runResult) throws Exception {
+    public void start(RunResult runResult) {
         List<Event> events = getEvents();
     }
 }
