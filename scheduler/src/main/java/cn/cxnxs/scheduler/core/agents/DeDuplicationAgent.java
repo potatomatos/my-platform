@@ -42,7 +42,7 @@ public class DeDuplicationAgent extends MultipleSourcesAgent {
             List<JSONObject> list = events.stream().map(Event::getPayload).collect(Collectors.toList());
             JSONArray result = new JSONArray();
             // 获取需要去重的字段名
-            Pattern pattern = Pattern.compile("$\\{\\s*(.*?)\\s*\\}");
+            Pattern pattern = Pattern.compile("\\$\\{\\s*(.*?)\\s*\\}");
             Matcher matcher = pattern.matcher(property);
             String key = null;
             if (matcher.find()) {

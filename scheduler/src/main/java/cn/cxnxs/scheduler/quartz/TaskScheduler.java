@@ -174,7 +174,7 @@ public class TaskScheduler {
      */
     public void triggerJob(TaskDetail taskDetail) throws SchedulerException {
         Scheduler scheduler = schedulerFactory.getScheduler();
-        JobKey jobKey = JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName());
+        JobKey jobKey = JobKey.jobKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
         if (checkExists(taskDetail)) {
             log.info("手动触发一个job：{}", taskDetail);
             scheduler.triggerJob(jobKey);
@@ -182,7 +182,7 @@ public class TaskScheduler {
     }
 
     public Boolean checkExists(TaskDetail taskDetail) throws SchedulerException {
-        return schedulerFactory.getScheduler().checkExists(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
+        return schedulerFactory.getScheduler().checkExists(JobKey.jobKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName()));
     }
 
     /**
