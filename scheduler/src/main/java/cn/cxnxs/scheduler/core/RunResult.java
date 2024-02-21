@@ -5,9 +5,11 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
-public class RunResult {
+public class RunResult implements Serializable {
 
     /**
      * 抓取的内容

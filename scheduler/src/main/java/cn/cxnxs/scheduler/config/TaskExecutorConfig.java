@@ -18,7 +18,6 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * <p>定时任务配置</p>
@@ -32,15 +31,15 @@ public class TaskExecutorConfig {
     /**
      * 配置核心线程数
      */
-    private static final int CORE_POOL_SIZE = 5;
+    private static final int CORE_POOL_SIZE = 20;
     /**
      * 配置最大线程数
      */
-    private static final int MAX_POOL_SIZE = 6;
+    private static final int MAX_POOL_SIZE = 50;
     /**
      * 配置队列大小
      */
-    private static final int QUEUE_CAPACITY = 6;
+    private static final int QUEUE_CAPACITY = 100;
 
     @Autowired
     private TaskScheduler taskScheduler;
@@ -65,8 +64,6 @@ public class TaskExecutorConfig {
         executor.setMaxPoolSize(MAX_POOL_SIZE);
         executor.setKeepAliveSeconds(60);
         executor.setQueueCapacity(QUEUE_CAPACITY);
-        //拒绝策略,静默拒绝
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.initialize();
         // 拒绝策略

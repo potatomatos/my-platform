@@ -16,10 +16,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import lombok.SneakyThrows;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.SchedulerException;
@@ -36,7 +32,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -153,6 +150,7 @@ public class DelayedJob extends QuartzJobBean {
      * <h1>执行任务</h1>
      */
     public void runTask(AgentVo agentVo, final List<ScheduleEvents> evs) throws ClassNotFoundException {
+
         Thread t = Thread.currentThread();
         List<Event> events;
         if (!CollectionUtils.isEmpty(evs)) {
@@ -171,86 +169,90 @@ public class DelayedJob extends QuartzJobBean {
             events = null;
         }
 
-        ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());
         AgentTypeVo agentType = agentVo.getAgentType();
-        CompletableFuture<RunResult> future = new CompletableFuture<>();
-
         if (MultipleSourcesAgent.class.isAssignableFrom(agentType.getHandlerClass())
                 && !CollectionUtils.isEmpty(events)) {
+            // 保存日志，记录运行记录
+            ScheduleAgentLogs agentLogs = saveLogs(null, null, null);
             // 处理多条数据
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
             ((MultipleSourcesAgent) agentInstance).setEvents(events);
-            TaskRunnable taskRunnable = new TaskRunnable(agentInstance, future);
+            TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
+            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+            future.thenAccept(getResultConsumer(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
         } else if (SingleSourceAgent.class.isAssignableFrom(agentType.getHandlerClass())
                 && !CollectionUtils.isEmpty(events)) {
             // 处理单条数据
             for (Event event : events) {
+                // 保存日志，记录运行记录
+                ScheduleAgentLogs agentLogs = saveLogs(null, null, null);
                 IAgent agentInstance = jobGenerator.buildAgent(agentVo);
                 ((SingleSourceAgent) agentInstance).setEvent(event);
-                TaskRunnable taskRunnable = new TaskRunnable(agentInstance, future);
+                TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
+                CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+                future.thenAccept(getResultConsumer(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
             }
         } else {
+            // 保存日志，记录运行记录
+            ScheduleAgentLogs agentLogs = saveLogs(null, null, null);
             // 无输入数据情况
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
-            TaskRunnable taskRunnable = new TaskRunnable(agentInstance, future);
+            TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
+            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+            future.thenAccept(getResultConsumer(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
         }
-        // 使用whenComplete等方法处理异步回调
-        future.whenComplete(new MyCompletionHandler());
-
-
-    }
-
-    class MyCompletionHandler implements BiConsumer<RunResult, Throwable> {
-        @Override
-        public void accept(RunResult result, Throwable throwable) {
-            if (throwable != null) {
-                // 处理异常
-                System.out.println("发生异常: " + throwable.getMessage());
-            } else {
-                // 处理正常结果
-                System.out.println("结果: " + result);
-            }
-        }
+        threadPoolTaskExecutor.shutdown();
     }
 
     /**
-     * 回调方法
+     * 成功回调
      *
+     * @param agentLogs
      * @param agentType
      * @param agentVo
      * @return
      */
-    private FutureCallback<RunResult> buildCallBack(AgentTypeVo agentType, AgentVo agentVo) {
-        // 保存日志，记录运行记录
-        ScheduleAgentLogs agentLogs = saveLogs(null, null, null);
-        return new FutureCallback<RunResult>() {
-            @SneakyThrows
-            @Override
-            public void onSuccess(RunResult runResult) {
-                logger.info("执行结果：{}", runResult);
-                // 保存日志
-                saveLogs(agentLogs, runResult.getRunLogs(), runResult.getSuccess());
-                if (runResult.getSuccess()) {
-                    // 保存结果
-                    boolean isChange = saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
-                    //执行接收者任务
-                    if (isChange && (runResult.getPayload() != null && runResult.getPayload().size() > 0)) {
-                        // 如果运行结果没采集到数据就不立即触发下个任务了
+    public Consumer<RunResult> getResultConsumer(ScheduleAgentLogs agentLogs, AgentTypeVo agentType, AgentVo agentVo) {
+        return runResult -> {
+            //成功
+            logger.info("执行结果：{}", runResult);
+            // 保存日志
+            saveLogs(agentLogs, runResult.getRunLogs(), runResult.getSuccess());
+            if (runResult.getSuccess()) {
+                // 保存结果
+                boolean isChange = saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
+                //执行接收者任务
+                if (isChange && (runResult.getPayload() != null && runResult.getPayload().size() > 0)) {
+                    // 如果运行结果没采集到数据就不立即触发下个任务了
+                    try {
                         runNextDelayedJobs(agentVo);
+                    } catch (SchedulerException e) {
+                        throw new RuntimeException(e);
                     }
-                    //任务暂停，等待下次运行
-                    agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.PAUSE);
                 }
+                //任务暂停，等待下次运行
+                agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.PAUSE);
             }
+        };
+    }
 
+    /**
+     * 异常处理
+     *
+     * @return
+     */
+    public Function<Throwable, Void> getExceptionallyFunction(ScheduleAgentLogs agentLogs) {
+        return new Function<Throwable, Void>() {
             @Override
-            public void onFailure(Throwable e) {
-                logger.error("线程运行发生异常,任务执行失败", e);
+            public Void apply(Throwable ex) {
+                //失败
+                logger.error("线程运行发生异常,任务执行失败", ex);
                 Thread thread = Thread.currentThread();
                 RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
-                runLogs.error("执行发生异常：{}", e.getMessage());
+                runLogs.error("执行发生异常：{}", ex);
                 // 保存日志
                 saveLogs(agentLogs, runLogs, false);
+                return null;
             }
         };
     }

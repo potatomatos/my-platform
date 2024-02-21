@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
@@ -14,7 +15,7 @@ import java.util.regex.Matcher;
  */
 @Getter
 @Setter
-public class RunLogs {
+public class RunLogs implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(RunLogs.class);
 

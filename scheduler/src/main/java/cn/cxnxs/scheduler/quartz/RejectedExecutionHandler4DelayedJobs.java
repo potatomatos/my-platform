@@ -25,20 +25,15 @@ public class RejectedExecutionHandler4DelayedJobs implements RejectedExecutionHa
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
         try {
             // 获取ListenableFutureTask类中的"task"字段
-            Field taskField = Class.forName("com.google.common.util.concurrent.TrustedListenableFutureTask").getDeclaredField("task");
+            Field taskField = Class.forName("java.util.concurrent.CompletableFuture$AsyncSupply").getDeclaredField("fn");
             taskField.setAccessible(true); // 设置私有字段可以访问
 
             // 从ListenableFutureTask对象中获取"task"字段的值
             Object task = taskField.get(r);
 
-            Field callableField = Class.forName("com.google.common.util.concurrent.TrustedListenableFutureTask.TrustedFutureInterruptibleTask").getDeclaredField("callable");
-            callableField.setAccessible(true); // 设置私有字段可以访问
-            Object callable = callableField.get(task);
-
-
             // 检查task是否是TaskRunnable的实例
-            if (callable instanceof TaskRunnable) {
-                TaskRunnable taskRunnable = (TaskRunnable) callable;
+            if (task instanceof TaskRunnable) {
+                TaskRunnable taskRunnable = (TaskRunnable) task;
                 IAgent agent = taskRunnable.getAgent();
                 // 序列化存储到数据库
                 if (Objects.nonNull(agent)) {
