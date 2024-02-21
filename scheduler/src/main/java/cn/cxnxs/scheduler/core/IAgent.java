@@ -2,18 +2,17 @@ package cn.cxnxs.scheduler.core;
 
 import com.alibaba.fastjson.JSONObject;
 
+import java.io.Serializable;
+
 /**
  * 代理接口
  *
  * @author potatomato
  */
-public interface IAgent {
+public interface IAgent extends Serializable {
 
     /**
      * 执行
-     *
-     * @param event
-     * @return
      */
     RunResult runAgent();
 

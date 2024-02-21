@@ -55,7 +55,7 @@ public class ScheduleDelayedJobs extends Model<ScheduleDelayedJobs> {
     /**
      * 线程id
      */
-    private Integer threadId;
+    private String threadId;
 
     /**
      * 发生错误时间

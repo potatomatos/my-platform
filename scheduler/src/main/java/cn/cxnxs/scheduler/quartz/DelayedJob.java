@@ -16,7 +16,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.SneakyThrows;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
@@ -32,7 +34,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -169,33 +173,43 @@ public class DelayedJob extends QuartzJobBean {
 
         ListeningExecutorService service = MoreExecutors.listeningDecorator(threadPoolTaskExecutor.getThreadPoolExecutor());
         AgentTypeVo agentType = agentVo.getAgentType();
+        CompletableFuture<RunResult> future = new CompletableFuture<>();
+
         if (MultipleSourcesAgent.class.isAssignableFrom(agentType.getHandlerClass())
                 && !CollectionUtils.isEmpty(events)) {
             // 处理多条数据
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
             ((MultipleSourcesAgent) agentInstance).setEvents(events);
-            TaskRunnable taskRunnable = new TaskRunnable();
-            taskRunnable.setAgent(agentInstance);
-            ListenableFuture<RunResult> future = service.submit(taskRunnable);
-            Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
+            TaskRunnable taskRunnable = new TaskRunnable(agentInstance, future);
         } else if (SingleSourceAgent.class.isAssignableFrom(agentType.getHandlerClass())
                 && !CollectionUtils.isEmpty(events)) {
             // 处理单条数据
             for (Event event : events) {
                 IAgent agentInstance = jobGenerator.buildAgent(agentVo);
                 ((SingleSourceAgent) agentInstance).setEvent(event);
-                TaskRunnable taskRunnable = new TaskRunnable();
-                taskRunnable.setAgent(agentInstance);
-                ListenableFuture<RunResult> future = service.submit(taskRunnable);
-                Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
+                TaskRunnable taskRunnable = new TaskRunnable(agentInstance, future);
             }
         } else {
             // 无输入数据情况
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
-            TaskRunnable taskRunnable = new TaskRunnable();
-            taskRunnable.setAgent(agentInstance);
-            ListenableFuture<RunResult> future = service.submit(taskRunnable);
-            Futures.addCallback(future, this.buildCallBack(agentType, agentVo), threadPoolTaskExecutor);
+            TaskRunnable taskRunnable = new TaskRunnable(agentInstance, future);
+        }
+        // 使用whenComplete等方法处理异步回调
+        future.whenComplete(new MyCompletionHandler());
+
+
+    }
+
+    class MyCompletionHandler implements BiConsumer<RunResult, Throwable> {
+        @Override
+        public void accept(RunResult result, Throwable throwable) {
+            if (throwable != null) {
+                // 处理异常
+                System.out.println("发生异常: " + throwable.getMessage());
+            } else {
+                // 处理正常结果
+                System.out.println("结果: " + result);
+            }
         }
     }
 

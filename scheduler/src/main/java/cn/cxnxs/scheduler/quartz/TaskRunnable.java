@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * <p>执行代理线程</p>
@@ -20,6 +21,13 @@ import java.util.concurrent.Callable;
 public class TaskRunnable implements Callable<RunResult> {
 
     private IAgent agent;
+
+    private CompletableFuture<RunResult> future;
+
+    public TaskRunnable(IAgent agent, CompletableFuture<RunResult> future) {
+        this.agent = agent;
+        this.future = future;
+    }
 
     @Override
     public RunResult call() {
