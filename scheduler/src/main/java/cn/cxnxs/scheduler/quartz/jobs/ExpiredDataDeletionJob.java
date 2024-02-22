@@ -1,4 +1,4 @@
-package cn.cxnxs.scheduler.quartz;
+package cn.cxnxs.scheduler.quartz.jobs;
 
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;

@@ -1,4 +1,4 @@
-package cn.cxnxs.scheduler.quartz;
+package cn.cxnxs.scheduler.quartz.jobs;
 
 
 import cn.cxnxs.common.core.utils.ObjectUtil;
@@ -8,6 +8,10 @@ import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.enums.RunState;
+import cn.cxnxs.scheduler.quartz.JobGenerator;
+import cn.cxnxs.scheduler.quartz.TaskDetail;
+import cn.cxnxs.scheduler.quartz.TaskRunnable;
+import cn.cxnxs.scheduler.quartz.TaskScheduler;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.service.EventsServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
@@ -42,7 +46,7 @@ import java.util.stream.Collectors;
  * @author mengjinyuan
  * @date 2021-02-01 22:53
  **/
-public class DelayedJob extends QuartzJobBean {
+public class RunningAgentJob extends QuartzJobBean {
 
     @Autowired
     private AgentServiceImpl agentService;
@@ -59,7 +63,7 @@ public class DelayedJob extends QuartzJobBean {
     @Autowired
     private TaskScheduler taskScheduler;
 
-    private static final Logger logger = LoggerFactory.getLogger(DelayedJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunningAgentJob.class);
 
     /**
      * 代理信息id
@@ -245,22 +249,19 @@ public class DelayedJob extends QuartzJobBean {
      * @return
      */
     public Function<Throwable, Void> getExceptionallyFunction(ScheduleAgentLogs agentLogs) {
-        return new Function<Throwable, Void>() {
-            @Override
-            public Void apply(Throwable ex) {
-                //失败
-                logger.error("线程运行发生异常,任务执行失败", ex);
-                Thread thread = Thread.currentThread();
-                RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
-                runLogs.error("执行发生异常：{}", ex);
-                ScheduleAgent scheduleAgent = new ScheduleAgent();
-                scheduleAgent.setId(getId());
-                scheduleAgent.setLastErrorLogTime(LocalDateTime.now());
-                scheduleAgent.updateById();
-                // 保存日志
-                saveLogs(agentLogs, runLogs, false);
-                return null;
-            }
+        return ex -> {
+            //失败
+            logger.error("线程运行发生异常,任务执行失败", ex);
+            Thread thread = Thread.currentThread();
+            RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
+            runLogs.error("执行发生异常：{}", ex);
+            ScheduleAgent scheduleAgent = new ScheduleAgent();
+            scheduleAgent.setId(getId());
+            scheduleAgent.setLastErrorLogTime(LocalDateTime.now());
+            scheduleAgent.updateById();
+            // 保存日志
+            saveLogs(agentLogs, runLogs, false);
+            return null;
         };
     }
 

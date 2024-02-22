@@ -2,15 +2,13 @@ package cn.cxnxs.scheduler.quartz;
 
 import cn.cxnxs.scheduler.core.IAgent;
 import cn.cxnxs.scheduler.entity.ScheduleDelayedJobs;
+import cn.cxnxs.scheduler.utils.SerializeUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -39,7 +37,7 @@ public class RejectedExecutionHandler4DelayedJobs implements RejectedExecutionHa
                 IAgent agent = taskRunnable.getAgent();
                 // 序列化存储到数据库
                 if (Objects.nonNull(agent)) {
-                    String serializeObjectToString = this.serializeObjectToString(agent);
+                    String serializeObjectToString = SerializeUtil.serializeObjectToString(agent);
                     if (Objects.nonNull(serializeObjectToString)) {
                         ScheduleDelayedJobs scheduleDelayedJobs = new ScheduleDelayedJobs();
                         scheduleDelayedJobs.setPriority(1);
@@ -55,18 +53,12 @@ public class RejectedExecutionHandler4DelayedJobs implements RejectedExecutionHa
         }
     }
 
-    public String serializeObjectToString(Object object) {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
-            objectOutputStream.writeObject(object);
-            objectOutputStream.flush();
-            return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
+    /**
+     * 获取线程池运行状态
+     *
+     * @param executor
+     * @return
+     */
     public JSONObject getExecutorStatus(ThreadPoolExecutor executor) {
         JSONObject jsonObject = new JSONObject();
         // 获取线程池的一些状态信息
