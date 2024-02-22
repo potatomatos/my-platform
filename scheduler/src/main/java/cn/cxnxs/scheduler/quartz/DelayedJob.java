@@ -4,6 +4,7 @@ package cn.cxnxs.scheduler.quartz;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.*;
+import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.enums.RunState;
@@ -16,7 +17,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
  * @author mengjinyuan
  * @date 2021-02-01 22:53
  **/
-@DisallowConcurrentExecution
 public class DelayedJob extends QuartzJobBean {
 
     @Autowired
@@ -149,7 +148,7 @@ public class DelayedJob extends QuartzJobBean {
     /**
      * <h1>执行任务</h1>
      */
-    public void runTask(AgentVo agentVo, final List<ScheduleEvents> evs) throws ClassNotFoundException {
+    public void runTask(AgentVo agentVo, final List<ScheduleEvents> evs) throws ClassNotFoundException, InterruptedException {
 
         Thread t = Thread.currentThread();
         List<Event> events;
@@ -178,18 +177,19 @@ public class DelayedJob extends QuartzJobBean {
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
             ((MultipleSourcesAgent) agentInstance).setEvents(events);
             TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
-            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor.getThreadPoolExecutor());
             future.thenAccept(getResultConsumer(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
         } else if (SingleSourceAgent.class.isAssignableFrom(agentType.getHandlerClass())
                 && !CollectionUtils.isEmpty(events)) {
             // 处理单条数据
             for (Event event : events) {
+                Thread.sleep(500);
                 // 保存日志，记录运行记录
                 ScheduleAgentLogs agentLogs = saveLogs(null, null, null);
                 IAgent agentInstance = jobGenerator.buildAgent(agentVo);
                 ((SingleSourceAgent) agentInstance).setEvent(event);
                 TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
-                CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+                CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor.getThreadPoolExecutor());
                 future.thenAccept(getResultConsumer(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
             }
         } else {
@@ -198,10 +198,9 @@ public class DelayedJob extends QuartzJobBean {
             // 无输入数据情况
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
             TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
-            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor.getThreadPoolExecutor());
             future.thenAccept(getResultConsumer(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
         }
-        threadPoolTaskExecutor.shutdown();
     }
 
     /**
@@ -223,6 +222,10 @@ public class DelayedJob extends QuartzJobBean {
                 boolean isChange = saveEvents(agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
                 //执行接收者任务
                 if (isChange && (runResult.getPayload() != null && runResult.getPayload().size() > 0)) {
+                    ScheduleAgent scheduleAgent = new ScheduleAgent();
+                    scheduleAgent.setId(getId());
+                    scheduleAgent.setLastDataIme(LocalDateTime.now());
+                    scheduleAgent.updateById();
                     // 如果运行结果没采集到数据就不立即触发下个任务了
                     try {
                         runNextDelayedJobs(agentVo);
@@ -250,6 +253,10 @@ public class DelayedJob extends QuartzJobBean {
                 Thread thread = Thread.currentThread();
                 RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
                 runLogs.error("执行发生异常：{}", ex);
+                ScheduleAgent scheduleAgent = new ScheduleAgent();
+                scheduleAgent.setId(getId());
+                scheduleAgent.setLastErrorLogTime(LocalDateTime.now());
+                scheduleAgent.updateById();
                 // 保存日志
                 saveLogs(agentLogs, runLogs, false);
                 return null;

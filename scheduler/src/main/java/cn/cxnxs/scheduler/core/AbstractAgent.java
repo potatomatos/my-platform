@@ -21,6 +21,8 @@ public abstract class AbstractAgent implements IAgent {
      */
     protected String name;
 
+    protected Integer id;
+
     @Override
     public RunResult runAgent() {
         Thread thread = Thread.currentThread();
@@ -56,7 +58,18 @@ public abstract class AbstractAgent implements IAgent {
         this.name = name;
     }
 
+    @Override
+    public Integer getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public abstract void start(RunResult runResult) throws Exception;
+
 
     public abstract void preStart(RunResult runResult) throws Exception;
 

@@ -43,4 +43,13 @@ public interface IAgent extends Serializable {
      */
     String getName();
 
+
+    /**
+     * 标识
+     */
+    void setId(Integer id);
+
+
+    Integer getId();
+
 }

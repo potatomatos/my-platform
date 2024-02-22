@@ -21,6 +21,7 @@ public class JobGenerator {
     public IAgent buildAgent(AgentVo agent) throws ClassNotFoundException {
         logger.info("创建任务实例:{}", agent.getAgentType().getHandler());
         IAgent agentInstance = SpringContextUtil.getBean(agent.getAgentType().getHandlerClass());
+        agentInstance.setId(agent.getId());
         agentInstance.setName(agent.getName());
         return agentInstance.option(agent.getOptionsJSON());
     }
