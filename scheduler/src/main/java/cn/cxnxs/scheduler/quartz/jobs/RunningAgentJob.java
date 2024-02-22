@@ -82,6 +82,11 @@ public class RunningAgentJob extends QuartzJobBean {
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) {
         AgentVo agentVo = agentService.getAgentById(id);
+        ScheduleAgent agent = new ScheduleAgent();
+        agent.setId(id);
+        agent.setUpdatedAt(LocalDateTime.now());
+        agent.setLastCheckAt(LocalDateTime.now());
+        agent.updateById();
         if (Objects.equals(agentVo.getState(), AgentVo.AgentState.DISABLE.getCode())) {
             // 任务已关闭或者暂停
             taskScheduler.pauseJob(new TaskDetail(agentVo.getName(), agentVo.getAgentType().getAgentTypeName(), agentVo.getName(), agentVo.getAgentType().getAgentTypeName()));
