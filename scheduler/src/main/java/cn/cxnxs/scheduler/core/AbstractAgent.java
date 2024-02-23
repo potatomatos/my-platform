@@ -28,7 +28,6 @@ public abstract class AbstractAgent implements IAgent {
         Thread thread = Thread.currentThread();
         RunResult runResult = new RunResult(new JSONArray(), RunLogs.create(thread.getId() + "-" + thread.getName()));
         try {
-            runResult.info("======开始运行：{}", getName());
             // 开始前的一些操作
             this.preStart(runResult);
             this.start(runResult);

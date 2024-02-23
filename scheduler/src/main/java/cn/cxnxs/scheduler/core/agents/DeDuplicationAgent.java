@@ -33,7 +33,7 @@ public class DeDuplicationAgent extends MultipleSourcesAgent {
         long start = System.currentTimeMillis();
         List<Event> events = getEvents();
         if (!CollectionUtils.isEmpty(events)) {
-            runResult.info("------开始去重数据,输入数据：{}", events);
+            runResult.info("输入数据：{}", events);
             JSONObject options = getOptions();
             // 去重的字段名
             String property = options.getString("property");

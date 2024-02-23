@@ -13,10 +13,10 @@ import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.utils.SerializeUtil;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
-import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.quartz.QuartzJobBean;
@@ -69,19 +69,13 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
                     // 删掉队列
                     delayedJob.deleteById();
                     // 保存结果
-                    boolean isChange = jobSupport.saveEvents(agentVo.getId(), agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
+                    JSONObject saveResult = jobSupport.saveEvents(agentVo.getId(), agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
                     //执行接收者任务
-                    if (isChange && (runResult.getPayload() != null && runResult.getPayload().size() > 0)) {
+                    if (saveResult.getBooleanValue("isChange") && (runResult.getPayload() != null && runResult.getPayload().size() > 0)) {
                         ScheduleAgent scheduleAgent = new ScheduleAgent();
                         scheduleAgent.setId(agent.getId());
                         scheduleAgent.setLastDataIme(LocalDateTime.now());
                         scheduleAgent.updateById();
-                        // 如果运行结果没采集到数据就不立即触发下个任务了
-                        try {
-                            jobSupport.runNextDelayedJobs(agentVo);
-                        } catch (SchedulerException e) {
-                            throw new RuntimeException(e);
-                        }
                     }
                 }
             }).exceptionally(ex -> {
@@ -103,7 +97,6 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
                 delayedJob.setAttempts(delayedJob.getAttempts() + 1);
                 delayedJob.setUpdatedAt(LocalDateTime.now());
                 delayedJob.updateById();
-
                 return null;
             });
         }

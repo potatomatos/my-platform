@@ -46,7 +46,6 @@ public class TriggerAgent extends MultipleSourcesAgent {
     @Override
     public void start(RunResult runResult) throws IOException, TemplateException {
         long start = System.currentTimeMillis();
-        log.info("======开始运行数据过滤任务");
         List<Event> events = getEvents();
         if (!CollectionUtils.isEmpty(events)) {
             runResult.info("输入数据：{}", events);

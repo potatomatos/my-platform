@@ -5,7 +5,6 @@ import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.enums.RunState;
-import cn.cxnxs.scheduler.quartz.JobGenerator;
 import cn.cxnxs.scheduler.quartz.JobSupport;
 import cn.cxnxs.scheduler.quartz.TaskDetail;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
@@ -20,7 +19,6 @@ import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.util.CollectionUtils;
 
@@ -43,12 +41,6 @@ public class RunningAgentJob extends QuartzJobBean {
 
     @Autowired
     private EventsServiceImpl eventsService;
-
-    @Autowired
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
-
-    @Autowired
-    private JobGenerator jobGenerator;
 
     @Autowired
     private TaskScheduler taskScheduler;
@@ -96,7 +88,7 @@ public class RunningAgentJob extends QuartzJobBean {
 
             if (CollectionUtils.isEmpty(sourceAgents)) {
                 // 无输入数据源来源直接运行
-                this.runTask(agentVo, null);
+                jobSupport.runTask(agentVo, null);
             } else {
                 // 假如不是立即传播的话，先检查数据源任务是不是都执行完成了，否则等待数据准备完成才能执行
                 if (!agentVo.getPropagateImmediately()
@@ -105,7 +97,7 @@ public class RunningAgentJob extends QuartzJobBean {
                 }
                 List<Integer> sourceAgentsIdList = sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList());
                 List<ScheduleEvents> events = getSourceEvents(sourceAgentsIdList, agentVo);
-                this.runTask(agentVo, events);
+                jobSupport.runTask(agentVo, events);
             }
         } catch (Exception e) {
             logger.error("定时任务执行失败", e);
@@ -120,7 +112,6 @@ public class RunningAgentJob extends QuartzJobBean {
      * @param sourceIds 数据源任务id
      */
     public Boolean sourcesAreRunning(List<Integer> sourceIds) {
-
         Integer count = new ScheduleAgentLogs().selectCount(Wrappers.lambdaQuery(ScheduleAgentLogs.class)
                 .in(ScheduleAgentLogs::getAgentId, sourceIds).eq(ScheduleAgentLogs::getState, RunState.WORKING));
         if (count > 0) {

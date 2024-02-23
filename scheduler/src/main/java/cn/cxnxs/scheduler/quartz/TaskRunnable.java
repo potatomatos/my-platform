@@ -27,8 +27,7 @@ public class TaskRunnable implements Supplier<RunResult> {
 
     @Override
     public RunResult get() {
-        log.info("------开" +
-                "始运行任务：{}------", agent.getName());
+        log.info("------开始运行任务：{}------", agent.getName());
         return agent.runAgent();
     }
 }

@@ -46,6 +46,7 @@ public class ExpiredDataDeletionJob extends QuartzJobBean {
             }
             // 更新数据数量
             agent.setDataCount(eventsService.count(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, agent.getId())));
+            agent.updateById();
         }
     }
 }

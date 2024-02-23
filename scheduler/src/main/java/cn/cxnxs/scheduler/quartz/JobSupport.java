@@ -17,7 +17,6 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -41,10 +41,7 @@ public class JobSupport {
     private EventsServiceImpl eventsService;
 
     @Autowired
-    private TaskScheduler taskScheduler;
-
-    @Autowired
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    private Executor threadPoolTaskExecutor;
 
     @Autowired
     private JobGenerator jobGenerator;
@@ -83,10 +80,13 @@ public class JobSupport {
      * @param options         任务配置信息
      * @return 数据是否有变动
      */
-    public boolean saveEvents(final Integer agentId, final Integer taskId, final Boolean canCreateEvents, final JSONObject options, final JSONArray payload) {
+    public JSONObject saveEvents(final Integer agentId, final Integer taskId, final Boolean canCreateEvents, final JSONObject options, final JSONArray payload) {
+        JSONObject result = new JSONObject();
+        List<ScheduleEvents> newEvents = new ArrayList<>();
         AtomicBoolean isChange = new AtomicBoolean(false);
         if (payload == null) {
-            return isChange.get();
+            result.put("isChange", isChange.get());
+            result.put("row", newEvents);
         }
         String mode = options.getString("mode");
         //和多少条数据对比去重
@@ -106,20 +106,25 @@ public class JobSupport {
                         if (!eventsService.exists(agentId, uniquenessLookBack, eventAdd.getPayload())) {
                             isChange.set(true);
                             eventAdd.insert();
+                            newEvents.add(eventAdd);
                         }
                     } else {
                         isChange.set(true);
                         eventAdd.insert();
+                        newEvents.add(eventAdd);
                     }
                 } else {
                     if ((!eventsService.exists(agentId, uniquenessLookBack, eventAdd.getPayload()))) {
                         isChange.set(true);
                         eventAdd.insert();
+                        newEvents.add(eventAdd);
                     }
                 }
             }
         });
-        return isChange.get();
+        result.put("isChange", isChange.get());
+        result.put("row", newEvents);
+        return result;
     }
 
     /**
@@ -138,17 +143,17 @@ public class JobSupport {
             this.saveLogs(agentVo.getId(), agentLogs, runResult.getRunLogs(), runResult.getSuccess());
             if (runResult.getSuccess()) {
                 // 保存结果
-                boolean isChange = this.saveEvents(agentVo.getId(), agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
+                JSONObject saveResult = this.saveEvents(agentVo.getId(), agentLogs.getId(), agentType.getCanCreateEvents(), agentVo.getOptionsJSON(), runResult.getPayload());
                 //执行接收者任务
-                if (isChange && (runResult.getPayload() != null && runResult.getPayload().size() > 0)) {
+                if (saveResult.getBooleanValue("isChange") && (runResult.getPayload() != null && runResult.getPayload().size() > 0)) {
                     ScheduleAgent scheduleAgent = new ScheduleAgent();
                     scheduleAgent.setId(agentVo.getId());
                     scheduleAgent.setLastDataIme(LocalDateTime.now());
                     scheduleAgent.updateById();
                     // 如果运行结果没采集到数据就不立即触发下个任务了
                     try {
-                        this.runNextDelayedJobs(agentVo);
-                    } catch (SchedulerException e) {
+                        this.runNextDelayedJobs(agentVo, saveResult.getObject("row", List.class));
+                    } catch (SchedulerException | ClassNotFoundException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -212,29 +217,29 @@ public class JobSupport {
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
             ((MultipleSourcesAgent) agentInstance).setEvents(events);
             TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
-            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor.getThreadPoolExecutor());
-            future.thenAccept(getSuccessCallback(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
+            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+            future.thenAccept(getSuccessCallback(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentVo, agentLogs));
         } else if (SingleSourceAgent.class.isAssignableFrom(agentType.getHandlerClass())
                 && !CollectionUtils.isEmpty(events)) {
             // 处理单条数据
             for (Event event : events) {
                 Thread.sleep(500);
                 // 保存日志，记录运行记录
-                ScheduleAgentLogs agentLogs = this.saveLogs(getId(), null, null, null);
+                ScheduleAgentLogs agentLogs = this.saveLogs(agentVo.getId(), null, null, null);
                 IAgent agentInstance = jobGenerator.buildAgent(agentVo);
                 ((SingleSourceAgent) agentInstance).setEvent(event);
                 TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
-                CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor.getThreadPoolExecutor());
-                future.thenAccept(getSuccessCallback(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
+                CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+                future.thenAccept(getSuccessCallback(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentVo, agentLogs));
             }
         } else {
             // 保存日志，记录运行记录
-            ScheduleAgentLogs agentLogs = this.saveLogs(getId(), null, null, null);
+            ScheduleAgentLogs agentLogs = this.saveLogs(agentVo.getId(), null, null, null);
             // 无输入数据情况
             IAgent agentInstance = jobGenerator.buildAgent(agentVo);
             TaskRunnable taskRunnable = new TaskRunnable(agentInstance);
-            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor.getThreadPoolExecutor());
-            future.thenAccept(getSuccessCallback(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentLogs));
+            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
+            future.thenAccept(getSuccessCallback(agentLogs, agentType, agentVo)).exceptionally(getExceptionallyFunction(agentVo, agentLogs));
         }
     }
 
@@ -243,7 +248,7 @@ public class JobSupport {
      *
      * @param agentVo
      */
-    public void runNextDelayedJobs(AgentVo agentVo) throws SchedulerException {
+    public void runNextDelayedJobs(AgentVo agentVo, List<ScheduleEvents> evs) throws SchedulerException, ClassNotFoundException, InterruptedException {
         //查出所有下一级代理信息
         List<AgentVo> receivers = agentVo.getReceiverAgents();
         if (receivers.isEmpty()) {
@@ -256,14 +261,7 @@ public class JobSupport {
             AgentTypeVo agentType = receiverAgentVo.getAgentType();
             if (agentType.getCanReceiveEvents()
                     && receiverAgentVo.getPropagateImmediately()) {
-                if (agentType.getCanBeScheduled()) {
-                    //立即触发定时任务，否则让定时任务自己定时执行
-                    TaskDetail taskDetail = new TaskDetail(receiverAgentVo.getName(), agentType.getAgentTypeName());
-                    taskScheduler.triggerJob(taskDetail);
-                } else {
-                    // 非定时任务直接执行
-
-                }
+                this.runTask(receiverAgentVo, evs);
             }
         }
     }
