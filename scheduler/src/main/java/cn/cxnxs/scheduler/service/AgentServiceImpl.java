@@ -8,10 +8,14 @@ import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.*;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
+import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
 import cn.cxnxs.scheduler.mapper.ScheduleLinksMapper;
+import cn.cxnxs.scheduler.quartz.CustomThreadPoolExecutor;
 import cn.cxnxs.scheduler.quartz.TaskDetail;
+import cn.cxnxs.scheduler.quartz.TaskRunnable;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
 import cn.cxnxs.scheduler.quartz.jobs.RunningAgentJob;
+import cn.cxnxs.scheduler.utils.SerializeUtil;
 import cn.cxnxs.scheduler.utils.SpringContextUtil;
 import cn.cxnxs.scheduler.vo.*;
 import com.alibaba.fastjson.JSONArray;
@@ -23,13 +27,16 @@ import com.github.pagehelper.PageHelper;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +47,7 @@ import java.util.stream.Collectors;
  * @author mengjinyuan
  * @since 2020-11-10
  */
+@Lazy
 @Service
 public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleAgent> {
 
@@ -57,6 +65,12 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
 
     @Resource
     private ScheduleLinksMapper scheduleLinksMapper;
+
+    @Resource
+    private ScheduleDelayedJobsMapper scheduleDelayedJobsMapper;
+
+    @Autowired
+    private CustomThreadPoolExecutor threadPoolTaskExecutor;
 
 
     public List<AgentVo> findByTypeProperties(AgentTypeVo agentTypeVo) {
@@ -333,6 +347,64 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         scenarios.setId(id);
         scenarios.setDiagram(diagramOption);
         scenarios.updateById();
+    }
+
+    public PageResult<TaskVO> selectTaskList(PageWrapper<Object> pageWrapper) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
+
+        Page<TaskVO> page = PageHelper.startPage(pageWrapper.getPage(), pageWrapper.getLimit());
+        List<TaskVO> tasks = scheduleDelayedJobsMapper.selectTaskList();
+        PageResult<TaskVO> result = new PageResult<>(page.getTotal());
+        result.setCurrent(page.getPageNum());
+        result.setPageSize(page.getPageSize());
+        result.setPages(page.getPages());
+        for (TaskVO task : tasks) {
+            task.setState(0);
+            if (StringUtil.isNotEmpty(task.getHandler())) {
+                IAgent agent = SerializeUtil.deserializeObjectFromString(task.getHandler());
+                if (agent == null) {
+                    continue;
+                }
+                if (MultipleSourcesAgent.class.isAssignableFrom(agent.getClass())) {
+                    task.setEvents(((MultipleSourcesAgent) agent).getEvents());
+                } else if (SingleSourceAgent.class.isAssignableFrom(agent.getClass())) {
+                    List<Event> events = new ArrayList<>();
+                    events.add(((SingleSourceAgent) agent).getEvent());
+                    task.setEvents(events);
+                }
+            }
+            task.setHandler(null);
+        }
+
+        List<TaskVO> executingTasksVo = new ArrayList<>();
+        // 获取正在执行的任务
+        ConcurrentLinkedQueue<Runnable> executingTasks = threadPoolTaskExecutor.getExecutingTasks();
+        // 获取ListenableFutureTask类中的"task"字段
+        Field taskField = Class.forName("java.util.concurrent.CompletableFuture$AsyncSupply").getDeclaredField("fn");
+        taskField.setAccessible(true); // 设置私有字段可以访问
+        for (Runnable executingTask : executingTasks) {
+            Object task = taskField.get(executingTask);
+            if (task instanceof TaskRunnable) {
+                TaskRunnable taskRunnable = (TaskRunnable) task;
+                IAgent agent = taskRunnable.getAgent();
+                TaskVO taskVO = new TaskVO();
+                taskVO.setState(1);
+                taskVO.setAgentId(agent.getId());
+                taskVO.setAgentName(agent.getName());
+                taskVO.setCreatedAt(LocalDateTime.now());
+                if (MultipleSourcesAgent.class.isAssignableFrom(agent.getClass())) {
+                    taskVO.setEvents(((MultipleSourcesAgent) agent).getEvents());
+                } else if (SingleSourceAgent.class.isAssignableFrom(agent.getClass())) {
+                    List<Event> events = new ArrayList<>();
+                    events.add(((SingleSourceAgent) agent).getEvent());
+                    taskVO.setEvents(events);
+                }
+                executingTasksVo.add(taskVO);
+            }
+        }
+        tasks.addAll(0, executingTasksVo);
+        result.setRows(tasks);
+
+        return result;
     }
 
 }

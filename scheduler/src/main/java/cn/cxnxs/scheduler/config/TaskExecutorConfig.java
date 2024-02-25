@@ -3,6 +3,7 @@ package cn.cxnxs.scheduler.config;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentType;
+import cn.cxnxs.scheduler.quartz.CustomThreadPoolExecutor;
 import cn.cxnxs.scheduler.quartz.RejectedExecutionHandler4DelayedJobs;
 import cn.cxnxs.scheduler.quartz.TaskDetail;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
@@ -17,12 +18,12 @@ import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>定时任务配置</p>
@@ -52,28 +53,15 @@ public class TaskExecutorConfig {
     @Autowired
     private AgentServiceImpl agentService;
 
-    @Autowired
-    private RejectedExecutionHandler4DelayedJobs rejectedExecutionHandler4DelayedJobs;
-
     /**
      * 定义线程池
-     * 使用方法：
-     * private ThreadPoolTaskExecutor threadPoolTaskExecutor;
      *
      * @return none
      */
     @Bean("threadPoolTaskExecutor")
-    public Executor threadPoolTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(CORE_POOL_SIZE);
-        executor.setMaxPoolSize(MAX_POOL_SIZE);
-        executor.setKeepAliveSeconds(60);
-        executor.setQueueCapacity(QUEUE_CAPACITY);
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.initialize();
-        // 拒绝策略
-        executor.setRejectedExecutionHandler(rejectedExecutionHandler4DelayedJobs);
-        return executor;
+    public CustomThreadPoolExecutor CustomThreadPoolExecutor(RejectedExecutionHandler4DelayedJobs rejectedExecutionHandler4DelayedJobs) {
+        return new CustomThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, 60,
+                TimeUnit.SECONDS, new ArrayBlockingQueue<>(QUEUE_CAPACITY), rejectedExecutionHandler4DelayedJobs);
     }
 
     /**

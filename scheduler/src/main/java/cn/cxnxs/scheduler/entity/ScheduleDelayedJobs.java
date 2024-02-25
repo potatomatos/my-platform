@@ -27,6 +27,8 @@ public class ScheduleDelayedJobs extends Model<ScheduleDelayedJobs> {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    private Integer agentId;
+
     /**
      * 任务权重
      */

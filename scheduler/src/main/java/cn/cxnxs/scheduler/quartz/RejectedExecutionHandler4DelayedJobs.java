@@ -29,11 +29,8 @@ public class RejectedExecutionHandler4DelayedJobs implements RejectedExecutionHa
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
         try {
-            // 获取ListenableFutureTask类中的"task"字段
             Field taskField = Class.forName("java.util.concurrent.CompletableFuture$AsyncSupply").getDeclaredField("fn");
             taskField.setAccessible(true); // 设置私有字段可以访问
-
-            // 从ListenableFutureTask对象中获取"task"字段的值
             Object task = taskField.get(r);
             log.info("任务{}被拒绝，状态如下：\n{}", task, getExecutorStatus(executor));
 
@@ -48,6 +45,7 @@ public class RejectedExecutionHandler4DelayedJobs implements RejectedExecutionHa
                         Integer count = scheduleDelayedJobsMapper.selectCount(Wrappers.lambdaQuery(ScheduleDelayedJobs.class).eq(ScheduleDelayedJobs::getHandler, serializeObjectToString));
                         if (count == 0) {
                             ScheduleDelayedJobs scheduleDelayedJobs = new ScheduleDelayedJobs();
+                            scheduleDelayedJobs.setAgentId(agent.getId());
                             scheduleDelayedJobs.setPriority(1);
                             scheduleDelayedJobs.setHandler(serializeObjectToString);
                             scheduleDelayedJobs.setThreadId(Thread.currentThread().getName());

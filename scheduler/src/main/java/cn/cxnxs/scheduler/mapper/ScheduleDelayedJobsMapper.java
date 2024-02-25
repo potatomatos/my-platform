@@ -2,7 +2,11 @@ package cn.cxnxs.scheduler.mapper;
 
 
 import cn.cxnxs.scheduler.entity.ScheduleDelayedJobs;
+import cn.cxnxs.scheduler.vo.TaskVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,4 +18,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ScheduleDelayedJobsMapper extends BaseMapper<ScheduleDelayedJobs> {
 
+    @Select("select a.*,b.name as agentName from schedule_delayed_jobs a left join schedule_agent b on a.agent_id=b.id order by a.created_at desc")
+    List<TaskVO> selectTaskList();
 }

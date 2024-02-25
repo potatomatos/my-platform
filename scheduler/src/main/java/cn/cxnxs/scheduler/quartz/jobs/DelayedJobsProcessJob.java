@@ -91,6 +91,7 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
                 jobSupport.saveLogs(agentVo.getId(), agentLogs, runLogs, false);
 
                 // 记录任务状态
+                delayedJob.setRunAt(LocalDateTime.now());
                 delayedJob.setFailedAt(LocalDateTime.now());
                 delayedJob.setLastError(ex.getMessage());
                 delayedJob.setThreadId(thread.getId() + "-" + thread.getName());

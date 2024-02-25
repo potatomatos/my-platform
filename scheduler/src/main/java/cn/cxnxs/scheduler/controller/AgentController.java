@@ -14,6 +14,7 @@ import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import cn.cxnxs.scheduler.vo.TaskGraphVo;
+import cn.cxnxs.scheduler.vo.TaskVO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -201,6 +202,12 @@ public class AgentController {
     public Result<Boolean> saveDiagram(@PathVariable("id") Integer id, @RequestParam String diagram) {
         agentService.saveDiagram(id, diagram);
         return Result.success("保存成功！", true);
+    }
+
+    @ResponseResult
+    @PostMapping("/tasks")
+    public PageResult<TaskVO> selectTaskList(PageWrapper<Object> pageWrapper) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
+        return agentService.selectTaskList(pageWrapper);
     }
 }
 
