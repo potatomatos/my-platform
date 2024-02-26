@@ -11,10 +11,7 @@ import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
-import cn.cxnxs.scheduler.vo.AgentTypeVo;
-import cn.cxnxs.scheduler.vo.AgentVo;
-import cn.cxnxs.scheduler.vo.TaskGraphVo;
-import cn.cxnxs.scheduler.vo.TaskVO;
+import cn.cxnxs.scheduler.vo.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -113,15 +110,13 @@ public class AgentController {
     /**
      * 运行日志
      *
-     * @param id
-     * @param pageNo
-     * @param limit
+     * @param pageWrapper
      * @return
      */
     @ResponseResult
-    @PostMapping("logs/{id}")
-    public PageResult<JSONObject> getEventLogs(@PathVariable("id") Integer id, Integer pageNo, Integer limit) {
-        return agentService.getAgentLogs(id, pageNo, limit);
+    @PostMapping("logs")
+    public PageResult<JSONObject> getEventLogs(@RequestBody PageWrapper<AgentLogQuery> pageWrapper) {
+        return agentService.getAgentLogs(pageWrapper);
     }
 
     /**

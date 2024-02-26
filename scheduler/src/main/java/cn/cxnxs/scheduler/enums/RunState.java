@@ -19,6 +19,15 @@ public enum RunState {
         this.name = name;
     }
 
+    public static String getName(Integer code) {
+        for (RunState runState : RunState.values()) {
+            if (runState.code.equals(code)) {
+                return runState.getName();
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return code.toString();

@@ -6,6 +6,7 @@ import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.*;
+import cn.cxnxs.scheduler.enums.RunState;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
 import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
@@ -20,6 +21,7 @@ import cn.cxnxs.scheduler.utils.SpringContextUtil;
 import cn.cxnxs.scheduler.vo.*;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
@@ -299,9 +301,14 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         super.updateById(agent);
     }
 
-    public PageResult<JSONObject> getAgentLogs(Integer id, Integer pageNo, Integer limit) {
-        Page<ScheduleAgentLogs> page = PageHelper.startPage(pageNo, limit);
-        List<ScheduleAgentLogs> logs = new ScheduleAgentLogs().selectList(Wrappers.lambdaQuery(ScheduleAgentLogs.class).eq(ScheduleAgentLogs::getAgentId, id).orderByDesc(ScheduleAgentLogs::getCreatedAt));
+    public PageResult<JSONObject> getAgentLogs(PageWrapper<AgentLogQuery> pageWrapper) {
+        AgentLogQuery param = pageWrapper.getParam();
+        LambdaQueryWrapper<ScheduleAgentLogs> queryWrapper = Wrappers.lambdaQuery(ScheduleAgentLogs.class).eq(ScheduleAgentLogs::getAgentId, param.getAgentId()).orderByDesc(ScheduleAgentLogs::getCreatedAt);
+        if (Objects.nonNull(param.getState())) {
+            queryWrapper.eq(ScheduleAgentLogs::getState, param.getState());
+        }
+        Page<ScheduleAgentLogs> page = PageHelper.startPage(pageWrapper.getPage(), pageWrapper.getLimit());
+        List<ScheduleAgentLogs> logs = new ScheduleAgentLogs().selectList(queryWrapper);
         PageResult<JSONObject> result = new PageResult<>(page.getTotal());
         result.setCurrent(page.getPageNum());
         result.setPageSize(page.getPageSize());
@@ -318,6 +325,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
                     .filter(event -> event.getTaskId().equals(item.getId())).map(events1 -> JSONObject.parseObject(events1.getPayload()))
                     .collect(Collectors.toList());
             jsonObject.put("payload", events);
+            jsonObject.put("state", RunState.getName(jsonObject.getInteger("state")));
             return jsonObject;
         }).collect(Collectors.toList());
 
