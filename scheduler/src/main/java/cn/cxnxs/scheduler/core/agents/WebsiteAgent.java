@@ -66,6 +66,13 @@ public class WebsiteAgent extends SingleSourceAgent {
                 hcb.ssl();
             }
         }
+        // 设置代理
+        if (this.getOptions().containsKey("proxy")) {
+            String proxy = this.getOptions().getString("proxy");
+            String proxyIP = proxy.split(":")[0];
+            String proxyPort = proxy.split(":")[1];
+            hcb.proxy(proxyIP, Integer.parseInt(proxyPort));
+        }
         HttpClient client = hcb.build();
         //获取返回的cookie
         HttpCookies cookies = HttpCookies.custom();
@@ -78,16 +85,30 @@ public class WebsiteAgent extends SingleSourceAgent {
                 .timeout(TIMEOUT).context(cookies.getContext());
         //请求方式判断
         if (this.getOptions().containsKey("method")) {
-            if (this.getOptions().getString("method").toUpperCase().equals(HttpMethods.POST.getName())) {
+            if (this.getOptions().getString("method").equalsIgnoreCase(HttpMethods.POST.getName())) {
                 config.method(HttpMethods.POST);
                 //设置请求体
                 if (this.getOptions().containsKey("data")) {
-                    JSONObject data = this.getOptions().getJSONObject("data");
-                    config.json(data.toJSONString());
+                    if (this.getOptions().containsKey("contentType")) {
+                        if (Objects.equals("application/json", this.getOptions().getString("contentType"))) {
+                            JSONObject data = this.getOptions().getJSONObject("data");
+                            config.json(data.toJSONString());
+                        } else {
+                            JSONObject data = this.getOptions().getJSONObject("data");
+                            config.map(data);
+                        }
+                    } else {
+                        JSONObject data = this.getOptions().getJSONObject("data");
+                        config.map(data);
+                    }
                 }
-            } else if (this.getOptions().getString("method").toUpperCase().equals(HttpMethods.GET.getName())) {
+            } else if (this.getOptions().getString("method").equalsIgnoreCase(HttpMethods.GET.getName())) {
                 config.method(HttpMethods.GET);
             }
+        }
+        // 超时时间
+        if (this.getOptions().containsKey("timeout")) {
+            config.timeout(this.getOptions().getInteger("timeout"));
         }
         runResult.info("-----------请求参数-----------");
         runResult.info(this.getOptions().toJSONString());

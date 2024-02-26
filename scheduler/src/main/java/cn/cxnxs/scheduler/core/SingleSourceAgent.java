@@ -44,8 +44,10 @@ public abstract class SingleSourceAgent extends AbstractAgent {
         if (!Objects.isNull(event) && !event.getPayload().isEmpty() && !Objects.isNull(this.getOptions())) {
             runResult.info("入参数据：{}", event);
             runResult.info("-------开始替换配置占位符------");
-            String optionsStr = getOptions().toJSONString();
+            JSONObject options = getOptions();
+            String optionsStr = options.toJSONString();
             JSONObject ev = event.getPayload();
+            ev.put("__this__", options);
 
             // 创建Freemarker配置实例
             Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
