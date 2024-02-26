@@ -349,6 +349,10 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         scenarios.updateById();
     }
 
+    public Integer selectRunningTaskCount() {
+        return threadPoolTaskExecutor.getExecutingTasks().size();
+    }
+
     public PageResult<TaskVO> selectTaskList(PageWrapper<Object> pageWrapper) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
 
         Page<TaskVO> page = PageHelper.startPage(pageWrapper.getPage(), pageWrapper.getLimit());

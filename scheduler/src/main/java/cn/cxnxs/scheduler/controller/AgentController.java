@@ -209,5 +209,11 @@ public class AgentController {
     public PageResult<TaskVO> selectTaskList(PageWrapper<Object> pageWrapper) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
         return agentService.selectTaskList(pageWrapper);
     }
+
+    @ResponseResult
+    @GetMapping("/runningTasks")
+    public Integer runningTasks() {
+        return agentService.selectRunningTaskCount();
+    }
 }
 
