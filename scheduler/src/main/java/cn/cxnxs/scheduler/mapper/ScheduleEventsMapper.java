@@ -15,5 +15,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface ScheduleEventsMapper extends BaseMapper<ScheduleEvents> {
 
-    Integer getUniquenessLookBackCount(@Param("agentId") Integer agentId, @Param("uniquenessLookBack") Integer uniquenessLookBack, @Param("payload") String payload);
+    Integer getUniquenessLookBackCount(@Param("agentId") Integer agentId, @Param("uniquenessLookBack") Integer uniquenessLookBack, @Param("payloadMd5") String payloadMd5);
 }

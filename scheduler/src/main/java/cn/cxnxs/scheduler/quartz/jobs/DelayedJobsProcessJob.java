@@ -107,17 +107,21 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
                 scheduleAgent.setId(agentVo.getId());
                 scheduleAgent.setLastErrorLogTime(LocalDateTime.now());
                 scheduleAgent.updateById();
-                // 记录任务状态
-                delayedJob.setRunAt(LocalDateTime.now());
-                delayedJob.setFailedAt(LocalDateTime.now());
-                delayedJob.setLastError(ex.getMessage());
-                delayedJob.setThreadId(Thread.currentThread().getId() + "-" + Thread.currentThread().getName());
-                delayedJob.setAttempts(delayedJob.getAttempts() + 1);
-                // 放到队尾去
-                delayedJob.setCreatedAt(LocalDateTime.now());
-                delayedJob.setUpdatedAt(LocalDateTime.now());
-                delayedJob.updateById();
-
+                if (delayedJob.getAttempts() >= MAX_RUN_TIMES) {
+                    // 超过执行次数，直接删除
+                    delayedJob.deleteById();
+                } else {
+                    // 记录任务状态
+                    delayedJob.setRunAt(LocalDateTime.now());
+                    delayedJob.setFailedAt(LocalDateTime.now());
+                    delayedJob.setLastError(ex.getMessage());
+                    delayedJob.setThreadId(Thread.currentThread().getId() + "-" + Thread.currentThread().getName());
+                    delayedJob.setAttempts(delayedJob.getAttempts() + 1);
+                    // 放到队尾去
+                    delayedJob.setCreatedAt(LocalDateTime.now());
+                    delayedJob.setUpdatedAt(LocalDateTime.now());
+                    delayedJob.updateById();
+                }
                 // 保存日志
                 jobSupport.saveLogs(agentVo.getId(), agentLogs, runLogs, false);
                 return null;

@@ -20,10 +20,10 @@ public class EventsServiceImpl extends ServiceImpl<ScheduleEventsMapper, Schedul
      * 判断内容是否存在
      *
      * @param agentId
-     * @param payload
+     * @param payloadMd5
      * @return
      */
-    public Boolean exists(Integer agentId, Integer uniquenessLookBack, String payload) {
-        return baseMapper.getUniquenessLookBackCount(agentId, uniquenessLookBack, payload) > 0;
+    public Boolean exists(Integer agentId, Integer uniquenessLookBack, String payloadMd5) {
+        return baseMapper.getUniquenessLookBackCount(agentId, uniquenessLookBack, payloadMd5) > 0;
     }
 }

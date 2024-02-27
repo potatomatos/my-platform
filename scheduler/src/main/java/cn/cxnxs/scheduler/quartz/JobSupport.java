@@ -9,6 +9,7 @@ import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.enums.RunState;
 import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
 import cn.cxnxs.scheduler.service.EventsServiceImpl;
+import cn.cxnxs.scheduler.utils.MD5Util;
 import cn.cxnxs.scheduler.utils.SerializeUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -87,13 +88,14 @@ public class JobSupport {
             eventAdd.setAgentId(agentId);
             eventAdd.setTaskId(taskId);
             eventAdd.setPayload(JSON.toJSONString(map));
+            eventAdd.setPayloadMd5(MD5Util.encryptMD5(eventAdd.getPayload()));
             eventAdd.setCreatedAt(LocalDateTime.now());
             //是否保存事件
             if (canCreateEvents) {
                 // on_change 表示数据发生改变的时候才插入，即不产生重复数据
                 if (StringUtil.isNotEmpty(mode)) {
                     if (Objects.equals(mode, "on_change")) {
-                        if (!eventsService.exists(agentId, uniquenessLookBack, eventAdd.getPayload())) {
+                        if (!eventsService.exists(agentId, uniquenessLookBack, eventAdd.getPayloadMd5())) {
                             isChange.set(true);
                             eventAdd.insert();
                             newEvents.add(eventAdd);
@@ -104,7 +106,7 @@ public class JobSupport {
                         newEvents.add(eventAdd);
                     }
                 } else {
-                    if ((!eventsService.exists(agentId, uniquenessLookBack, eventAdd.getPayload()))) {
+                    if ((!eventsService.exists(agentId, uniquenessLookBack, eventAdd.getPayloadMd5()))) {
                         isChange.set(true);
                         eventAdd.insert();
                         newEvents.add(eventAdd);

@@ -4,10 +4,10 @@
 
     <select id="getUniquenessLookBackCount" resultType="int">
         select count(1) from (
-        select payload from schedule_events where agent_id=#{agentId} order by created_at desc
+        select payload_md5 from schedule_events where agent_id=#{agentId} order by created_at desc
         <if test="uniquenessLookBack!=null">
             limit ${uniquenessLookBack}
         </if>
-        ) T where T.payload = #{payload}
+        ) T where T.payload_md5 = #{payloadMd5}
     </select>
 </mapper>

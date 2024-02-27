@@ -49,6 +49,8 @@ public class ScheduleEvents extends Model<ScheduleEvents> {
      */
     private String payload;
 
+    private String payloadMd5;
+
     /**
      * 创建时间
      */

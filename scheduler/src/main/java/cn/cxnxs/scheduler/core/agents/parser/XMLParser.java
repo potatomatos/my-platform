@@ -2,8 +2,6 @@ package cn.cxnxs.scheduler.core.agents.parser;
 
 
 import cn.cxnxs.scheduler.core.http.ContentType;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -13,13 +11,9 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2021-02-01 22:38
  **/
 @Slf4j
-public class XMLParser extends WebSiteContentParser {
+public class XMLParser extends HTMLParser {
+
     public XMLParser(ContentType contentType, String name) {
         super(contentType, name);
-    }
-
-    @Override
-    public JSONArray parse(JSONObject extract, String payload) {
-        return null;
     }
 }
