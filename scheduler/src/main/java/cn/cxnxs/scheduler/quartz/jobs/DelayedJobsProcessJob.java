@@ -45,6 +45,11 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
     @Autowired
     private JobSupport jobSupport;
 
+    /**
+     * 最多执行5次
+     */
+    private static final Integer MAX_RUN_TIMES = 5;
+
     @Override
     protected void executeInternal(JobExecutionContext context) {
         log.info("======开始处理任务队列======");
@@ -63,8 +68,7 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
             // 保存日志，记录运行记录
             ScheduleAgentLogs agentLogs = jobSupport.saveLogs(agent.getId(), null, null, null);
             future.thenAccept(runResult -> {
-                // 保存日志
-                jobSupport.saveLogs(agentVo.getId(), agentLogs, runResult.getRunLogs(), runResult.getSuccess());
+
                 if (runResult.getSuccess()) {
                     // 删掉队列
                     delayedJob.deleteById();
@@ -77,27 +81,45 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
                         scheduleAgent.setLastDataIme(LocalDateTime.now());
                         scheduleAgent.updateById();
                     }
+                } else {
+                    if (delayedJob.getAttempts() >= MAX_RUN_TIMES) {
+                        // 超过执行次数，直接删除
+                        delayedJob.deleteById();
+                    } else {
+                        // 记录任务状态
+                        delayedJob.setRunAt(LocalDateTime.now());
+                        delayedJob.setFailedAt(LocalDateTime.now());
+                        delayedJob.setThreadId(Thread.currentThread().getId() + "-" + Thread.currentThread().getName());
+                        delayedJob.setAttempts(delayedJob.getAttempts() + 1);
+                        delayedJob.setUpdatedAt(LocalDateTime.now());
+                        // 放到队尾去
+                        delayedJob.setCreatedAt(LocalDateTime.now());
+                        delayedJob.updateById();
+                    }
                 }
+                // 保存日志
+                jobSupport.saveLogs(agentVo.getId(), agentLogs, runResult.getRunLogs(), runResult.getSuccess());
             }).exceptionally(ex -> {
                 //失败
-                Thread thread = Thread.currentThread();
-                RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
+                RunLogs runLogs = RunLogs.create(Thread.currentThread().getId() + "-" + Thread.currentThread().getName());
                 runLogs.error("执行发生异常：{}", ex);
                 ScheduleAgent scheduleAgent = new ScheduleAgent();
                 scheduleAgent.setId(agentVo.getId());
                 scheduleAgent.setLastErrorLogTime(LocalDateTime.now());
                 scheduleAgent.updateById();
-                // 保存日志
-                jobSupport.saveLogs(agentVo.getId(), agentLogs, runLogs, false);
-
                 // 记录任务状态
                 delayedJob.setRunAt(LocalDateTime.now());
                 delayedJob.setFailedAt(LocalDateTime.now());
                 delayedJob.setLastError(ex.getMessage());
-                delayedJob.setThreadId(thread.getId() + "-" + thread.getName());
+                delayedJob.setThreadId(Thread.currentThread().getId() + "-" + Thread.currentThread().getName());
                 delayedJob.setAttempts(delayedJob.getAttempts() + 1);
+                // 放到队尾去
+                delayedJob.setCreatedAt(LocalDateTime.now());
                 delayedJob.setUpdatedAt(LocalDateTime.now());
                 delayedJob.updateById();
+
+                // 保存日志
+                jobSupport.saveLogs(agentVo.getId(), agentLogs, runLogs, false);
                 return null;
             });
         }

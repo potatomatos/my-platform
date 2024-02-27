@@ -1,18 +1,12 @@
 package cn.cxnxs.scheduler.quartz;
 
 import cn.cxnxs.scheduler.core.IAgent;
-import cn.cxnxs.scheduler.entity.ScheduleDelayedJobs;
-import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
-import cn.cxnxs.scheduler.utils.SerializeUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -23,8 +17,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Component
 public class RejectedExecutionHandler4DelayedJobs implements RejectedExecutionHandler {
 
-    @Resource
-    private ScheduleDelayedJobsMapper scheduleDelayedJobsMapper;
+    @Autowired
+    private JobSupport jobSupport;
 
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
@@ -38,22 +32,7 @@ public class RejectedExecutionHandler4DelayedJobs implements RejectedExecutionHa
             if (task instanceof TaskRunnable) {
                 TaskRunnable taskRunnable = (TaskRunnable) task;
                 IAgent agent = taskRunnable.getAgent();
-                // 序列化存储到数据库
-                if (Objects.nonNull(agent)) {
-                    String serializeObjectToString = SerializeUtil.serializeObjectToString(agent);
-                    if (Objects.nonNull(serializeObjectToString)) {
-                        Integer count = scheduleDelayedJobsMapper.selectCount(Wrappers.lambdaQuery(ScheduleDelayedJobs.class).eq(ScheduleDelayedJobs::getHandler, serializeObjectToString));
-                        if (count == 0) {
-                            ScheduleDelayedJobs scheduleDelayedJobs = new ScheduleDelayedJobs();
-                            scheduleDelayedJobs.setAgentId(agent.getId());
-                            scheduleDelayedJobs.setPriority(1);
-                            scheduleDelayedJobs.setHandler(serializeObjectToString);
-                            scheduleDelayedJobs.setThreadId(Thread.currentThread().getName());
-                            scheduleDelayedJobs.setCreatedAt(LocalDateTime.now());
-                            scheduleDelayedJobsMapper.insert(scheduleDelayedJobs);
-                        }
-                    }
-                }
+                jobSupport.saveDelayedJob(agent);
             }
         } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
             log.error(e.getMessage(), e);

@@ -1,18 +1,24 @@
 package cn.cxnxs.scheduler.quartz;
 
 import cn.cxnxs.common.core.utils.StringUtil;
+import cn.cxnxs.scheduler.core.IAgent;
 import cn.cxnxs.scheduler.core.RunLogs;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
+import cn.cxnxs.scheduler.entity.ScheduleDelayedJobs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.enums.RunState;
+import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
 import cn.cxnxs.scheduler.service.EventsServiceImpl;
+import cn.cxnxs.scheduler.utils.SerializeUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +31,9 @@ public class JobSupport {
 
     @Autowired
     private EventsServiceImpl eventsService;
+
+    @Resource
+    private ScheduleDelayedJobsMapper scheduleDelayedJobsMapper;
 
 
     /**
@@ -106,5 +115,30 @@ public class JobSupport {
         result.put("isChange", isChange.get());
         result.put("row", newEvents);
         return result;
+    }
+
+    /**
+     * 保存任务队列
+     *
+     * @param agent
+     */
+    public void saveDelayedJob(IAgent agent) {
+        // 序列化存储到数据库
+        if (Objects.nonNull(agent)) {
+            String serializeObjectToString = SerializeUtil.serializeObjectToString(agent);
+            if (Objects.nonNull(serializeObjectToString)) {
+                Integer count = scheduleDelayedJobsMapper.selectCount(Wrappers.lambdaQuery(ScheduleDelayedJobs.class).eq(ScheduleDelayedJobs::getHandler, serializeObjectToString));
+                if (count == 0) {
+                    ScheduleDelayedJobs scheduleDelayedJobs = new ScheduleDelayedJobs();
+                    scheduleDelayedJobs.setAgentId(agent.getId());
+                    scheduleDelayedJobs.setPriority(1);
+                    scheduleDelayedJobs.setAttempts(0);
+                    scheduleDelayedJobs.setHandler(serializeObjectToString);
+                    scheduleDelayedJobs.setThreadId(Thread.currentThread().getName());
+                    scheduleDelayedJobs.setCreatedAt(LocalDateTime.now());
+                    scheduleDelayedJobsMapper.insert(scheduleDelayedJobs);
+                }
+            }
+        }
     }
 }
