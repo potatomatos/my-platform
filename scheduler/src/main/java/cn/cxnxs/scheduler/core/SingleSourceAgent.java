@@ -1,7 +1,6 @@
 package cn.cxnxs.scheduler.core;
 
 import com.alibaba.fastjson.JSONObject;
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Objects;
 
@@ -47,14 +45,8 @@ public abstract class SingleSourceAgent extends AbstractAgent {
             JSONObject options = getOptions();
             String optionsStr = options.toJSONString();
             JSONObject ev = event.getPayload();
-            ev.put("__this__", options);
-
-            // 创建Freemarker配置实例
-            Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
-
-            // 使用StringReader从字符串创建模板
-            Template template = new Template("template", new StringReader(optionsStr), cfg);
-
+            ev.put("_this_", options);
+            Template template = this.buildTemplate(optionsStr);
             // 渲染模板
             StringWriter out = new StringWriter();
             template.process(ev, out);

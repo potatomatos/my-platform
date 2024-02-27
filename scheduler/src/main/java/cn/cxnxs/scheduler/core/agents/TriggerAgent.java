@@ -8,7 +8,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,9 +56,6 @@ public class TriggerAgent extends MultipleSourcesAgent {
             // 数据源
             List<JSONObject> list = events.stream().map(Event::getPayload).collect(Collectors.toList());
             JSONArray result = new JSONArray();
-            // 创建Freemarker配置实例
-            Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
-
             for (JSONObject jsonObject : list) {
                 List<Boolean> checkResult = new ArrayList<>();
                 ReadContext context = JsonPath.parse(jsonObject);
@@ -79,17 +74,17 @@ public class TriggerAgent extends MultipleSourcesAgent {
                     } else {
                         Template template = null;
                         if (Objects.equals(type, "field<value")) {
-                            template = new Template("template", new StringReader("${(" + data + "<" + value + ")?c}"), cfg);
+                            template = this.buildTemplate("${(" + data + "<" + value + ")?c}");
                         } else if (Objects.equals(type, "field<=value")) {
-                            template = new Template("template", new StringReader("${(" + data + "<=" + value + ")?c}"), cfg);
+                            template = this.buildTemplate("${(" + data + "<=" + value + ")?c}");
                         } else if (Objects.equals(type, "field==value")) {
-                            template = new Template("template", new StringReader("${(\"" + data + "\"==\"" + value + "\")?c}"), cfg);
+                            template = this.buildTemplate("${(\"" + data + "\"==\"" + value + "\")?c}");
                         } else if (Objects.equals(type, "field!=value")) {
-                            template = new Template("template", new StringReader("${(" + data + "!=" + value + ")?c}"), cfg);
+                            template = this.buildTemplate("${(" + data + "!=" + value + ")?c}");
                         } else if (Objects.equals(type, "field>=value")) {
-                            template = new Template("template", new StringReader("${(" + data + ">=" + value + ")?c}"), cfg);
+                            template = this.buildTemplate("${(" + data + ">=" + value + ")?c}");
                         } else if (Objects.equals(type, "field>value")) {
-                            template = new Template("template", new StringReader("${(" + data + ">" + value + ")?c}"), cfg);
+                            template = this.buildTemplate("${(" + data + ">" + value + ")?c}");
                         } else {
                             runResult.error("规则配置有误：{}", rule);
                         }

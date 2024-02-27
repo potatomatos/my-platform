@@ -39,7 +39,12 @@ public class DeDuplicationAgent extends MultipleSourcesAgent {
             String property = options.getString("property");
             runResult.info("去重字段配置：property={}", property);
             Map<String, Boolean> dupConMap = new HashMap<>();
-            List<JSONObject> list = events.stream().map(Event::getPayload).collect(Collectors.toList());
+            List<JSONObject> list = events.stream().map(item -> {
+                JSONObject payload = item.getPayload();
+                // 将配置也放到模板数据里面
+                payload.put("_this_", options);
+                return payload;
+            }).collect(Collectors.toList());
             JSONArray result = new JSONArray();
             // 获取需要去重的字段名
             Pattern pattern = Pattern.compile("\\$\\{\\s*(.*?)\\s*\\}");
