@@ -76,6 +76,8 @@
 
     <!-- Spring日志级别控制  -->
     <logger name="org.springframework" level="warn"/>
+    <!--关闭数据源打印日志-->
+    <logger name="com.alibaba.druid.pool.DruidAbstractDataSource" level="OFF"/>
 
     <!--系统操作日志-->
     <root level="info">
