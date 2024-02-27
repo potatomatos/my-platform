@@ -214,9 +214,6 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
 
     public PageResult<AgentVo> pageList(PageWrapper<AgentVo> param) {
         AgentVo agentVo = param.getParam();
-        if (StringUtil.isNotEmpty(agentVo.getName())) {
-            agentVo.setName(StringUtil.sqlLike(agentVo.getName()));
-        }
         PageResult<AgentVo> result = new PageResult<>(param.getPage(), param.getLimit());
         Page<ScheduleAgent> page = PageHelper.startPage(param.getPage(), param.getLimit());
         List<ScheduleAgent> list = getBaseMapper().pageSelectList(agentVo);
