@@ -147,7 +147,6 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
                 //先把原来的任务删掉，再添加新任务
                 taskScheduler.removeJob(taskDetail);
             }
-            taskScheduler.addManualJob(taskDetail);
         } else {
             taskDetail.setCron(AgentTypeVo.ScheduleEnum.getCron(scheduleAgent.getSchedule()));
             if (taskScheduler.checkExists(taskDetail)) {

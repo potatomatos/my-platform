@@ -89,7 +89,6 @@ public class TaskScheduler {
     public void modifyJobTime(TaskDetail taskDetail) {
         log.info("修改一个任务的触发时间：{}", taskDetail);
         try {
-            log.info("------修改定时任务，{}", taskDetail);
             Scheduler scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
             Trigger trigger = scheduler.getTrigger(triggerKey);
@@ -107,6 +106,7 @@ public class TaskScheduler {
                     trigger = triggerBuilder.build();
                     // 方式一 ：修改一个任务的触发时间
                     scheduler.rescheduleJob(triggerKey, trigger);
+                    scheduler.resumeJob(new JobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
                 }
             }
 
@@ -174,7 +174,7 @@ public class TaskScheduler {
      */
     public void triggerJob(TaskDetail taskDetail) throws SchedulerException {
         Scheduler scheduler = schedulerFactory.getScheduler();
-        JobKey jobKey = JobKey.jobKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
+        JobKey jobKey = JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName());
         if (checkExists(taskDetail)) {
             log.info("手动触发一个job：{}", taskDetail);
             scheduler.triggerJob(jobKey);
@@ -182,7 +182,7 @@ public class TaskScheduler {
     }
 
     public Boolean checkExists(TaskDetail taskDetail) throws SchedulerException {
-        return schedulerFactory.getScheduler().checkExists(JobKey.jobKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName()));
+        return schedulerFactory.getScheduler().checkExists(JobKey.jobKey(taskDetail.getJobName(), taskDetail.getJobGroupName()));
     }
 
     /**

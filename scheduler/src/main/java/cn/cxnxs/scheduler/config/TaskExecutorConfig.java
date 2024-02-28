@@ -90,9 +90,6 @@ public class TaskExecutorConfig {
             if (scheduleAgentType.getCanBeScheduled()
                     && StringUtil.isNotEmpty(cron)) {
                 taskScheduler.addJob(taskDetail);
-            } else {
-                // 手动触发
-                taskScheduler.addManualJob(taskDetail);
             }
         }
 
