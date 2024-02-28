@@ -37,7 +37,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -82,7 +84,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     }
 
     @Transactional
-    public Map<String, String> saveAgent(AgentVo agentVo) throws SchedulerException {
+    public Integer saveAgent(AgentVo agentVo) throws SchedulerException {
         //保存代理
         ScheduleAgent scheduleAgent = new ScheduleAgent();
         ObjectUtil.transValues(agentVo, scheduleAgent);
@@ -124,7 +126,7 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         }
         // 修改定时任务信息
         agentScheduleChange(scheduleAgent);
-        return new HashMap<>();
+        return scheduleAgent.getId();
     }
 
     private void agentScheduleChange(ScheduleAgent scheduleAgent) throws SchedulerException {

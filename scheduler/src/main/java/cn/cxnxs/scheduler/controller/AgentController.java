@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -63,7 +62,7 @@ public class AgentController {
 
     @ResponseResult
     @RequestMapping("save")
-    public Map<String, String> saveAgent(@RequestBody AgentVo agentVo) throws SchedulerException {
+    public Integer saveAgent(@RequestBody AgentVo agentVo) throws SchedulerException {
         return agentService.saveAgent(agentVo);
     }
 

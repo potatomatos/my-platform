@@ -56,9 +56,10 @@ public class AgentTypeController {
         return pageResult;
     }
 
+    @ResponseResult
     @RequestMapping("save")
-    public Result<Integer> save(@RequestBody ScheduleAgentType agentType) {
-        return Result.success("保存成功", agentTypeService.updateOrSave(agentType));
+    public Integer save(@RequestBody ScheduleAgentType agentType) {
+        return agentTypeService.updateOrSave(agentType);
     }
 
     @SneakyThrows
