@@ -11,6 +11,7 @@ import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
+import cn.cxnxs.scheduler.service.EventsServiceImpl;
 import cn.cxnxs.scheduler.vo.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -41,6 +42,9 @@ public class AgentController {
 
     @Autowired
     private AgentServiceImpl agentService;
+
+    @Autowired
+    private EventsServiceImpl eventsService;
 
     @RequestMapping
     public Result<AgentVo> list(@RequestBody PageWrapper<AgentVo> pageWrapper) {
@@ -83,7 +87,7 @@ public class AgentController {
         AgentVo agent = agentService.getAgentById(id);
         if (!Objects.isNull(agent.getSourceAgents()) && !agent.getSourceAgents().isEmpty()) {
             List<Integer> sourceIds = agent.getSourceAgents().stream().map(AgentVo::getId).collect(Collectors.toList());
-            return new ScheduleEvents().selectList(Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getAgentId, sourceIds).orderByDesc(ScheduleEvents::getCreatedAt).last(" limit 10"));
+            return eventsService.list(Wrappers.lambdaQuery(ScheduleEvents.class).in(ScheduleEvents::getAgentId, sourceIds).orderByDesc(ScheduleEvents::getCreatedAt).last(" limit 10"));
         }
         return new ArrayList<>();
     }
@@ -97,13 +101,25 @@ public class AgentController {
     @PostMapping("events/{id}")
     public PageResult<ScheduleEvents> getEvents(@PathVariable("id") Integer id, Integer pageNo, Integer limit) {
         Page<ScheduleEvents> page = PageHelper.startPage(pageNo, limit);
-        List<ScheduleEvents> events = new ScheduleEvents().selectList(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id).orderByDesc(ScheduleEvents::getCreatedAt));
+        List<ScheduleEvents> events = eventsService.list(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, id).orderByDesc(ScheduleEvents::getCreatedAt));
         PageResult<ScheduleEvents> result = new PageResult<>(page.getTotal());
         result.setCurrent(page.getPageNum());
         result.setPageSize(page.getPageSize());
         result.setPages(page.getPages());
         result.setRows(events);
         return result;
+    }
+
+    /**
+     * 删除单条数据
+     *
+     * @param id
+     * @return
+     */
+    @ResponseResult
+    @PostMapping("event/delete/{id}")
+    public Boolean deleteEvent(@PathVariable("id") Integer id) {
+        return eventsService.removeById(id);
     }
 
     /**
@@ -208,6 +224,21 @@ public class AgentController {
     @GetMapping("/runningTasks")
     public Integer runningTasks() {
         return agentService.selectRunningTaskCount();
+    }
+
+
+    @ResponseResult
+    @PostMapping("/re-emit-event")
+    public Result<Object> reEmitEvent(@RequestParam("agentId") Integer agentId, @RequestParam("eventId") Integer eventId) throws ClassNotFoundException, InterruptedException {
+        agentService.reEmitEvent(agentId, eventId);
+        return Result.success();
+    }
+
+    @ResponseResult
+    @PostMapping("/re-emit-events/{agentId}")
+    public Result<Object> reEmitEvents(@PathVariable("agentId") Integer agentId) throws ClassNotFoundException, InterruptedException {
+        agentService.reEmitEvents(agentId);
+        return Result.success();
     }
 }
 

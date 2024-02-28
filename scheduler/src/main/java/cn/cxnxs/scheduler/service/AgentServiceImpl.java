@@ -11,10 +11,7 @@ import cn.cxnxs.scheduler.exception.AgentNotFoundException;
 import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
 import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
 import cn.cxnxs.scheduler.mapper.ScheduleLinksMapper;
-import cn.cxnxs.scheduler.quartz.CustomThreadPoolExecutor;
-import cn.cxnxs.scheduler.quartz.TaskDetail;
-import cn.cxnxs.scheduler.quartz.TaskRunnable;
-import cn.cxnxs.scheduler.quartz.TaskScheduler;
+import cn.cxnxs.scheduler.quartz.*;
 import cn.cxnxs.scheduler.quartz.jobs.RunningAgentJob;
 import cn.cxnxs.scheduler.utils.SerializeUtil;
 import cn.cxnxs.scheduler.utils.SpringContextUtil;
@@ -75,6 +72,12 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
 
     @Autowired
     private CustomThreadPoolExecutor threadPoolTaskExecutor;
+
+    @Autowired
+    private JobsService jobsService;
+
+    @Autowired
+    private EventsServiceImpl eventsService;
 
 
     public List<AgentVo> findByTypeProperties(AgentTypeVo agentTypeVo) {
@@ -415,6 +418,29 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         result.setRows(tasks);
 
         return result;
+    }
+
+    /**
+     * 重发数据
+     *
+     * @param agentId
+     * @param eventId
+     */
+    public void reEmitEvent(Integer agentId, Integer eventId) throws ClassNotFoundException, InterruptedException {
+        List<ScheduleEvents> scheduleEvents = eventsService.list(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getId, eventId));
+        AgentVo agent = this.getAgentById(agentId);
+        jobsService.runNextDelayedJobs(agent, scheduleEvents);
+    }
+
+    /**
+     * 重发数据
+     *
+     * @param agentId
+     */
+    public void reEmitEvents(Integer agentId) throws ClassNotFoundException, InterruptedException {
+        List<ScheduleEvents> scheduleEvents = eventsService.list(Wrappers.lambdaQuery(ScheduleEvents.class).eq(ScheduleEvents::getAgentId, agentId));
+        AgentVo agent = this.getAgentById(agentId);
+        jobsService.runNextDelayedJobs(agent, scheduleEvents);
     }
 
 }

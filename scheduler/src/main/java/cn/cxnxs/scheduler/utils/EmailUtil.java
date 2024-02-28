@@ -2,7 +2,6 @@ package cn.cxnxs.scheduler.utils;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -20,23 +19,18 @@ import java.io.File;
 @Component
 public class EmailUtil {
 
-    /**
-     * 从application.yml配置文件中获取发送发邮箱地址
-     */
-    @Value("${spring.mail.from}")
-    private String from;
-
     @Autowired
     private JavaMailSender mailSender;
 
     /**
      * 发送纯文本邮件信息
      *
+     * @param from    发送方
      * @param to      接收方
      * @param subject 邮件主题
      * @param content 邮件内容（发送内容）
      */
-    public void sendMessage(String to, String subject, String content) {
+    public void sendMessage(String from, String to, String subject, String content) {
         // 创建一个邮件对象
         SimpleMailMessage msg = new SimpleMailMessage();
         // 设置发送发
@@ -54,12 +48,13 @@ public class EmailUtil {
     /**
      * 发送带附件的邮件信息
      *
+     * @param from    发送方
      * @param to      接收方
      * @param subject 邮件主题
      * @param content 邮件内容（发送内容）
      * @param files   文件数组 // 可发送多个附件
      */
-    public void sendMessageCarryFiles(String to, String subject, String content, File[] files) {
+    public void sendMessageCarryFiles(String from, String to, String subject, String content, File[] files) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
@@ -92,7 +87,7 @@ public class EmailUtil {
      * @param content 邮件内容（发送内容）
      * @param file    单个文件
      */
-    public void sendMessageCarryFile(String to, String subject, String content, File file) {
+    public void sendMessageCarryFile(String from, String to, String subject, String content, File file) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
@@ -120,7 +115,7 @@ public class EmailUtil {
      * @param subject 邮件主题
      * @param content 邮件内容（发送内容）
      */
-    public void sendMessageHTML(String to, String subject, String content) {
+    public void sendMessageHTML(String from, String to, String subject, String content) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);

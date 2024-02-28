@@ -7,6 +7,7 @@ import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleDelayedJobs;
 import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
+import cn.cxnxs.scheduler.quartz.CustomThreadPoolExecutor;
 import cn.cxnxs.scheduler.quartz.JobSupport;
 import cn.cxnxs.scheduler.quartz.TaskRunnable;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
@@ -18,7 +19,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import javax.annotation.Resource;
@@ -40,7 +40,7 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
     private ScheduleDelayedJobsMapper scheduleDelayedJobsMapper;
 
     @Autowired
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    private CustomThreadPoolExecutor threadPoolTaskExecutor;
 
     @Autowired
     private JobSupport jobSupport;
@@ -64,7 +64,7 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
             AgentVo agentVo = agentService.getAgentById(agent.getId());
             AgentTypeVo agentType = agentVo.getAgentType();
             TaskRunnable taskRunnable = new TaskRunnable(agent);
-            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor.getThreadPoolExecutor());
+            CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
             // 保存日志，记录运行记录
             ScheduleAgentLogs agentLogs = jobSupport.saveLogs(agent.getId(), null, null, null);
             future.thenAccept(runResult -> {

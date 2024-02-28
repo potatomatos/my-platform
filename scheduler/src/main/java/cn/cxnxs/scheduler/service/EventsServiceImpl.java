@@ -26,4 +26,6 @@ public class EventsServiceImpl extends ServiceImpl<ScheduleEventsMapper, Schedul
     public Boolean exists(Integer agentId, Integer uniquenessLookBack, String payloadMd5) {
         return baseMapper.getUniquenessLookBackCount(agentId, uniquenessLookBack, payloadMd5) > 0;
     }
+
+
 }
