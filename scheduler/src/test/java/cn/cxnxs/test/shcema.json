@@ -1,0 +1,54 @@
+{
+  "title": "数据输出任务",
+  "type": "object",
+  "properties": {
+    "secrets": {
+      "title": "给请求者提供的令牌数组",
+      "type": "array"
+    },
+    "events_order": {
+      "title": "排序字段",
+      "type": "object",
+      "properties": {
+        "filed": {
+          "title": "字段名",
+          "type": "string"
+        },
+        "reverse": {
+          "title": "是否倒叙",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "filed",
+        "reverse"
+      ]
+    },
+    "template": {
+      "title": "数据内容",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "pubDate": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "pubDate"
+      ]
+    }
+  },
+  "required": [
+    "secrets",
+    "template"
+  ]
+}

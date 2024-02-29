@@ -1,5 +1,22 @@
 {
-  "property": "#{next_url}",
-  "expected_update_period_in_days": "2",
-  "lookback": "15"
+  "secrets": [
+    "a-secret-key"
+  ],
+  "events_order": {
+    "filed": "pubDate",
+    "reverse": false
+  },
+  "template": {
+    "title": "这是一个标题",
+    "description": "这是最近的 XKCD 漫画订阅。",
+    "link": "https://www.baidu.com",
+    "icon": "",
+    "image": "",
+    "item": {
+      "title": "${title}",
+      "link": "${url}",
+      "description": "这是一段描述",
+      "pubDate": "${pubDate}"
+    }
+  }
 }
