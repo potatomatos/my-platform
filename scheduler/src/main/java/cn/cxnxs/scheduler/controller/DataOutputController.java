@@ -24,8 +24,8 @@ public class DataOutputController {
      */
     @GetMapping(value = "/{agentId}/xml", produces = {MediaType.APPLICATION_XML_VALUE})
     @ResponseBody
-    public String rssData(@PathVariable("agentId") Integer agentId) throws FeedException {
-        return dataOutputService.getRssData(agentId);
+    public String rssData(@PathVariable("agentId") Integer agentId, @RequestParam("secret") String secret) throws FeedException {
+        return dataOutputService.getRssData(agentId, secret);
     }
 
     /**
@@ -34,9 +34,9 @@ public class DataOutputController {
      * @param agentId
      * @return
      */
-    @GetMapping(value = "/{agentId}/json", produces = {MediaType.APPLICATION_XML_VALUE})
+    @GetMapping(value = "/{agentId}/json")
     @ResponseBody
-    public JSONObject jsonData(@PathVariable("agentId") Integer agentId) {
-        return dataOutputService.getOutputData(agentId);
+    public JSONObject jsonData(@PathVariable("agentId") Integer agentId, @RequestParam("secret") String secret) {
+        return dataOutputService.getOutputData(agentId, secret);
     }
 }

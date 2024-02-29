@@ -138,18 +138,17 @@ public class AgentController {
      * 测试运行
      *
      * @param type     代理类型id
-     * @param options  配置
-     * @param payloads 数据源
+     * @param dryRunVO 数据源和配置
      * @return 代理数据
      * @throws ClassNotFoundException
      */
     @ResponseResult
     @RequestMapping("dryRun/{type}")
-    public RunResult dryRun(@PathVariable("type") Integer type, @RequestParam String options, String payloads) throws ClassNotFoundException {
-        JSONObject optionsJson = JSON.parseObject(options);
+    public RunResult dryRun(@PathVariable("type") Integer type, @RequestBody DryRunVO dryRunVO) throws ClassNotFoundException {
+        JSONObject optionsJson = JSON.parseObject(dryRunVO.getOptions());
         List<JSONObject> payloadJson = new ArrayList<>();
-        if (StringUtil.isNotEmpty(payloads)) {
-            JSONArray jsonArray = JSONArray.parseArray(payloads);
+        if (StringUtil.isNotEmpty(dryRunVO.getPayloads())) {
+            JSONArray jsonArray = JSONArray.parseArray(dryRunVO.getPayloads());
             for (int i = 0; i < jsonArray.size(); i++) {
                 payloadJson.add(jsonArray.getJSONObject(i));
             }

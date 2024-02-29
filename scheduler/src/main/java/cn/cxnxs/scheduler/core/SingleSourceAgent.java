@@ -43,15 +43,22 @@ public abstract class SingleSourceAgent extends AbstractAgent {
             runResult.info("入参数据：{}", event);
             runResult.info("-------开始替换配置占位符------");
             JSONObject options = getOptions();
+            JSONObject template = new JSONObject();
+            // template节点不替换
+            if (options.containsKey("template")) {
+                template = options.getJSONObject("template");
+                options.remove("template");
+            }
             String optionsStr = options.toJSONString();
             JSONObject ev = event.getPayload();
             ev.put("_this_", options);
-            Template template = this.buildTemplate(optionsStr);
+            Template tlp = this.buildTemplate(optionsStr);
             // 渲染模板
             StringWriter out = new StringWriter();
-            template.process(ev, out);
-
-            setOptions(JSONObject.parseObject(out.toString()));
+            tlp.process(ev, out);
+            options = JSONObject.parseObject(out.toString());
+            options.put("template", template);
+            setOptions(options);
         }
     }
 }
