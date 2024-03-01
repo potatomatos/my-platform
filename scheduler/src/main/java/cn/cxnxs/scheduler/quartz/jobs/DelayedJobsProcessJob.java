@@ -52,9 +52,12 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) {
-        log.info("======开始处理任务队列======");
         // 一次处理100条数据
         List<ScheduleDelayedJobs> delayedJobs = scheduleDelayedJobsMapper.selectList(Wrappers.lambdaQuery(ScheduleDelayedJobs.class).isNotNull(ScheduleDelayedJobs::getHandler).orderByAsc(ScheduleDelayedJobs::getCreatedAt).last(" limit 100"));
+        if (delayedJobs.size() == 0) {
+            return;
+        }
+        log.info("======开始处理任务队列======");
         for (ScheduleDelayedJobs delayedJob : delayedJobs) {
             IAgent agent = SerializeUtil.deserializeObjectFromString(delayedJob.getHandler());
             if (Objects.isNull(agent)) {

@@ -61,6 +61,7 @@ public class DeDuplicationAgent extends MultipleSourcesAgent {
                     String value = context.read("$." + key);
                     if (StringUtil.isNotEmpty(value) && !dupConMap.containsKey(value)) {
                         dupConMap.put(value, true);
+                        json.remove("_this_");
                         result.add(json);
                     }
                 }

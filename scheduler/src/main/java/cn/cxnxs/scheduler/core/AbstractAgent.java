@@ -1,8 +1,11 @@
 package cn.cxnxs.scheduler.core;
 
+import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.enums.OptionConstants;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -13,7 +16,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Getter
@@ -53,22 +57,38 @@ public abstract class AbstractAgent implements IAgent {
 
     /**
      * 根据配置中的模板返回
-     *
-     * @param sources
      */
     private JSONArray formatWithTemplate(JSONArray sources) throws IOException, TemplateException {
-        if (this.options.containsKey("template") && !CollectionUtils.isEmpty(sources)) {
+        if (this.options.containsKey("template")
+                && !this.options.getJSONObject("template").isEmpty()
+                && !CollectionUtils.isEmpty(sources)) {
+
+            JSONObject template = this.options.getJSONObject("template");
+            Pattern pattern = Pattern.compile("\\$\\{\\s*(.*?)\\s*\\}");
+
             JSONArray result = new JSONArray();
-            String templateStr = this.options.getString("template");
-            Template template = this.buildTemplate(templateStr);
-            StringWriter out = new StringWriter();
             for (int i = 0; i < sources.size(); i++) {
-                // 清空 StringWriter
-                out.getBuffer().setLength(0);
                 JSONObject jsonObject = sources.getJSONObject(i);
                 jsonObject.put("_this_", this.options);
-                template.process(jsonObject, out);
-                result.add(JSONObject.parseObject(out.toString()));
+                JSONObject item = new JSONObject();
+
+                for (String templateKey : template.keySet()) {
+                    item.put(templateKey, "");
+                    String templateValue = template.getString(templateKey);
+                    Matcher matcher = pattern.matcher(templateValue);
+                    String key = null;
+                    if (matcher.find()) {
+                        key = matcher.group(1);
+                    }
+                    if (StringUtil.isNotEmpty(key)) {
+                        ReadContext context = JsonPath.parse(jsonObject);
+                        // 通过jsonpath获取到内容
+                        String value = context.read("$." + key);
+                        item.put(templateKey, value);
+                    }
+
+                }
+                result.add(item);
             }
             return result;
         }

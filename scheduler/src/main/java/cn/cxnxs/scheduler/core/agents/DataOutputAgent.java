@@ -1,19 +1,22 @@
 package cn.cxnxs.scheduler.core.agents;
 
+import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.MultipleSourcesAgent;
 import cn.cxnxs.scheduler.core.RunResult;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import freemarker.template.Template;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -25,7 +28,7 @@ import java.util.stream.Collectors;
 public class DataOutputAgent extends MultipleSourcesAgent {
 
     @Override
-    public void start(RunResult runResult) throws Exception {
+    public void start(RunResult runResult) {
         long start = System.currentTimeMillis();
         JSONArray result = new JSONArray();
         List<Event> events = getEvents();
@@ -37,14 +40,26 @@ public class DataOutputAgent extends MultipleSourcesAgent {
             JSONObject options = getOptions();
             JSONObject templateOption = options.getJSONObject("template");
             JSONObject itemOption = templateOption.getJSONObject("item");
-            Template template = this.buildTemplate(itemOption.toJSONString());
-            StringWriter out = new StringWriter();
             List<JSONObject> items = new ArrayList<>();
+            Pattern pattern = Pattern.compile("\\$\\{\\s*(.*?)\\s*\\}");
             for (JSONObject jsonObject : list) {
-                // 清空 StringWriter
-                out.getBuffer().setLength(0);
-                template.process(jsonObject, out);
-                items.add(JSONObject.parseObject(out.toString()));
+                JSONObject item = new JSONObject();
+                for (String itemKey : itemOption.keySet()) {
+                    item.put(itemKey, "");
+                    String itemValue = itemOption.getString(itemKey);
+                    Matcher matcher = pattern.matcher(itemValue);
+                    String key = null;
+                    if (matcher.find()) {
+                        key = matcher.group(1);
+                    }
+                    if (StringUtil.isNotEmpty(key)) {
+                        ReadContext context = JsonPath.parse(jsonObject);
+                        // 通过jsonpath获取到内容
+                        String value = context.read("$." + key);
+                        item.put(itemKey, value);
+                    }
+                }
+                items.add(item);
             }
             templateOption.put("item", items);
             result.add(templateOption);

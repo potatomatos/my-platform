@@ -29,7 +29,6 @@ public class ExpiredDataDeletionJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) {
-        log.info("======开始删除过期数据======");
         List<ScheduleAgent> agents = agentService.list();
         for (ScheduleAgent agent : agents) {
             Integer keepDataTime = agent.getKeepDataTime();
