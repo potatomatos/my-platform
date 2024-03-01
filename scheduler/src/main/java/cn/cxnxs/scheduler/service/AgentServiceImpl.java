@@ -12,7 +12,6 @@ import cn.cxnxs.scheduler.mapper.ScheduleAgentMapper;
 import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
 import cn.cxnxs.scheduler.mapper.ScheduleLinksMapper;
 import cn.cxnxs.scheduler.quartz.*;
-import cn.cxnxs.scheduler.quartz.jobs.RunningAgentJob;
 import cn.cxnxs.scheduler.utils.SerializeUtil;
 import cn.cxnxs.scheduler.utils.SpringContextUtil;
 import cn.cxnxs.scheduler.vo.*;
@@ -23,7 +22,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -135,23 +133,13 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
     private void agentScheduleChange(ScheduleAgent scheduleAgent) throws SchedulerException {
         ScheduleAgentType agentType = agentTypeService.getById(scheduleAgent.getType());
         if (!agentType.getCanBeScheduled()) {
-            scheduleAgent.setSchedule(AgentTypeVo.ScheduleEnum.NEVER.getCode());
+            return;
         }
-        TaskDetail taskDetail = new TaskDetail();
-        taskDetail.setJobName(scheduleAgent.getName());
-        taskDetail.setJobGroupName(agentType.getAgentTypeName());
-        taskDetail.setTriggerName(scheduleAgent.getName());
-        taskDetail.setTriggerGroupName(agentType.getAgentTypeName());
-        taskDetail.setJobClass(RunningAgentJob.class);
-        JobDataMap jobDataMap = new JobDataMap();
-        jobDataMap.put("id", scheduleAgent.getId());
-        taskDetail.setJobDataMap(jobDataMap);
+        AgentVo agent = getAgentById(scheduleAgent.getId());
+        TaskDetail taskDetail = taskScheduler.buildTaskDetail(agent);
         //将自动任务改成手动
         if (Objects.equals(AgentTypeVo.ScheduleEnum.NEVER.getCode(), scheduleAgent.getSchedule())) {
-            if (taskScheduler.checkExists(taskDetail)) {
-                //先把原来的任务删掉，再添加新任务
-                taskScheduler.removeJob(taskDetail);
-            }
+            taskScheduler.removeJob(taskDetail);
         } else {
             taskDetail.setCron(AgentTypeVo.ScheduleEnum.getCron(scheduleAgent.getSchedule()));
             if (taskScheduler.checkExists(taskDetail)) {
@@ -442,5 +430,45 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         AgentVo agent = this.getAgentById(agentId);
         jobsService.runNextDelayedJobs(agent, scheduleEvents);
     }
+
+    /**
+     * 启动
+     *
+     * @param id
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean enable(Integer id) {
+        //将任务启动
+        AgentVo agent = getAgentById(id);
+        if (agent.getAgentType().getCanBeScheduled()
+                && StringUtil.isNotEmpty(AgentTypeVo.ScheduleEnum.getCron(agent.getSchedule()))) {
+            TaskDetail taskDetail = taskScheduler.buildTaskDetail(agent);
+            taskScheduler.addJob(taskDetail);
+        }
+        //修改状态
+        ScheduleAgent scheduleAgent = new ScheduleAgent();
+        scheduleAgent.setId(id);
+        scheduleAgent.setState(AgentVo.AgentState.ENABLE.getCode());
+        return this.saveOrUpdate(scheduleAgent);
+    }
+
+    /**
+     * 关闭
+     *
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean disable(Integer id) {
+        //将任务关闭
+        AgentVo agent = getAgentById(id);
+        TaskDetail taskDetail = taskScheduler.buildTaskDetail(agent);
+        taskScheduler.removeJob(taskDetail);
+        //修改状态
+        ScheduleAgent scheduleAgent = new ScheduleAgent();
+        scheduleAgent.setId(id);
+        scheduleAgent.setState(AgentVo.AgentState.DISABLE.getCode());
+        return this.saveOrUpdate(scheduleAgent);
+    }
+
 
 }

@@ -9,11 +9,7 @@ import cn.cxnxs.scheduler.quartz.JobsService;
 import cn.cxnxs.scheduler.quartz.TaskDetail;
 import cn.cxnxs.scheduler.quartz.TaskScheduler;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
-import cn.cxnxs.scheduler.service.EventsServiceImpl;
-import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
@@ -22,7 +18,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -38,9 +34,6 @@ public class RunningAgentJob extends QuartzJobBean {
 
     @Autowired
     private AgentServiceImpl agentService;
-
-    @Autowired
-    private EventsServiceImpl eventsService;
 
     @Autowired
     private TaskScheduler taskScheduler;
@@ -72,8 +65,8 @@ public class RunningAgentJob extends QuartzJobBean {
         AgentVo agentVo = agentService.getAgentById(id);
         ScheduleAgent agent = new ScheduleAgent();
         agent.setId(id);
-        agent.setUpdatedAt(LocalDateTime.now());
         agent.setLastCheckAt(LocalDateTime.now());
+        agent.setNextFireAt(jobExecutionContext.getNextFireTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
         agent.updateById();
         if (Objects.equals(agentVo.getState(), AgentVo.AgentState.DISABLE.getCode())) {
             // 任务已关闭或者暂停
@@ -94,8 +87,7 @@ public class RunningAgentJob extends QuartzJobBean {
                         && sourcesAreRunning(sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList()))) {
                     return;
                 }
-                List<Integer> sourceAgentsIdList = sourceAgents.stream().map(AgentVo::getId).collect(Collectors.toList());
-                List<ScheduleEvents> events = getSourceEvents(sourceAgentsIdList, agentVo);
+                List<ScheduleEvents> events = jobsService.getSourceEvents(agentVo);
                 jobsService.runTask(agentVo, events);
             }
         } catch (Exception e) {
@@ -117,38 +109,4 @@ public class RunningAgentJob extends QuartzJobBean {
         }
         return false;
     }
-
-    /**
-     * 分页获取数据源数据
-     *
-     * @param sourceIds
-     * @param agentVo
-     * @return
-     */
-    public List<ScheduleEvents> getSourceEvents(List<Integer> sourceIds, AgentVo agentVo) {
-        AgentTypeVo agentType = agentVo.getAgentType();
-        // 是否接收数据
-        Boolean canReceiveEvents = agentType.getCanReceiveEvents();
-        // 是否接收数据源
-        Boolean hasSources = agentVo.getHasSources();
-        JSONObject optionsJSON = agentVo.getOptionsJSON();
-        // 需要找的数据上溯多上天
-        Integer expectedUpdatePeriodInDays = optionsJSON.getInteger("expected_update_period_in_days");
-        //和之前多少条数据做对比
-        Integer lookback = optionsJSON.getInteger("lookback");
-        if (canReceiveEvents && hasSources) {
-            LambdaQueryWrapper<ScheduleEvents> query = Wrappers.lambdaQuery(ScheduleEvents.class);
-            query.orderByDesc(ScheduleEvents::getCreatedAt);
-            query.in(ScheduleEvents::getAgentId, sourceIds);
-            if (Objects.nonNull(expectedUpdatePeriodInDays)) {
-                query.ge(ScheduleEvents::getCreatedAt, LocalDateTime.now().minusDays(expectedUpdatePeriodInDays));
-            }
-            if (Objects.nonNull(lookback)) {
-                query.last("limit " + lookback);
-            }
-            return eventsService.list(query);
-        }
-        return new ArrayList<>();
-    }
-
 }

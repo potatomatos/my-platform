@@ -38,8 +38,8 @@ public class DataOutputAgent extends MultipleSourcesAgent {
         if (!CollectionUtils.isEmpty(events)) {
             runResult.info("输入数据：{}", events);
             JSONObject options = getOptions();
-            JSONObject templateOption = options.getJSONObject("template");
-            JSONObject itemOption = templateOption.getJSONObject("item");
+            JSONObject bodyOption = options.getJSONObject("body");
+            JSONObject itemOption = bodyOption.getJSONObject("item");
             List<JSONObject> items = new ArrayList<>();
             Pattern pattern = Pattern.compile("\\$\\{\\s*(.*?)\\s*\\}");
             for (JSONObject jsonObject : list) {
@@ -61,8 +61,8 @@ public class DataOutputAgent extends MultipleSourcesAgent {
                 }
                 items.add(item);
             }
-            templateOption.put("item", items);
-            result.add(templateOption);
+            bodyOption.put("item", items);
+            result.add(bodyOption);
             // 将内容返回
             runResult.log("解析完成！用时：{}ms,最终解析结果：\n{}", System.currentTimeMillis() - start, result.toJSONString());
             runResult.setPayload(result);

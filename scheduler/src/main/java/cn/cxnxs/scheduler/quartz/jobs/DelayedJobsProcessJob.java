@@ -1,14 +1,15 @@
 package cn.cxnxs.scheduler.quartz.jobs;
 
-import cn.cxnxs.scheduler.core.IAgent;
-import cn.cxnxs.scheduler.core.RunLogs;
-import cn.cxnxs.scheduler.core.RunResult;
+import cn.cxnxs.common.core.utils.ObjectUtil;
+import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleDelayedJobs;
+import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.mapper.ScheduleDelayedJobsMapper;
 import cn.cxnxs.scheduler.quartz.CustomThreadPoolExecutor;
 import cn.cxnxs.scheduler.quartz.JobSupport;
+import cn.cxnxs.scheduler.quartz.JobsService;
 import cn.cxnxs.scheduler.quartz.TaskRunnable;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
 import cn.cxnxs.scheduler.utils.SerializeUtil;
@@ -16,6 +17,7 @@ import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * 扫描队列中的任务并处理
@@ -45,15 +48,22 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
     @Autowired
     private JobSupport jobSupport;
 
+    @Autowired
+    private JobsService jobsService;
+
     /**
      * 最多执行5次
      */
     private static final Integer MAX_RUN_TIMES = 5;
 
+    @SneakyThrows
     @Override
     protected void executeInternal(JobExecutionContext context) {
         // 一次处理100条数据
-        List<ScheduleDelayedJobs> delayedJobs = scheduleDelayedJobsMapper.selectList(Wrappers.lambdaQuery(ScheduleDelayedJobs.class).isNotNull(ScheduleDelayedJobs::getHandler).orderByAsc(ScheduleDelayedJobs::getCreatedAt).last(" limit 100"));
+        List<ScheduleDelayedJobs> delayedJobs = scheduleDelayedJobsMapper.selectList(Wrappers.lambdaQuery(ScheduleDelayedJobs.class)
+                .isNotNull(ScheduleDelayedJobs::getHandler)
+                .orderByAsc(ScheduleDelayedJobs::getCreatedAt)
+                .last(" limit 100"));
         if (delayedJobs.size() == 0) {
             return;
         }
@@ -64,7 +74,14 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
                 delayedJob.deleteById();
                 continue;
             }
+            // 更新运行时间
+            ScheduleAgent scheduleAgentUpdate = new ScheduleAgent();
+            scheduleAgentUpdate.setId(agent.getId());
+            scheduleAgentUpdate.setLastCheckAt(LocalDateTime.now());
+            scheduleAgentUpdate.updateById();
+
             AgentVo agentVo = agentService.getAgentById(agent.getId());
+            this.fillData(agent, agentVo);
             AgentTypeVo agentType = agentVo.getAgentType();
             TaskRunnable taskRunnable = new TaskRunnable(agent);
             CompletableFuture<RunResult> future = CompletableFuture.supplyAsync(taskRunnable, threadPoolTaskExecutor);
@@ -131,6 +148,19 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
             });
         }
 
+    }
+
+    public void fillData(IAgent iAgent, AgentVo agentVo) throws ClassNotFoundException {
+        AgentTypeVo agentType = agentVo.getAgentType();
+        if (MultipleSourcesAgent.class.isAssignableFrom(agentType.getHandlerClass())) {
+            List<ScheduleEvents> sourceEvents = jobsService.getSourceEvents(agentVo);
+            ((MultipleSourcesAgent) iAgent).setEvents(sourceEvents.stream().map(item -> {
+                Event event = ObjectUtil.transValues(item, Event.class);
+                assert event != null;
+                event.setPayload(JSONObject.parseObject(item.getPayload()));
+                return event;
+            }).collect(Collectors.toList()));
+        }
     }
 
 

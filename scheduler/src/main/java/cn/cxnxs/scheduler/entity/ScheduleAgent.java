@@ -66,6 +66,11 @@ public class ScheduleAgent extends Model<ScheduleAgent> {
     private LocalDateTime lastCheckAt;
 
     /**
+     * 下次触发事件
+     */
+    private LocalDateTime nextFireAt;
+
+    /**
      * 上次接收到数据时间
      */
     private LocalDateTime lastReceiveAt;

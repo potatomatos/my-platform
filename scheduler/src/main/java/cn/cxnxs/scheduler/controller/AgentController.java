@@ -173,10 +173,7 @@ public class AgentController {
     @ResponseResult
     @GetMapping("enable/{id}")
     public Result<Boolean> enable(@PathVariable("id") Integer id) {
-        ScheduleAgent scheduleAgent = new ScheduleAgent();
-        scheduleAgent.setId(id);
-        scheduleAgent.setState(AgentVo.AgentState.ENABLE.getCode());
-        boolean b = agentService.saveOrUpdate(scheduleAgent);
+        boolean b = agentService.enable(id);
         return Result.success("启用成功！", b);
     }
 
@@ -186,10 +183,7 @@ public class AgentController {
     @ResponseResult
     @GetMapping("disable/{id}")
     public Result<Boolean> disable(@PathVariable("id") Integer id) {
-        ScheduleAgent scheduleAgent = new ScheduleAgent();
-        scheduleAgent.setId(id);
-        scheduleAgent.setState(AgentVo.AgentState.DISABLE.getCode());
-        boolean b = agentService.saveOrUpdate(scheduleAgent);
+        boolean b = agentService.disable(id);
         return Result.success("关闭成功！", b);
     }
 

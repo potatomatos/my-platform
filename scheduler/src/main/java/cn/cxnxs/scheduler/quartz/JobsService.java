@@ -6,9 +6,12 @@ import cn.cxnxs.scheduler.entity.ScheduleAgent;
 import cn.cxnxs.scheduler.entity.ScheduleAgentLogs;
 import cn.cxnxs.scheduler.entity.ScheduleEvents;
 import cn.cxnxs.scheduler.service.AgentServiceImpl;
+import cn.cxnxs.scheduler.service.EventsServiceImpl;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,9 +20,11 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -36,6 +41,9 @@ public class JobsService {
 
     @Autowired
     private JobGenerator jobGenerator;
+
+    @Autowired
+    private EventsServiceImpl eventsService;
 
     /**
      * <h1>执行任务</h1>
@@ -111,9 +119,17 @@ public class JobsService {
             //判断是否立即传播事件
             AgentVo receiverAgentVo = agentService.getAgentById(receiver.getId());
             AgentTypeVo agentType = receiverAgentVo.getAgentType();
-            if (agentType.getCanReceiveEvents()
-                    && receiverAgentVo.getPropagateImmediately()) {
-                this.runTask(receiverAgentVo, evs);
+            if (agentType.getCanReceiveEvents()) {
+                if (receiverAgentVo.getPropagateImmediately()) {
+                    // 立即将数据传递到下个任务
+                    this.runTask(receiverAgentVo, evs);
+                } else {
+                    if (!agentType.getCanBeScheduled()) {
+                        // 将任务放到任务队列
+                        IAgent agent = jobGenerator.buildAgent(receiverAgentVo);
+                        jobSupport.saveDelayedJob(agent);
+                    }
+                }
             }
         }
     }
@@ -180,5 +196,38 @@ public class JobsService {
             jobSupport.saveLogs(agentVo.getId(), agentLogs, runLogs, false);
             return null;
         };
+    }
+
+    /**
+     * 分页获取数据源数据
+     *
+     * @param sourceIds
+     * @param agentVo
+     * @return
+     */
+    public List<ScheduleEvents> getSourceEvents(AgentVo agentVo) {
+        AgentTypeVo agentType = agentVo.getAgentType();
+        // 是否接收数据
+        Boolean canReceiveEvents = agentType.getCanReceiveEvents();
+        // 是否接收数据源
+        Boolean hasSources = agentVo.getHasSources();
+        JSONObject optionsJSON = agentVo.getOptionsJSON();
+        // 需要找的数据上溯多上天
+        Integer expectedUpdatePeriodInDays = optionsJSON.getInteger("expected_update_period_in_days");
+        //和之前多少条数据做对比
+        Integer lookback = optionsJSON.getInteger("lookback");
+        if (canReceiveEvents && hasSources) {
+            LambdaQueryWrapper<ScheduleEvents> query = Wrappers.lambdaQuery(ScheduleEvents.class);
+            query.orderByDesc(ScheduleEvents::getCreatedAt);
+            query.in(ScheduleEvents::getAgentId, agentVo.getSourceAgents().stream().map(AgentVo::getId).collect(Collectors.toList()));
+            if (Objects.nonNull(expectedUpdatePeriodInDays)) {
+                query.ge(ScheduleEvents::getCreatedAt, LocalDateTime.now().minusDays(expectedUpdatePeriodInDays));
+            }
+            if (Objects.nonNull(lookback)) {
+                query.last("limit " + lookback);
+            }
+            return eventsService.list(query);
+        }
+        return new ArrayList<>();
     }
 }

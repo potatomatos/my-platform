@@ -1,6 +1,9 @@
 package cn.cxnxs.scheduler.quartz;
 
 import cn.cxnxs.scheduler.exception.ScheduleException;
+import cn.cxnxs.scheduler.quartz.jobs.RunningAgentJob;
+import cn.cxnxs.scheduler.vo.AgentTypeVo;
+import cn.cxnxs.scheduler.vo.AgentVo;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +27,11 @@ public class TaskScheduler {
      * @param taskDetail 任务信息
      */
     public void addJob(TaskDetail taskDetail) {
-        log.info("------添加定时任务：{}", taskDetail);
         try {
-            if (checkExists(taskDetail)) {
+            if (this.checkExists(taskDetail)) {
                 return;
             }
+            log.info("------添加定时任务：{}", taskDetail);
             Scheduler scheduler = schedulerFactory.getScheduler();
             JobDetail jobDetail = JobBuilder
                     .newJob(taskDetail.getJobClass())
@@ -121,8 +124,11 @@ public class TaskScheduler {
      * @param taskDetail 任务信息
      */
     public void removeJob(TaskDetail taskDetail) {
-        log.info("移除一个任务：{}", taskDetail);
         try {
+            if (!this.checkExists(taskDetail)) {
+                return;
+            }
+            log.info("移除一个任务：{}", taskDetail);
             Scheduler scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDetail.getTriggerName(), taskDetail.getTriggerGroupName());
             scheduler.pauseTrigger(triggerKey);
@@ -212,4 +218,20 @@ public class TaskScheduler {
             log.error("关闭所有定时任务出现异常！", e);
         }
     }
+
+    public TaskDetail buildTaskDetail(AgentVo agentVo) {
+        String cron = AgentTypeVo.ScheduleEnum.getCron(agentVo.getSchedule());
+        TaskDetail taskDetail = new TaskDetail();
+        taskDetail.setJobName(agentVo.getName());
+        taskDetail.setJobGroupName(agentVo.getAgentType().getAgentTypeName());
+        taskDetail.setTriggerName(agentVo.getName());
+        taskDetail.setTriggerGroupName(agentVo.getAgentType().getAgentTypeName());
+        taskDetail.setJobClass(RunningAgentJob.class);
+        taskDetail.setCron(cron);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("id", agentVo.getId());
+        taskDetail.setJobDataMap(jobDataMap);
+        return taskDetail;
+    }
+
 }
