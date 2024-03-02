@@ -116,9 +116,17 @@ public class HTMLParser extends WebSiteContentParser {
 
     private String getContent(Element element, String value) {
         if (value != null) {
-            if ("string(.)".equals(value)) {
+            if ("string()".equals(value)) {
+                // 本节点文本（不包括子节点）
+                return element.ownText();
+            } else if ("string(.)".equals(value)) {
+                //本级及下级节点所有文本
                 return element.text();
+            } else if ("html()".equals(value)) {
+                // 本节点的html内容
+                return element.outerHtml();
             } else if (value.contains("@")) {
+                // 获取属性
                 return element.attr(value.substring(1));
             }
         }
