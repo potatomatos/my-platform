@@ -1,22 +1,14 @@
 {
-  "secrets": [
-    "a-secret-key"
-  ],
-  "events_order": {
-    "filed": "pubDate",
-    "reverse": false
+  "config": {
+    "username": "用户名（发送人）邮箱",
+    "password": "密码",
+    "to": "接收人邮箱",
+    "auth": "是否身份验证",
+    "enableStarttls": "是否启用 STARTTLS 协议",
+    "host": "SMTP 服务器IP",
+    "port": "MTP 服务器端口"
   },
-  "template": {
-    "title": "这是一个标题",
-    "description": "这是最近的 XKCD 漫画订阅。",
-    "link": "https://www.baidu.com",
-    "icon": "",
-    "image": "",
-    "item": {
-      "title": "${title}",
-      "link": "${url}",
-      "description": "这是一段描述",
-      "pubDate": "${pubDate}"
-    }
-  }
+  "type": "内容类型（MimeType）",
+  "subject": "邮件标题",
+  "body": "邮件内容"
 }

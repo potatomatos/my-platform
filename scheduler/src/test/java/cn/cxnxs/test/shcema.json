@@ -1,54 +1,56 @@
 {
-  "title": "数据输出任务",
+  "title": "发送邮件任务",
   "type": "object",
   "properties": {
-    "secrets": {
-      "title": "给请求者提供的令牌数组",
-      "type": "array"
+    "type": {
+      "title": "内容类型",
+      "type": "string"
     },
-    "events_order": {
-      "title": "排序字段",
+    "subject": {
+      "title": "邮件标题",
+      "type": "string"
+    },
+    "body": {
+      "title": "邮件内容",
+      "type": "string"
+    },
+    "config": {
+      "title": "配置",
       "type": "object",
       "properties": {
-        "filed": {
-          "title": "字段名",
+        "username": {
           "type": "string"
         },
-        "reverse": {
-          "title": "是否倒叙",
-          "type": "boolean"
+        "password": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "auth": {
+          "type": "string"
+        },
+        "enableStarttls": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "string"
         }
       },
       "required": [
-        "filed",
-        "reverse"
-      ]
-    },
-    "template": {
-      "title": "数据内容",
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "link": {
-          "type": "string"
-        },
-        "pubDate": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "title",
-        "pubDate"
+        "to",
+        "host",
+        "port"
       ]
     }
   },
   "required": [
-    "secrets",
-    "template"
+    "type",
+    "subject",
+    "body",
+    "config"
   ]
 }

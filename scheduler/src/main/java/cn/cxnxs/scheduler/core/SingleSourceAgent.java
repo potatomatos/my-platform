@@ -44,8 +44,9 @@ public abstract class SingleSourceAgent extends AbstractAgent {
             runResult.info("-------开始替换配置占位符------");
             JSONObject options = getOptions();
             JSONObject template = new JSONObject();
+            boolean hasTemplate = options.containsKey("template");
             // template节点不替换
-            if (options.containsKey("template")) {
+            if (hasTemplate) {
                 template = options.getJSONObject("template");
                 options.remove("template");
             }
@@ -57,7 +58,9 @@ public abstract class SingleSourceAgent extends AbstractAgent {
             StringWriter out = new StringWriter();
             tlp.process(ev, out);
             options = JSONObject.parseObject(out.toString());
-            options.put("template", template);
+            if (hasTemplate) {
+                options.put("template", template);
+            }
             setOptions(options);
         }
     }
