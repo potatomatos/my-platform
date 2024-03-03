@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.core;
 
 import cn.cxnxs.common.core.utils.StringUtil;
-import cn.cxnxs.scheduler.enums.OptionConstants;
+import cn.cxnxs.scheduler.enums.CustomMethods;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.jayway.jsonpath.JsonPath;
@@ -73,7 +73,8 @@ public abstract class AbstractAgent implements IAgent {
                 JSONObject item = new JSONObject();
 
                 for (String templateKey : template.keySet()) {
-                    item.put(templateKey, "");
+                    item.put(templateKey, template.get(templateKey));
+
                     String templateValue = template.getString(templateKey);
                     Matcher matcher = pattern.matcher(templateValue);
                     String key = null;
@@ -98,10 +99,7 @@ public abstract class AbstractAgent implements IAgent {
 
     protected Template buildTemplate(String templateStr) throws IOException {
         // 将自定义函数注入到模板里
-        templateStr = OptionConstants.INCREMENT
-                + OptionConstants.DECREMENT
-                + OptionConstants.CONCAT
-                + templateStr;
+        templateStr = CustomMethods.getMethods() + templateStr;
         Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
         return new Template("template", new StringReader(templateStr), cfg);
     }

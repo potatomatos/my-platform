@@ -1,56 +1,45 @@
 {
-  "title": "发送邮件任务",
+  "title": "options",
+  "description": "post数据任务",
   "type": "object",
   "properties": {
-    "type": {
-      "title": "内容类型",
+    "post_url": {
+      "title": "请求链接",
+      "examples": [
+        "www.baidu.com"
+      ],
       "type": "string"
     },
-    "subject": {
-      "title": "邮件标题",
+    "sslpv": {
+      "title": "ssl版本",
+      "enum": [
+        "",
+        "TLSv1",
+        "TLSv1.1",
+        "TLSv1.2",
+        "SSLv3"
+      ],
+      "type": "string",
+      "default": ""
+    },
+    "disable_ssl_verification": {
+      "type": "boolean",
+      "default": false
+    },
+    "headers": {
+      "title": "请求头信息",
+      "type": "object"
+    },
+    "contentType": {
       "type": "string"
     },
-    "body": {
-      "title": "邮件内容",
-      "type": "string"
-    },
-    "config": {
-      "title": "配置",
-      "type": "object",
-      "properties": {
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "to": {
-          "type": "string"
-        },
-        "auth": {
-          "type": "string"
-        },
-        "enableStarttls": {
-          "type": "string"
-        },
-        "host": {
-          "type": "string"
-        },
-        "port": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "to",
-        "host",
-        "port"
-      ]
+    "data": {
+      "title": "请求数据",
+      "type": "object"
     }
   },
   "required": [
-    "type",
-    "subject",
-    "body",
-    "config"
+    "post_url",
+    "data"
   ]
 }

@@ -1,7 +1,7 @@
 package cn.cxnxs.scheduler.core.agents.parser;
 
 
-import cn.cxnxs.scheduler.core.http.ContentType;
+import cn.cxnxs.scheduler.core.agents.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
