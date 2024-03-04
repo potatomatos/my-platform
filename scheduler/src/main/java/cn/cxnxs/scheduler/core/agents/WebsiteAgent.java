@@ -31,12 +31,12 @@ public class WebsiteAgent extends SingleSourceAgent {
     @Override
     public void start(RunResult runResult) throws Exception {
         long start = System.currentTimeMillis();
-        HttpConfig config = HttpConfigBuilder.build(this.getOptions());
+        HttpConfig config = HttpConfigBuilder.build(runResult, this.getOptions());
         runResult.info("-----------请求参数-----------");
-        runResult.info(this.getOptions().toJSONString());
+        runResult.info("配置信息：{}", this.getOptions().toJSONString());
         runResult.info("-----------------------------");
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
-
+        runResult.info("返回状态：{}", respResult.getStatusLine());
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
         JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);

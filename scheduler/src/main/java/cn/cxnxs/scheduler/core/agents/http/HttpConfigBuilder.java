@@ -1,6 +1,7 @@
 package cn.cxnxs.scheduler.core.agents.http;
 
 import cn.cxnxs.common.core.utils.StringUtil;
+import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.exception.IllegalOptionException;
 import com.alibaba.fastjson.JSONObject;
 import com.arronlong.httpclientutil.builder.HCB;
@@ -20,7 +21,7 @@ public class HttpConfigBuilder {
     private static final int TIMEOUT = 5000;
     private static final int RETRY_TIMES = 5;
 
-    public static HttpConfig build(JSONObject options) throws HttpProcessException {
+    public static HttpConfig build(RunResult runResult, JSONObject options) throws HttpProcessException {
 
         //请求地址
         String url = options.getString("url");
@@ -36,6 +37,7 @@ public class HttpConfigBuilder {
         if (StringUtil.isEmpty(url)) {
             throw new IllegalOptionException("请求地址为空");
         }
+        runResult.info("http请求地址：{}", url);
         //插件式配置Header（各种header信息、自定义header）
         HttpHeader httpHeader = HttpHeader.custom().userAgent(USER_AGENT);
         if (options.containsKey("headers")) {

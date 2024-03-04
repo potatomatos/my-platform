@@ -26,11 +26,12 @@ public class PostAgent extends SingleSourceAgent {
     @Override
     public void start(RunResult runResult) throws Exception {
         long start = System.currentTimeMillis();
-        HttpConfig config = HttpConfigBuilder.build(this.getOptions());
+        HttpConfig config = HttpConfigBuilder.build(runResult, this.getOptions());
         runResult.info("-----------请求参数-----------");
-        runResult.info(this.getOptions().toJSONString());
+        runResult.info("配置信息：{}", this.getOptions().toJSONString());
         runResult.info("-----------------------------");
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
+        runResult.info("返回状态：{}", respResult.getStatusLine());
         runResult.log("数据post完成！用时：{}ms,返回结果结果：{}", System.currentTimeMillis() - start, JSON.toJSONString(respResult));
     }
 }

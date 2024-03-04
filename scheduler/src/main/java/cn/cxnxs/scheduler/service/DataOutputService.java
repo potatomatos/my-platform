@@ -70,6 +70,9 @@ public class DataOutputService {
      */
     public String getRssData(Integer agentId, String secret) throws FeedException {
         JSONObject outputData = this.getOutputData(agentId, secret);
+        if (outputData.isEmpty()) {
+            return "";
+        }
         SyndFeed feed = new SyndFeedImpl();
         feed.setFeedType("rss_2.0");
         feed.setTitle(outputData.getString("title"));
