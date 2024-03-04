@@ -1,11 +1,8 @@
 package cn.cxnxs.scheduler.core;
 
-import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.enums.CustomMethods;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.ReadContext;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -16,8 +13,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.StringWriter;
 
 @Slf4j
 @Getter
@@ -64,30 +60,19 @@ public abstract class AbstractAgent implements IAgent {
                 && !CollectionUtils.isEmpty(sources)) {
 
             JSONObject template = this.options.getJSONObject("template");
-            Pattern pattern = Pattern.compile("\\$\\{\\s*(.*?)\\s*\\}");
 
             JSONArray result = new JSONArray();
             for (int i = 0; i < sources.size(); i++) {
                 JSONObject jsonObject = sources.getJSONObject(i);
                 jsonObject.put("_this_", this.options);
                 JSONObject item = new JSONObject();
-
+                Template tlp;
                 for (String templateKey : template.keySet()) {
-                    item.put(templateKey, template.get(templateKey));
-
                     String templateValue = template.getString(templateKey);
-                    Matcher matcher = pattern.matcher(templateValue);
-                    String key = null;
-                    if (matcher.find()) {
-                        key = matcher.group(1);
-                    }
-                    if (StringUtil.isNotEmpty(key)) {
-                        ReadContext context = JsonPath.parse(jsonObject);
-                        // 通过jsonpath获取到内容
-                        String value = context.read("$." + key);
-                        item.put(templateKey, value);
-                    }
-
+                    tlp = this.buildTemplate(templateValue);
+                    StringWriter out = new StringWriter();
+                    tlp.process(jsonObject, out);
+                    item.put(templateKey, out.toString());
                 }
                 result.add(item);
             }

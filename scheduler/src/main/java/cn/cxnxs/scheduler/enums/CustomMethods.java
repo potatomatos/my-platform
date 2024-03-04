@@ -13,10 +13,10 @@ import java.util.UUID;
 public enum CustomMethods {
 
     INCREMENT("自增", "<#function increment num>\n" +
-            "<#return num + 1>\n" +
+            "<#return num?number + 1>\n" +
             "</#function>"),
     DECREMENT("自减", "<#function decrement num>\n" +
-            "<#return num - 1>\n" +
+            "<#return num?number - 1>\n\n" +
             "</#function>"),
     CONCAT("两个参数相加", "<#function concat param1 param2>\n" +
             "    <#if param1?is_number && param2?is_number>\n" +
@@ -25,7 +25,7 @@ public enum CustomMethods {
             "        <#return param1 + param2>\n" +
             "    </#if>\n" +
             "</#function>"),
-    GUID("生成uuid", "<#assign guid = 'cn.cxnxs.scheduler.enums.CustomMethods$GuidMethod'?new()>"),
+    GUID("生成uuid", "<#assign guid ='cn.cxnxs.scheduler.enums.CustomMethods$GuidMethod'?new()>"),
     ;
     private final String name;
 
