@@ -16,6 +16,7 @@ import cn.cxnxs.scheduler.utils.SerializeUtil;
 import cn.cxnxs.scheduler.vo.AgentTypeVo;
 import cn.cxnxs.scheduler.vo.AgentVo;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -153,13 +154,19 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
     public void fillData(IAgent iAgent, AgentVo agentVo) throws ClassNotFoundException {
         AgentTypeVo agentType = agentVo.getAgentType();
         if (MultipleSourcesAgent.class.isAssignableFrom(agentType.getHandlerClass())) {
-            List<ScheduleEvents> sourceEvents = jobsService.getSourceEvents(agentVo);
-            ((MultipleSourcesAgent) iAgent).setEvents(sourceEvents.stream().map(item -> {
-                Event event = ObjectUtil.transValues(item, Event.class);
-                assert event != null;
-                event.setPayload(JSONObject.parseObject(item.getPayload()));
-                return event;
-            }).collect(Collectors.toList()));
+            MultipleSourcesAgent multipleSourcesAgent = (MultipleSourcesAgent) iAgent;
+            if (CollectionUtils.isEmpty(multipleSourcesAgent.getEvents())) {
+                // 如果数据源为空，则查出来设置
+                List<ScheduleEvents> sourceEvents = jobsService.getSourceEvents(agentVo);
+                multipleSourcesAgent.setEvents(sourceEvents.stream().map(item -> {
+                    Event event = ObjectUtil.transValues(item, Event.class);
+                    assert event != null;
+                    event.setPayload(JSONObject.parseObject(item.getPayload()));
+                    return event;
+                }).collect(Collectors.toList()));
+            } else {
+                // 单条数据的情况暂时不处理
+            }
         }
     }
 
