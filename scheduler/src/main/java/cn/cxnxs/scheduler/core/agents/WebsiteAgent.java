@@ -12,6 +12,7 @@ import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.common.HttpConfig;
 import com.arronlong.httpclientutil.common.HttpResult;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +38,9 @@ public class WebsiteAgent extends SingleSourceAgent {
         runResult.info("-----------------------------");
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
         runResult.info("返回状态：{}", respResult.getStatusLine());
+        if (respResult.getStatusCode() != HttpStatus.SC_OK) {
+            return;
+        }
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
         JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);

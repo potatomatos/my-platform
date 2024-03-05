@@ -9,6 +9,7 @@ import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.common.HttpConfig;
 import com.arronlong.httpclientutil.common.HttpResult;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,9 @@ public class PostAgent extends SingleSourceAgent {
         runResult.info("-----------------------------");
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
         runResult.info("返回状态：{}", respResult.getStatusLine());
+        if (respResult.getStatusCode() != HttpStatus.SC_OK) {
+            return;
+        }
         runResult.log("数据post完成！用时：{}ms,返回结果结果：{}", System.currentTimeMillis() - start, JSON.toJSONString(respResult));
     }
 }
