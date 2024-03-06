@@ -1,20 +1,25 @@
 {
-  "url": "https://fapello.su/ajax/model_new/pialoof/page-1/photos",
-  "method": "get",
-  "type": "html",
-  "mode": "on_change",
-  "uniqueness_look_back": 2000,
-  "extract": {
-    "url": {
-      "css": "div>a",
-      "value": "@href"
-    }
-  },
-  "template": {
-    "url": "${url}",
-    "page": 2,
-    "nextPageUrl": "https://fapello.su/ajax/model_new/pialoof/page-2/photos"
-  },
-  "disable_ssl_verification": true,
-  "sslpv": "TLSv1.2"
+  "post_url": "http://192.168.1.101:6800/jsonrpc",
+  "contentType": "application/json",
+  "data": {
+    "id": "${guid()}",
+    "jsonrpc": "2.0",
+    "method": "aria2.addUri",
+    "params": [
+      "token:cxnxs2022mjy",
+      [
+        "${img}"
+      ],
+      {
+        "all-proxy": "http://192.168.1.101:1080",
+        "referer": "https://fapello.su/",
+        "header": [
+          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+        ],
+        "dir": "/downloads/pialoof",
+        "out": "${title}.jpg",
+        "allow-overwrite": "true"
+      }
+    ]
+  }
 }

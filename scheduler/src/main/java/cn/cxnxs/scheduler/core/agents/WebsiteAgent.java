@@ -41,6 +41,7 @@ public class WebsiteAgent extends SingleSourceAgent {
         if (respResult.getStatusCode() != HttpStatus.SC_OK) {
             return;
         }
+        HttpConfigBuilder.saveCookie(respResult, config);
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
         JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);

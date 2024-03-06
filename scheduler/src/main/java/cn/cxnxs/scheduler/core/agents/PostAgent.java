@@ -36,6 +36,7 @@ public class PostAgent extends SingleSourceAgent {
         if (respResult.getStatusCode() != HttpStatus.SC_OK) {
             return;
         }
+        HttpConfigBuilder.saveCookie(respResult, config);
         runResult.log("数据post完成！用时：{}ms,返回结果结果：{}", System.currentTimeMillis() - start, JSON.toJSONString(respResult));
     }
 }

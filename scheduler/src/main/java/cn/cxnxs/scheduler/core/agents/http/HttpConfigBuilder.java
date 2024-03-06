@@ -1,27 +1,39 @@
 package cn.cxnxs.scheduler.core.agents.http;
 
+import cn.cxnxs.common.cache.RedisUtils;
 import cn.cxnxs.common.core.utils.StringUtil;
 import cn.cxnxs.scheduler.core.RunResult;
 import cn.cxnxs.scheduler.exception.IllegalOptionException;
 import com.alibaba.fastjson.JSONObject;
 import com.arronlong.httpclientutil.builder.HCB;
-import com.arronlong.httpclientutil.common.HttpConfig;
-import com.arronlong.httpclientutil.common.HttpCookies;
-import com.arronlong.httpclientutil.common.HttpHeader;
-import com.arronlong.httpclientutil.common.HttpMethods;
+import com.arronlong.httpclientutil.common.*;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Objects;
 
+@Component
 public class HttpConfigBuilder {
 
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.81 Safari/537.36 SE 2.X MetaSr 1.0";
     private static final int TIMEOUT = 5000;
     private static final int RETRY_TIMES = 5;
 
-    public static HttpConfig build(RunResult runResult, JSONObject options) throws HttpProcessException {
+    private static final String REDIS_KEY = "COOKIE:";
+
+    private static RedisUtils redisUtils;
+
+    @Autowired
+    public void setRedisUtils(RedisUtils redisUtils) {
+        HttpConfigBuilder.redisUtils = redisUtils;
+    }
+
+    public static HttpConfig build(RunResult runResult, JSONObject options) throws HttpProcessException, MalformedURLException {
 
         //请求地址
         String url = options.getString("url");
@@ -44,6 +56,8 @@ public class HttpConfigBuilder {
             JSONObject headers = options.getJSONObject("headers");
             headers.forEach((key, value) -> httpHeader.other(key, value.toString()));
         }
+        // 设置cookie
+        setCookie(httpHeader, url, options.getJSONObject("headers"));
         Header[] headers = httpHeader.build();
         //重试5次
         HCB hcb = HCB.custom().retry(RETRY_TIMES);
@@ -107,6 +121,49 @@ public class HttpConfigBuilder {
             } else {
                 JSONObject data = options.getJSONObject("data");
                 config.map(data);
+            }
+        }
+    }
+
+    /**
+     * 保存cookie
+     *
+     * @param respResult
+     * @param httpConfig
+     * @throws MalformedURLException
+     */
+    public static void saveCookie(HttpResult respResult, HttpConfig httpConfig) throws MalformedURLException {
+        Header headers = respResult.getHeaders("Set-Cookie");
+        if (headers != null) {
+            String value = headers.getValue();
+            URL url = new URL(httpConfig.url());
+            String host = url.getHost();
+            redisUtils.set(REDIS_KEY + host, value, 24 * 360);
+        }
+    }
+
+    /**
+     * 设置cookie
+     *
+     * @param httpHeader
+     * @param url
+     * @param headers
+     * @throws MalformedURLException
+     */
+    public static void setCookie(HttpHeader httpHeader, String url, JSONObject headers) throws MalformedURLException {
+        if (headers != null) {
+            if (!headers.containsKey("Cookie")) {
+                String key = REDIS_KEY + new URL(url).getHost();
+                if (redisUtils.hasKey(key)) {
+                    String cookie = redisUtils.get(key);
+                    httpHeader.other("Cookie", cookie);
+                }
+            }
+        } else {
+            String key = REDIS_KEY + new URL(url).getHost();
+            if (redisUtils.hasKey(key)) {
+                String cookie = redisUtils.get(key);
+                httpHeader.other("Cookie", cookie);
             }
         }
     }
