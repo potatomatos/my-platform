@@ -39,6 +39,7 @@ public class WebsiteAgent extends SingleSourceAgent {
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
         runResult.info("返回状态：{}", respResult.getStatusLine());
         if (respResult.getStatusCode() != HttpStatus.SC_OK) {
+            runResult.setSuccess(false);
             return;
         }
         HttpConfigBuilder.saveCookie(respResult, config);
