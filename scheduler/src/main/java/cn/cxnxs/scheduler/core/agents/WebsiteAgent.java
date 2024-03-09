@@ -38,14 +38,16 @@ public class WebsiteAgent extends SingleSourceAgent {
         runResult.info("-----------------------------");
         HttpResult respResult = HttpClientUtil.sendAndGetResp(config);
         runResult.info("返回状态：{}", respResult.getStatusLine());
+        JSONArray maps = new JSONArray();
         if (respResult.getStatusCode() != HttpStatus.SC_OK) {
             runResult.setSuccess(false);
+            runResult.setPayload(maps);
             return;
         }
         HttpConfigBuilder.saveCookie(respResult, config);
         //处理返回结果
         WebSiteContentParser webSiteContentParser = WebSiteParserFactory.getParser(ContentType.valueOf(this.getOptions().getString("type").toUpperCase(Locale.ENGLISH)));
-        JSONArray maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);
+        maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);
         runResult.log("解析完成！用时：{}ms,数据大小：{}，最终解析结果：\n{}", System.currentTimeMillis() - start, maps.size(), maps.toJSONString());
         runResult.setPayload(maps);
     }

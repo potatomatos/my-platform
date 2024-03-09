@@ -70,6 +70,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
         list.add("/oauth-server/login");
         list.add("/oauth-server/login.html");
         list.add("/oauth-server/verifyPage");
+        list.add("/scheduler/output/**");
         list.add("/system/system/api/getAccessToken");
         list.add("/cloud-disk/system/getAccessToken");
         list.add("/bookmark/system/getAccessToken");

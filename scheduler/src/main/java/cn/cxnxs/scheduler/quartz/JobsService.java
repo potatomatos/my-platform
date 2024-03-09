@@ -1,5 +1,6 @@
 package cn.cxnxs.scheduler.quartz;
 
+import cn.cxnxs.common.core.utils.ExceptionUtil;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
@@ -185,7 +186,7 @@ public class JobsService {
             log.error("线程运行发生异常,任务执行失败", ex);
             Thread thread = Thread.currentThread();
             RunLogs runLogs = RunLogs.create(thread.getId() + "-" + thread.getName());
-            runLogs.error("执行发生异常：{}", ex);
+            runLogs.error("线程运行发生异常,任务执行失败：{}", ExceptionUtil.getTrack(ex));
             ScheduleAgent scheduleAgent = new ScheduleAgent();
             scheduleAgent.setId(agentVo.getId());
             scheduleAgent.setLastErrorLogTime(LocalDateTime.now());
@@ -201,7 +202,6 @@ public class JobsService {
     /**
      * 分页获取数据源数据
      *
-     * @param sourceIds
      * @param agentVo
      * @return
      */
