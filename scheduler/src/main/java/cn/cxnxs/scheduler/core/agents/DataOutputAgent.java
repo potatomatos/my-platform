@@ -1,5 +1,6 @@
 package cn.cxnxs.scheduler.core.agents;
 
+import cn.cxnxs.common.core.utils.ExceptionUtil;
 import cn.cxnxs.scheduler.core.Event;
 import cn.cxnxs.scheduler.core.MultipleSourcesAgent;
 import cn.cxnxs.scheduler.core.RunResult;
@@ -44,11 +45,16 @@ public class DataOutputAgent extends MultipleSourcesAgent {
                 JSONObject item = new JSONObject();
                 Template tlp;
                 for (String itemKey : itemOption.keySet()) {
-                    String itemValue = itemOption.getString(itemKey);
-                    tlp = this.buildTemplate(itemValue);
-                    StringWriter out = new StringWriter();
-                    tlp.process(jsonObject, out);
-                    item.put(itemKey, out.toString());
+                    item.put(itemKey, "");
+                    try {
+                        String itemValue = itemOption.getString(itemKey);
+                        tlp = this.buildTemplate(itemValue);
+                        StringWriter out = new StringWriter();
+                        tlp.process(jsonObject, out);
+                        item.put(itemKey, out.toString());
+                    } catch (Exception e) {
+                        runResult.error(e.getMessage() + "\n", ExceptionUtil.getTrack(e));
+                    }
                 }
                 items.add(item);
             }
