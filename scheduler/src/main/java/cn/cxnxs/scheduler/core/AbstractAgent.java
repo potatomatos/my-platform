@@ -1,5 +1,6 @@
 package cn.cxnxs.scheduler.core;
 
+import cn.cxnxs.common.core.utils.ExceptionUtil;
 import cn.cxnxs.scheduler.enums.CustomMethods;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -47,7 +48,7 @@ public abstract class AbstractAgent implements IAgent {
             runResult.info("运行结束");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            runResult.error(e.getMessage());
+            runResult.error(e.getMessage(), ExceptionUtil.getTrack(e));
             runResult.setSuccess(false);
         }
         return runResult;
