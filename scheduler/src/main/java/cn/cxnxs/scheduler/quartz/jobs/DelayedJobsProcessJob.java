@@ -1,5 +1,6 @@
 package cn.cxnxs.scheduler.quartz.jobs;
 
+import cn.cxnxs.common.core.utils.ExceptionUtil;
 import cn.cxnxs.common.core.utils.ObjectUtil;
 import cn.cxnxs.scheduler.core.*;
 import cn.cxnxs.scheduler.entity.ScheduleAgent;
@@ -89,7 +90,6 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
             // 保存日志，记录运行记录
             ScheduleAgentLogs agentLogs = jobSupport.saveLogs(agent.getId(), null, null, null);
             future.thenAccept(runResult -> {
-
                 if (runResult.getSuccess()) {
                     // 删掉队列
                     delayedJob.deleteById();
@@ -123,7 +123,8 @@ public class DelayedJobsProcessJob extends QuartzJobBean {
             }).exceptionally(ex -> {
                 //失败
                 RunLogs runLogs = RunLogs.create(Thread.currentThread().getId() + "-" + Thread.currentThread().getName());
-                runLogs.error("执行发生异常：{}", ex);
+                runLogs.error("队列执行发生异常：{}", ExceptionUtil.getTrack(ex));
+                log.error("队列执行发生异常", ex);
                 ScheduleAgent scheduleAgent = new ScheduleAgent();
                 scheduleAgent.setId(agentVo.getId());
                 scheduleAgent.setLastErrorLogTime(LocalDateTime.now());

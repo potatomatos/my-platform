@@ -50,5 +50,6 @@ public class WebsiteAgent extends SingleSourceAgent {
         maps = webSiteContentParser.parse(this.getOptions().getJSONObject("extract"), respResult.getResult(), runResult);
         runResult.log("解析完成！用时：{}ms,数据大小：{}，最终解析结果：\n{}", System.currentTimeMillis() - start, maps.size(), maps.toJSONString());
         runResult.setPayload(maps);
+        runResult.setSuccess(true);
     }
 }

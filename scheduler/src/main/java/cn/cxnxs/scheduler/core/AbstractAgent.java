@@ -40,7 +40,7 @@ public abstract class AbstractAgent implements IAgent {
             // 开始前的一些操作
             this.preStart(runResult);
             this.start(runResult);
-            if (runResult.getSuccess() != null) {
+            if (runResult.getSuccess() == null) {
                 runResult.setSuccess(true);
             }
             runResult.setPayload(this.formatWithTemplate(runResult.getPayload()));
