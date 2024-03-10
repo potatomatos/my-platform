@@ -26,12 +26,13 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
-        super.afterExecute(r, t);
         executingTasks.remove(r);
+        super.afterExecute(r, t);
     }
 
     @PreDestroy
     public void cleanUp() {
+        executingTasks = new ConcurrentLinkedQueue<>();
         this.shutdown();
     }
 }
