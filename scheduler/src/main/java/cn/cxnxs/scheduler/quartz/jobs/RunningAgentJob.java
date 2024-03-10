@@ -66,7 +66,7 @@ public class RunningAgentJob extends QuartzJobBean {
         ScheduleAgent agent = new ScheduleAgent();
         agent.setId(id);
         agent.setLastCheckAt(LocalDateTime.now());
-        agent.setNextFireAt(jobExecutionContext.getNextFireTime().toInstant().atZone(ZoneId.of("CTT")).toLocalDateTime());
+        agent.setNextFireAt(jobExecutionContext.getNextFireTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
         agent.updateById();
         if (Objects.equals(agentVo.getState(), AgentVo.AgentState.DISABLE.getCode())) {
             // 任务已关闭或者暂停
