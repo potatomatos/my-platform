@@ -215,7 +215,7 @@ public class AgentController {
 
     @ResponseResult
     @GetMapping("/runningTasks")
-    public Integer runningTasks() {
+    public Integer runningTasks() throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
         return agentService.selectRunningTaskCount();
     }
 

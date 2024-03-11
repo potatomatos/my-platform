@@ -21,7 +21,15 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
     @Override
     public void execute(Runnable command) {
         executingTasks.add(command);
-        super.execute(command);
+        super.execute(() -> {
+            try {
+                command.run();
+            } catch (Exception e) {
+                log.error("Task execution error: {}", e.getMessage());
+            } finally {
+                afterExecute(command, null);
+            }
+        });
     }
 
     @Override

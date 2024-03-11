@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
  * @author mengjinyuan
  * @since 2020-11-10
  */
+@Slf4j
 @Lazy
 @Service
 public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleAgent> {
@@ -346,8 +348,10 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
         scenarios.updateById();
     }
 
-    public Integer selectRunningTaskCount() {
-        return threadPoolTaskExecutor.getActiveCount();
+    public Integer selectRunningTaskCount() throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
+        List<TaskVO> executingTasks = this.getExecutingTasks();
+        log.info("正在运行任务：{}", executingTasks);
+        return threadPoolTaskExecutor.getExecutingTasks().size();
     }
 
     public PageResult<TaskVO> selectTaskList(PageWrapper<Object> pageWrapper) throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
@@ -375,7 +379,16 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
             }
             task.setHandler(null);
         }
+        List<TaskVO> executingTasksVo = getExecutingTasks();
+        if (executingTasksVo.size() > 0) {
+            tasks.addAll(0, executingTasksVo);
+        }
+        result.setRows(tasks);
 
+        return result;
+    }
+
+    public List<TaskVO> getExecutingTasks() throws ClassNotFoundException, IllegalAccessException, NoSuchFieldException {
         List<TaskVO> executingTasksVo = new ArrayList<>();
         // 获取正在执行的任务
         ConcurrentLinkedQueue<Runnable> executingTasks = threadPoolTaskExecutor.getExecutingTasks();
@@ -402,11 +415,9 @@ public class AgentServiceImpl extends ServiceImpl<ScheduleAgentMapper, ScheduleA
                 executingTasksVo.add(taskVO);
             }
         }
-        tasks.addAll(0, executingTasksVo);
-        result.setRows(tasks);
-
-        return result;
+        return executingTasksVo;
     }
+
 
     /**
      * 重发数据
