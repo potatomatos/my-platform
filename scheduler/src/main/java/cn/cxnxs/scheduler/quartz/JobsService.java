@@ -166,12 +166,12 @@ public class JobsService {
                         throw new RuntimeException(e);
                     }
                 }
-                //任务暂停，等待下次运行
-                agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.PAUSE);
             } else {
                 // 运行不成功，把任务放到队列里重试
                 jobSupport.saveDelayedJob(agent);
             }
+            //任务暂停，等待下次运行
+            agentService.updateAgentState(agentVo.getId(), AgentVo.AgentState.PAUSE);
         };
     }
 
