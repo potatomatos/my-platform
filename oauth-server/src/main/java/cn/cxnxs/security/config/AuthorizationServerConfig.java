@@ -133,7 +133,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 //指定token存储到redis，还有数据库、内存、jwt等存储方式！
                 .tokenStore(jdbcTokenStore())
                 //支持refresh_token机制
-                .reuseRefreshTokens(false)
+                .reuseRefreshTokens(true)
                 //这一步包含账号、密码的检查！
                 .userDetailsService(userService)
                 //支持GET,POST请求

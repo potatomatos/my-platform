@@ -59,8 +59,6 @@ public class PermissionFilter implements GlobalFilter, Ordered {
             accessToken = exchange.getRequest().getQueryParams().getFirst("token");
         }
         String url = exchange.getRequest().getURI().getPath();
-        log.info("访问地址：{}, token: {}", url, accessToken);
-
         List<String> list = Lists.newArrayList();
         list.add("/platform/**");
         list.add("/static/**");
