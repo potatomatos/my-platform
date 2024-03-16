@@ -7,8 +7,12 @@ import cn.cxnxs.common.web.annotation.ResponseResult;
 import cn.cxnxs.system.service.UserServiceImpl;
 import cn.cxnxs.system.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Base64;
+import java.util.Map;
 
 /**
  * 用户相关接口
@@ -62,7 +66,10 @@ public class UserController {
     }
 
     @PostMapping("avatar/upload")
-    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
+    public Result<String> uploadAvatar(@RequestBody Map<String, String> imageData) {
+        String base64Image = imageData.get("image");
+        byte[] imageBytes = Base64.getDecoder().decode(base64Image.split(",")[1]);
+        MultipartFile file = new MockMultipartFile("avatar.jpg", "avatar.jpg", "image/jpeg", imageBytes);
         String avatar = userService.uploadAvatar(file);
         Result<String> success = Result.success();
         success.setData(avatar);

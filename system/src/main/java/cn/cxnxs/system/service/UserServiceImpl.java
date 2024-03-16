@@ -270,7 +270,6 @@ public class UserServiceImpl {
      * @param file
      * @return
      */
-
     public String uploadAvatar(MultipartFile file) {
         Result<JSONObject> result = oauth2Service.currentUser();
         String filename = minioTemplate.upload(file, minioProperties.getBucketName(), "avatar/" + result.getData().getString("id"));

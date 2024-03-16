@@ -4,15 +4,19 @@ import cn.cxnxs.common.api.auth.Oauth2Service;
 import cn.cxnxs.common.api.system.domain.UserApiEntity;
 import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.common.core.utils.StringUtil;
+import cn.cxnxs.minio.config.MinioProperties;
+import cn.cxnxs.minio.config.MinioTemplate;
 import cn.cxnxs.system.service.PermissionServiceImpl;
 import cn.cxnxs.system.service.UserServiceImpl;
 import cn.cxnxs.system.vo.UserVO;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -29,6 +33,12 @@ public class SystemController {
 
     @Autowired
     private Oauth2Service oauth2Service;
+
+    @Autowired
+    private MinioTemplate minioTemplate;
+
+    @Autowired
+    private MinioProperties minioProperties;
 
     @Value("${oauth.clientSecret}")
     private String clientSecret;
@@ -91,5 +101,21 @@ public class SystemController {
     Result<UserApiEntity> getUserByName(@RequestParam("username") String username) {
         UserApiEntity userByName = userService.getUserByName(username);
         return userByName == null ? Result.failure("用户不存在") : Result.success(userByName);
+    }
+
+    /**
+     * 文件上传
+     *
+     * @param file
+     * @return
+     */
+    @PostMapping("upload")
+    public Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        Result<JSONObject> result = oauth2Service.currentUser();
+        String filename = minioTemplate.upload(file, minioProperties.getBucketName(), "file/" + result.getData().getString("id"));
+        String filePath = minioProperties.getUrl() + "/" + filename;
+        Result<String> success = Result.success();
+        success.setData(filePath);
+        return success;
     }
 }
