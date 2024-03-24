@@ -11,22 +11,24 @@ html, body {
 }
 
 .login-frame {
-    padding: 50px;
-    width: 358px;
-    height: 588px;
-    margin: 0 auto;
+    position: absolute;
 }
 
 .login-wrapper {
     background-color: #fff;
     width: 358px;
-    height: 588px;
     border-radius: 15px;
-    padding: 0 50px;
+    padding: 0 50px 50px 50px;
     animation: Frame 1s;
     -webkit-animation: Frame 1s;
     -moz-animation: Frame 1s;
     -o-animation: Frame 1s;
+}
+
+@media screen and (max-width: 720px) {
+    .login-wrapper {
+        width: 258px;
+    }
 }
 
 .shadow {

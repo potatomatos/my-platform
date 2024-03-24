@@ -52,7 +52,23 @@
 
         $('.btn-login').click(login)
 
+        autoPosition()
+
+        $(window).resize(autoPosition)
     })
+
+    function autoPosition() {
+        // 计算容器位置
+        var container = $('.login-frame');
+        var containerWidth = container.width();
+        var containerHeight = container.height();
+        var viewportWidth = $(window).width();
+        var viewportHeight = $(window).height();
+        var left = (viewportWidth - containerWidth) / 2;
+        var top = (viewportHeight - containerHeight) / 2;
+        container.css({'left': left, 'top': top});
+    }
+
     var doing = false
 
     function refreshImg() {
