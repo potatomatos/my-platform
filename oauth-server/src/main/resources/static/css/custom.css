@@ -18,7 +18,34 @@ li {
 
 .container {
     height: 100%;
-    background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+    animation: bg-gradient 10s infinite;
+}
+
+@keyframes bg-gradient {
+    0% {
+        background-color: #a6c1ee;
+    }
+    50% {
+        background-color: #fbc2eb;
+    }
+    100% {
+        background-color: #a6c1ee;
+    }
+}
+
+@keyframes text-gradient {
+    0% {
+        color: #ffc2c8;
+        fill: #ffc2c8;
+    }
+    50% {
+        color: #7a8fbf;
+        fill: #7a8fbf;
+    }
+    100% {
+        color: #ffc2c8;
+        fill: #ffc2c8;
+    }
 }
 
 .login-frame {
@@ -39,6 +66,10 @@ li {
 @media screen and (max-width: 720px) {
     .login-wrapper {
         width: 258px;
+    }
+
+    .social-account li {
+        margin-right: 0 !important;
     }
 }
 
@@ -278,6 +309,7 @@ li {
     font-weight: bold;
     text-align: center;
     line-height: 200px;
+    animation: text-gradient 10s infinite;
 }
 
 .input-item {
@@ -323,8 +355,12 @@ li {
     display: inline-block;
     padding: 8px;
     margin-right: 1em;
-    color: #a6c1ee;
+    animation: text-gradient 10s infinite;
     cursor: pointer;
+}
+
+.social-account svg {
+    animation: text-gradient 10s infinite;
 }
 
 .social-account li:last-child {
@@ -335,14 +371,19 @@ li {
     color: #fbc2eb;
 }
 
+.social-account svg:hover {
+    fill: #fbc2eb;
+}
+
 .msg {
     padding-top: 20px;
+    font-size: 1.5em;
     text-align: center;
 }
 
 a {
     text-decoration-line: none;
-    color: #abc1ee;
+    animation: text-gradient 10s infinite;
 }
 
 #errorMsg {
