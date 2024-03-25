@@ -5,6 +5,17 @@ html, body {
     height: 100%;
 }
 
+ul {
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
 .container {
     height: 100%;
     background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
@@ -303,8 +314,29 @@ html, body {
     cursor: pointer;
 }
 
+.social-account {
+    padding-top: 20px;
+    text-align: center;
+}
+
+.social-account li {
+    display: inline-block;
+    padding: 8px;
+    margin-right: 1em;
+    color: #a6c1ee;
+    cursor: pointer;
+}
+
+.social-account li:last-child {
+    margin: 0;
+}
+
+.social-account li:hover {
+    color: #fbc2eb;
+}
+
 .msg {
-    line-height: 50px;
+    padding-top: 20px;
     text-align: center;
 }
 
@@ -315,5 +347,5 @@ a {
 
 #errorMsg {
     text-align: center;
-    color: red;
+    color: #fbc2eb;
 }
