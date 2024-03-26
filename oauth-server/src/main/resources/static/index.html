@@ -231,7 +231,7 @@
                     timer = setInterval(function () {
                         let val = $('.btn-get-verification-code').html()
                         let number = parseInt(val)
-                        if (number) {
+                        if (!isNaN(number)) {
                             number = number - 1
                             if (number < 0) {
                                 clearInterval(timer)
