@@ -18,6 +18,7 @@ li {
 
 .container {
     height: 100%;
+    user-select: none;
     animation: bg-gradient 10s infinite;
 }
 
@@ -303,6 +304,37 @@ li {
     }
 }
 
+.to-user-login {
+    cursor: pointer;
+    animation: text-gradient 10s infinite;
+    display: none;
+    margin-bottom: 20px;
+}
+
+.smg-login {
+    width: 100%;
+    display: none;
+}
+
+.verification-code-wrap {
+    content: "";
+    display: table;
+    clear: both;
+    width: 100%;
+}
+
+.verification-code {
+    float: left;
+    width: 58% !important;
+}
+
+.btn-get-verification-code {
+    float: left;
+    width: 30% !important;
+    margin-top: 0 !important;
+    padding: 8px !important;
+    border-bottom: 1px solid rgb(128, 125, 125);
+}
 
 .header {
     font-size: 38px;
@@ -310,6 +342,11 @@ li {
     text-align: center;
     line-height: 200px;
     animation: text-gradient 10s infinite;
+}
+
+.to-user-login {
+    width: 100%;
+    cursor: pointer;
 }
 
 .input-item {
@@ -331,6 +368,7 @@ li {
     -webkit-box-shadow: 0 2px 6px rgba(0, 143, 255, 0.6);
     -moz-box-shadow: 0 2px 6px rgba(0, 143, 255, 0.6);
     box-shadow: 0 2px 6px rgba(0, 143, 255, 0.6);
+    border-bottom: 1px solid #fbc2eb;
 }
 
 .btn {
