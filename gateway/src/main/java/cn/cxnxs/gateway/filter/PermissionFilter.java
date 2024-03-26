@@ -64,6 +64,7 @@ public class PermissionFilter implements GlobalFilter, Ordered {
         list.add("/static/**");
         list.add("/oauth-server/oauth/**");
         list.add("/oauth-server/captcha");
+        list.add("/oauth-server/SMSVerificationCode");
         list.add("/oauth-server/rsa/publicKey");
         list.add("/oauth-server/login");
         list.add("/oauth-server/login.html");

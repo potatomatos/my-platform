@@ -47,6 +47,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         List<AntPathRequestMatcher> list = Lists.newArrayList();
         list.add(new AntPathRequestMatcher("/oauth/**"));
         list.add(new AntPathRequestMatcher("/captcha"));
+        list.add(new AntPathRequestMatcher("/SMSVerificationCode"));
         list.add(new AntPathRequestMatcher("/rsa/publicKey"));
         list.add(new AntPathRequestMatcher("/login"));
         list.add(new AntPathRequestMatcher("/login.html"));

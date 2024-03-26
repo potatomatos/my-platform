@@ -1,7 +1,7 @@
 package cn.cxnxs.security.config;
 
+import cn.cxnxs.security.filter.AuthenticationProcessingFilter;
 import cn.cxnxs.security.filter.JwtAuthenticationTokenFilter;
-import cn.cxnxs.security.filter.UserPasswordAuthenticationProcessingFilter;
 import cn.cxnxs.security.handler.DeniedHandler;
 import cn.cxnxs.security.handler.FailureHandler;
 import cn.cxnxs.security.handler.LogoutHandler;
@@ -47,13 +47,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * 核心：filter配置
      */
-    public UserPasswordAuthenticationProcessingFilter userPasswordAuthenticationProcessingFilter(AuthenticationManager authenticationManager) {
-        UserPasswordAuthenticationProcessingFilter userPasswordAuthenticationProcessingFilter = new UserPasswordAuthenticationProcessingFilter();
+    public AuthenticationProcessingFilter authenticationProcessingFilter(AuthenticationManager authenticationManager) {
+        AuthenticationProcessingFilter authenticationProcessingFilter = new AuthenticationProcessingFilter();
         //为filter设置管理器
-        userPasswordAuthenticationProcessingFilter.setAuthenticationManager(authenticationManager);
-        userPasswordAuthenticationProcessingFilter.setAuthenticationSuccessHandler(successHandler);
-        userPasswordAuthenticationProcessingFilter.setAuthenticationFailureHandler(failureHandler);
-        return userPasswordAuthenticationProcessingFilter;
+        authenticationProcessingFilter.setAuthenticationManager(authenticationManager);
+        authenticationProcessingFilter.setAuthenticationSuccessHandler(successHandler);
+        authenticationProcessingFilter.setAuthenticationFailureHandler(failureHandler);
+        return authenticationProcessingFilter;
     }
 
     /**
@@ -115,7 +115,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()*/
                 .authorizeRequests()
 //                .antMatchers(securityService.permitPermissions(clientId).toArray(new String[0])).permitAll()
-                .antMatchers(new String[]{"/oauth/**", "/platform/**", "/static/**", "/captcha", "/rsa/publicKey", "/login", "/login.html"}).permitAll()
+                .antMatchers(new String[]{
+                        "/oauth/**",
+                        "/platform/**",
+                        "/static/**",
+                        "/captcha",
+                        "/SMSVerificationCode",
+                        "/rsa/publicKey",
+                        "/login",
+                        "/login.html"}).permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -134,7 +142,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         //token验证过滤器
         http.addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         //核心：添加过滤器，注意先后顺序
-        http.addFilterBefore(userPasswordAuthenticationProcessingFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authenticationProcessingFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class);
 
     }
 

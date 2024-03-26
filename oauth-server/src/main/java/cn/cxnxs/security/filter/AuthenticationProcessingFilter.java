@@ -19,9 +19,9 @@ import java.io.IOException;
  * @author mengjinyuan
  * @date 2022-05-06 21:09
  **/
-public class UserPasswordAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
+public class AuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
-    public UserPasswordAuthenticationProcessingFilter() {
+    public AuthenticationProcessingFilter() {
         //认证url
         super("/login");
     }

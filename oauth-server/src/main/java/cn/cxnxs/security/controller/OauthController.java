@@ -13,6 +13,11 @@ import cn.cxnxs.security.service.impl.AuthService;
 import cn.cxnxs.security.utils.ImageUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.aliyuncs.IAcsClient;
+import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
+import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
+import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.http.MethodType;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +53,9 @@ public class OauthController {
     @Autowired
     private RedisUtils redisUtils;
 
+    @Autowired
+    private IAcsClient acsClient;
+
     /**
      * 获取公钥
      */
@@ -75,6 +83,47 @@ public class OauthController {
         os.flush();
         os.close();
     }
+
+    /**
+     * 获取短信验证码
+     *
+     * @return
+     */
+    @CrossOrigin(origins = "*")
+    @RequestMapping("SMSVerificationCode")
+    public Result<Object> getSMSVerificationCode(String phoneNumber) {
+        if (StringUtil.isEmpty(phoneNumber)) {
+            return Result.failure("手机号不能为空！");
+        }
+
+        String code = StringUtil.randomString(4, 1);
+
+        SendSmsRequest request = new SendSmsRequest();
+        request.setMethod(MethodType.POST);
+        request.setPhoneNumbers(phoneNumber);
+        request.setSignName("gamerom网");
+        request.setTemplateCode("SMS_296765275");
+        JSONObject templateParam = new JSONObject();
+        templateParam.put("code", code);
+        request.setTemplateParam(templateParam.toJSONString());
+        try {
+            SendSmsResponse sendSmsResponse = acsClient.getAcsResponse(request);
+            if ((sendSmsResponse.getCode() != null) && (sendSmsResponse.getCode().equals("OK"))) {
+                log.info("发送成功,code:{}", sendSmsResponse.getCode());
+                // 缓存到redis
+                String key = RedisKeyPrefix.KEY_SMS + phoneNumber;
+                redisUtils.set(key, code, 5 * 60);
+                return Result.success("发送成功");
+            } else {
+                log.info("发送失败,code:{}", sendSmsResponse.getCode());
+                return Result.failure("发送失败");
+            }
+        } catch (ClientException e) {
+            log.error("发送失败,系统错误！", e);
+            return Result.failure("发送失败");
+        }
+    }
+
 
     /**
      * 获取授权的用户信息

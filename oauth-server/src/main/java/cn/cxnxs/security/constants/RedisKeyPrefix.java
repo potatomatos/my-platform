@@ -17,5 +17,10 @@ public class RedisKeyPrefix {
      */
     public static final String KEY_CAPTCHA = "captcha:";
 
+    /**
+     * 短信验证码
+     */
+    public static final String KEY_SMS = "sms:";
+
 
 }

@@ -308,7 +308,7 @@ li {
     cursor: pointer;
     animation: text-gradient 10s infinite;
     display: none;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
 }
 
 .smg-login {
@@ -317,22 +317,25 @@ li {
 }
 
 .verification-code-wrap {
+    width: 100%;
+}
+
+.clearfix::after {
     content: "";
     display: table;
     clear: both;
-    width: 100%;
 }
 
 .verification-code {
     float: left;
-    width: 58% !important;
+    width: 40% !important;
 }
 
 .btn-get-verification-code {
     float: left;
     width: 30% !important;
     margin-top: 0 !important;
-    padding: 8px !important;
+    padding: 10.5px !important;
     border-bottom: 1px solid rgb(128, 125, 125);
 }
 
@@ -354,7 +357,7 @@ li {
     width: 100%;
     margin-bottom: 20px;
     border: 0;
-    padding: 10px;
+    padding: 10px 0 10px 10px;
     border-bottom: 1px solid rgb(128, 125, 125);
     font-size: 15px;
     outline: none;
@@ -373,7 +376,7 @@ li {
 
 .btn {
     text-align: center;
-    padding: 10px;
+    padding: 10px 0 10px 10px;
     width: 100%;
     margin-top: 40px;
     background-image: linear-gradient(to right, #a6c1ee, #fbc2eb);

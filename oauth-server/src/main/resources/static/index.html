@@ -28,21 +28,25 @@
             <div class="username-login">
                 <input type="text" name="username" placeholder="用户名" class="input-item">
                 <input type="password" name="password" placeholder="密码" class="input-item">
-                <div><img alt="验证码" id="captchaImg" src="/captcha" onclick="refreshImg()"></div>
-                <input type="text" name="captcha" placeholder="验证码" class="input-item">
+                <div class="clearfix">
+                    <input type="text" name="captcha" placeholder="验证码" class="input-item verification-code"
+                           style="margin-right: 10px">
+                    <img alt="验证码" id="captchaImg" src="/captcha" onclick="refreshImg()">
+                </div>
                 <div class="btn pointer btn-login">登录</div>
             </div>
             <!--短信登录-->
             <div class="smg-login">
                 <input type="text" name="phoneNumber" placeholder="手机号" class="input-item">
-                <div class="verification-code-wrap">
-                    <input type="text" name="verificationCode" placeholder="验证码" class="input-item verification-code">
-                    <div class="btn pointer btn-get-verification-code">获取验证码</div>
+                <div class="verification-code-wrap clearfix">
+                    <input type="text" name="verificationCode" placeholder="验证码"
+                           class="input-item verification-code">
+                    <div class="btn pointer btn-get-verification-code" onclick="getVerificationCode()">获取验证码</div>
                 </div>
                 <div class="btn pointer btn-smg-login">登录</div>
             </div>
             <ul class="social-account">
-                <li><i class="fa fa-github fa-2x"></i></li>
+                <li class="smg"><i class="fa fa-mobile fa-3x"></i></li>
                 <li><i class="fa fa-weixin fa-2x"></i></li>
                 <li><i class="fa fa-qq fa-2x"></i></li>
                 <li>
@@ -61,7 +65,7 @@
                               p-id="1599"></path>
                     </svg>
                 </li>
-                <li class="smg"><i class="fa fa-mobile fa-3x"></i></li>
+                <li><i class="fa fa-github fa-3x"></i></li>
             </ul>
             <div class="msg">
                 <a href="#">注册账号</a>
@@ -194,6 +198,59 @@
             }
         })
 
+    }
+
+    let timer = null
+
+    /**
+     * 获取验证码
+     */
+    function getVerificationCode() {
+        if (parseInt($('.btn-get-verification-code').html())) {
+            return;
+        }
+
+        let phoneNumber = $('[name="phoneNumber"]').val()
+        if (!phoneNumber) {
+            layer.msg('手机号不能为空', function () {
+            });
+            return
+        }
+        if (timer) {
+            clearInterval(timer)
+        }
+        $.ajax({
+            url: '/SMSVerificationCode',
+            type: 'post',
+            contentType: 'application/x-www-form-urlencoded',
+            data: {
+                phoneNumber: phoneNumber
+            },
+            success: function (res) {
+                if (res.code === 200) {
+                    timer = setInterval(function () {
+                        let val = $('.btn-get-verification-code').html()
+                        let number = parseInt(val)
+                        if (number) {
+                            number = number - 1
+                            if (number < 0) {
+                                clearInterval(timer)
+                                $('.btn-get-verification-code').html('重新获取验证码')
+                            } else {
+                                $('.btn-get-verification-code').html(number + "秒后重新获取")
+                            }
+                        } else {
+                            $('.btn-get-verification-code').html('60秒后重新获取')
+                        }
+                    }, 1000)
+                } else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            },
+            error: function () {
+                layer.msg('系统异常', {icon: 5});
+            }
+        })
     }
 
     /**
