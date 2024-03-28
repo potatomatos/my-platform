@@ -33,7 +33,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
             return null;
         }
         //从数据库获取权限
-        Result<UserApiEntity> result = systemService.getUserByName(username);
+        Result<UserApiEntity> result = systemService.getUserByName(username, "system");
         UserApiEntity userApiEntity;
         if (result.ok()) {
             userApiEntity = result.getData();

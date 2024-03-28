@@ -33,7 +33,7 @@ public class SystemServiceFallbackFactory implements FallbackFactory<SystemServi
             }
 
             @Override
-            public Result<UserApiEntity> getUserByName(String username) {
+            public Result<UserApiEntity> getUserByName(String username, String userType) {
                 log.error("用户信息获取失败！", throwable);
                 return Result.failure("用户信息获取失败！");
             }

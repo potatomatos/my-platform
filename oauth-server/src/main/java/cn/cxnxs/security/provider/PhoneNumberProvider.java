@@ -19,8 +19,6 @@ public class PhoneNumberProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> aClass) {
-        //Manager传递token给provider，调用本方法判断该provider是否支持该token。不支持则尝试下一个filter
-        //本类支持的token类：UserPasswordAuthenticationToken
         return (PhoneNumberToken.class.isAssignableFrom(aClass));
     }
 }

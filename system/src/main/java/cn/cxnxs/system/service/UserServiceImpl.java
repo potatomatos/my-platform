@@ -215,9 +215,12 @@ public class UserServiceImpl {
     }
 
 
-    public UserApiEntity getUserByName(String username) {
-        SysUsers sysUsers = sysUsersMapper.selectOne(new LambdaQueryWrapper<SysUsers>()
-                .eq(SysUsers::getUsername, username).ne(SysUsers::getState, UserVO.USER_STATE.DELETED.getCode())
+    public UserApiEntity getUserByName(String username, String userType) {
+        SysUsers sysUsers = sysUsersMapper.selectOne(
+                new LambdaQueryWrapper<SysUsers>()
+                        .eq(SysUsers::getUsername, username)
+                        .eq(SysUsers::getUserType, userType)
+                        .ne(SysUsers::getState, UserVO.USER_STATE.DELETED.getCode())
         );
         if (sysUsers == null) {
             return null;

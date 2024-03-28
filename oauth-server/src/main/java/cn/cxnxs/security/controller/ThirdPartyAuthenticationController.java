@@ -1,5 +1,8 @@
 package cn.cxnxs.security.controller;
 
+import cn.cxnxs.common.api.system.SystemService;
+import cn.cxnxs.common.api.system.domain.UserApiEntity;
+import cn.cxnxs.common.core.entity.response.Result;
 import cn.cxnxs.security.config.GithubOauthProperties;
 import cn.cxnxs.security.entity.GithubAccessToken;
 import com.alibaba.fastjson.JSONObject;
@@ -21,6 +24,10 @@ public class ThirdPartyAuthenticationController {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private SystemService systemService;
+
+
     @RequestMapping("github/callback")
     public String githubCallback(String code) {
         // 获取Token的Url
@@ -37,7 +44,20 @@ public class ThirdPartyAuthenticationController {
         headers.set("Authorization", "token " + accessToken);
         HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
         ResponseEntity<JSONObject> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, JSONObject.class);
-        //TODO 判断用户是否注册
+        if (response.getBody() != null) {
+            JSONObject data = response.getBody();
+            Result<UserApiEntity> result = systemService.getUserByName(data.getString("login"), "system");
+            if (result.ok()) {
+                if (result.getData() == null) {
+                    // 登录成功
+                } else {
+                    // 添加用户
+                }
+            } else {
+                //登录失败
+            }
+        }
+
         return "";
     }
 }

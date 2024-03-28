@@ -74,6 +74,11 @@ public class SysUsers extends Model<SysUsers> {
     private String unconfirmedEmail;
 
     /**
+     * 用户类型
+     */
+    private String userType;
+
+    /**
      * 0-启用 1-停用 2-账号过期 3-认证过期 4-账号锁定
      */
     private Integer state;

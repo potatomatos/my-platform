@@ -96,10 +96,12 @@ public class SystemController {
      * 更新用户信息
      *
      * @param username 用户名
+     * @param userType 用户类型
      */
     @GetMapping("api/getUserByName")
-    Result<UserApiEntity> getUserByName(@RequestParam("username") String username) {
-        UserApiEntity userByName = userService.getUserByName(username);
+    Result<UserApiEntity> getUserByName(@RequestParam("username") String username,
+                                        @RequestParam("userType") String userType) {
+        UserApiEntity userByName = userService.getUserByName(username, userType);
         return userByName == null ? Result.failure("用户不存在") : Result.success(userByName);
     }
 

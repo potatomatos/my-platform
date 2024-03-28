@@ -38,5 +38,5 @@ public interface SystemService {
     Result<Boolean> updateUser(@RequestBody UserApiEntity userApiEntity);
 
     @GetMapping("/system/api/getUserByName")
-    Result<UserApiEntity> getUserByName(@RequestParam("username") String username);
+    Result<UserApiEntity> getUserByName(@RequestParam("username") String username, @RequestParam("userType") String userType);
 }

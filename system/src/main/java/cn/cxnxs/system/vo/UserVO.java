@@ -68,6 +68,8 @@ public class UserVO {
 
     private String unconfirmedEmail;
 
+    private String userType;
+
     /**
      * 0-启用 1-停用 2-账号过期 3-认证过期 4-账号锁定
      */
